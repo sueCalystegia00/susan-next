@@ -1,32 +1,32 @@
 {
-	"name": "susan-next",
-	"version": "0.0.0",
-	"private": true,
-	"scripts": {
-		"dev": "next dev",
-		"build": "next build",
-		"start": "next start -p 4000",
-		"lint": "next lint",
-		"format": "prettier --write --ignore-path .gitignore './**/*.{js,jsx,ts,tsx,json,css}'"
-	},
-	"dependencies": {
-		"@line/liff": "2.20.1",
-		"next": "12.0.10",
-		"react": "17.0.2",
-		"react-dom": "17.0.2"
-	},
-	"devDependencies": {
-		"@types/node": "17.0.16",
-		"@types/react": "17.0.39",
-		"autoprefixer": "^10.4.7",
-		"cssnano": "^5.1.10",
-		"eslint": "8.8.0",
-		"eslint-config-next": "12.0.10",
-		"eslint-config-prettier": "^8.5.0",
-		"eslint-plugin-tailwindcss": "^3.5.0",
-		"postcss": "^8.4.14",
-		"prettier": "^2.6.2",
-		"tailwindcss": "^3.0.24",
-		"typescript": "4.5.5"
-	}
+  "name": "susan-next",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p 4000",
+    "lint": "next lint",
+    "format": "prettier --write --ignore-path .gitignore './**/*.{js,jsx,ts,tsx,json,css}'"
+  },
+  "dependencies": {
+    "@line/liff": "2.20.1",
+    "next": "12.0.10",
+    "react": "17.0.2",
+    "react-dom": "17.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "17.0.16",
+    "@types/react": "17.0.39",
+    "autoprefixer": "^10.4.7",
+    "cssnano": "^5.1.10",
+    "eslint": "8.8.0",
+    "eslint-config-next": "12.0.10",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-tailwindcss": "^3.5.0",
+    "postcss": "^8.4.14",
+    "prettier": "^2.6.2",
+    "tailwindcss": "^3.0.24",
+    "typescript": "4.5.5"
+  }
 }
