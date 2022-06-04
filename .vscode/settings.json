@@ -7,5 +7,5 @@
 	"editor.codeActionsOnSave": {
 		"source.fixAll": true
 	},
-	"cSpell.words": ["liff"]
+	"cSpell.words": ["liff", "reduxjs"]
 }

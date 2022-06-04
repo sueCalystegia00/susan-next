@@ -1,9 +1,11 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
+import { Provider } from "react-redux";
+import { useStore } from "../store";
 import type { Liff } from "@line/liff";
 import { useState, useEffect } from "react";
 
-const MyApp: React.FC<AppProps> = ({ Component, pageProps }): JSX.Element => {
+const MyApp = ({ Component, pageProps }: AppProps) => {
 	const [liffObject, setLiffObject] = useState<Liff | null>(null);
 	const [liffError, setLiffError] = useState<string | null>(null);
 
@@ -31,7 +33,11 @@ const MyApp: React.FC<AppProps> = ({ Component, pageProps }): JSX.Element => {
 	// to page component as property
 	pageProps.liff = liffObject;
 	pageProps.liffError = liffError;
-	return <Component {...pageProps} />;
+	return (
+		<Provider store={useStore()}>
+			<Component {...pageProps} />
+		</Provider>
+	);
 };
 
 export default MyApp;
