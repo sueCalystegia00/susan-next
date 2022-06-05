@@ -1,4 +1,8 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import {
+	createSlice,
+	createAsyncThunk,
+	SerializedError,
+} from "@reduxjs/toolkit";
 import liff from "@line/liff";
 
 export type UserState = {
@@ -10,11 +14,11 @@ export type UserState = {
 		isLoggedIn?: boolean;
 		token?: string;
 	};
-	type: string | null;
+	type?: string;
 	loading: boolean;
 	error: {
 		status: boolean;
-		message: string | null;
+		message?: SerializedError;
 	};
 };
 
@@ -27,64 +31,66 @@ const initialState: UserState = {
 		isLoggedIn: false,
 		token: undefined,
 	},
-	type: null,
+	type: undefined,
 	loading: false,
 	error: {
 		status: false,
-		message: null,
+		message: undefined,
 	},
 };
 
 export type UpdateLiffPayload = UserState["liff"];
 
-export const userSlice = createSlice({
-	name: "user",
-	initialState,
-	reducers: {
-		reset(): UserState {
-			return initialState;
-		},
-	},
-	extraReducers: (builder) => {
-		builder.addCase(initializeLiff.pending, (state, action) => {
-			state.loading = true;
-			state.error.status = false;
-			state.error.message = null;
-		});
-		builder.addCase(initializeLiff.fulfilled, (state, action) => {
-			state.loading = false;
-			state.liff = { ...action.payload };
-		});
-		builder.addCase(initializeLiff.rejected, (state, action) => {
-			state.loading = true;
-			state.error.status = true;
-			state.error.message = "cant fetched data";
-		});
-	},
-});
-
-export const initializeLiff = createAsyncThunk(
+export const initializeLiff = createAsyncThunk<UpdateLiffPayload>(
 	"user/initializeLiff",
-	async () => {
+	async (): Promise<UpdateLiffPayload> => {
 		return await liff
 			.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID! })
 			.then(() => {
 				if (!liff.isInClient() && !liff.isLoggedIn()) {
 					liff.login();
-				} else {
-					const userData = liff.getDecodedIDToken();
-					return {
-						uid: userData?.sub,
-						//name: userData?.name,
-						//picture: userData?.picture,
-						isInClient: liff.isInClient(),
-						isLoggedIn: liff.isLoggedIn(),
-						token: liff.getAccessToken(),
-					} as UserState["liff"];
 				}
+				const userData = liff.getDecodedIDToken();
+				return {
+					uid: userData?.sub,
+					//name: userData?.name,
+					//picture: userData?.picture,
+					isInClient: liff.isInClient(),
+					isLoggedIn: liff.isLoggedIn(),
+					token: liff.getAccessToken(),
+				} as UpdateLiffPayload;
 			})
-			.catch((err) => {
-				console.log(err);
+			.catch((error) => {
+				throw new Error(error);
 			});
 	}
 );
+
+export const userSlice = createSlice({
+	name: "user",
+	initialState,
+	reducers: {
+		/* reset(): UserState {
+			return initialState;
+		}, */
+	},
+	extraReducers: (builder) => {
+		builder
+			.addCase(initializeLiff.pending, (state) => {
+				state.loading = true;
+				state.error.status = false;
+				state.error.message = undefined;
+			})
+			.addCase(initializeLiff.fulfilled, (state, action) => {
+				state.loading = false;
+				state.liff = { ...action.payload };
+			})
+			.addCase(initializeLiff.rejected, (state, action) => {
+				state.loading = true;
+				state.error.status = true;
+				state.error.message = action.error;
+			});
+	},
+});
+
+export default userSlice.reducer;

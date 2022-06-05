@@ -1,17 +1,19 @@
-import type { Liff } from "@line/liff";
 import type { NextPage } from "next";
 import Head from "next/head";
+import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "store";
-import { userSlice } from "store/user";
+import { AppDispatch, RootState } from "store";
 import styles from "../styles/Home.module.css";
 
-const Home: NextPage<{ liff: Liff | null; liffError: string | null }> = ({
-	liff,
-	liffError,
-}) => {
-	const dispatch = useDispatch();
+import { initializeLiff } from "store/user";
+
+const Home: NextPage = () => {
+	const dispatch: AppDispatch = useDispatch();
 	const user = useSelector((state: RootState) => state.user);
+
+	useEffect(() => {
+		if (!user.liff.isLoggedIn) dispatch(initializeLiff());
+	}, [user]);
 
 	const handleConfirm = () => {
 		console.log(user);
@@ -27,14 +29,10 @@ const Home: NextPage<{ liff: Liff | null; liffError: string | null }> = ({
 
 			<main className={styles.main}>
 				<h1>create-liff-app</h1>
-				{liff && <p>LIFF init succeeded.</p>}
-				{liffError && (
-					<>
-						<p>LIFF init failed.</p>
-						<p>
-							<code>{liffError}</code>
-						</p>
-					</>
+				{user.liff.isLoggedIn ? (
+					<p>{user.liff.uid}</p>
+				) : (
+					<p> you're not logged in. </p>
 				)}
 				<h2>redux test</h2>
 				<button type='button' onClick={handleConfirm}>
