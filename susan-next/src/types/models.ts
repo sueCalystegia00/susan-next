@@ -1,4 +1,7 @@
 export interface User {
 	userUid: string;
-	name: string;
+	token: string;
+	position: string;
+	//displayName: string;
+	//pictureUrl: string;
 }

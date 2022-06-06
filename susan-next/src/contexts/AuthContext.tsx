@@ -35,7 +35,10 @@ export const AuthProvider = ({ children }: Props) => {
 		}
 		const _user: User = {
 			userUid: user.userUid,
-			name: user.name,
+			token: user.token,
+			position: user.position,
+			//displayName: user.displayName,
+			//pictureUrl: user.pictureUrl;
 		};
 		setUserState(_user);
 	};

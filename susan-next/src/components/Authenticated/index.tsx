@@ -1,18 +1,19 @@
 import { LiffMockPlugin } from "@line/liff-mock";
 import Script from "next/script";
 import { useContext } from "react";
-
 import { AuthContext } from "~/contexts/AuthContext";
 
 export const Authenticated = () => {
 	const { setUser: setUserContext } = useContext(AuthContext);
 
-	const setUser = async (userUid: string): Promise<void> => {
-		// 今回はデモ用のテンプレートコードなので、nameに仮のdisplayNameを設定している
-		// 本来はここでuserUidをもとにDBから値を取り、setUserContextに反映させる
+	const setUser = async (userUid: string, token: string): Promise<void> => {
+		// TODO: APIを叩いてpositionを取得する
+		const position = "api response";
+
 		setUserContext({
 			userUid,
-			name: (await liff.getProfile()).displayName,
+			token,
+			position,
 		});
 	};
 
@@ -37,7 +38,12 @@ export const Authenticated = () => {
 				});
 			}
 			const profile = await liff.getProfile();
-			setUser(profile.userId);
+			setUser(
+				profile.userId, // FEで扱うID
+				(await liff.getAccessToken()) as string // BEでIDを扱うためにtokenを取得しておく
+				//profile.displayName,
+				//profile.pictureUrl,
+			);
 
 			console.info(profile);
 		} catch (err) {
