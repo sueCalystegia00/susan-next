@@ -1,5 +1,5 @@
 FROM node:16.14.2-alpine
-WORKDIR /susan-next/
+WORKDIR /app/
 
 # パッケージインストールのためのコマンド追加
 COPY ./susan-next/package.json ./susan-next/yarn.lock ./
