@@ -1,50 +1,37 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
-//import type { Liff } from "@line/liff";
-import { useEffect } from "react";
-import { Provider, useSelector, useDispatch } from "react-redux";
-import { store, AppDispatch, RootState } from "store";
-import { setLiffData } from "store/user";
+import type { Liff } from "@line/liff";
+import { useState, useEffect } from "react";
 
-const MyApp = ({ Component, pageProps }: AppProps) => {
-	const dispatch: AppDispatch = useDispatch();
-	const user = useSelector((state: RootState) => state.user);
+function MyApp({ Component, pageProps }: AppProps) {
+	const [liffObject, setLiffObject] = useState<Liff | null>(null);
+	const [liffError, setLiffError] = useState<string | null>(null);
 
-	/* useEffect(() => {
-		if (typeof window == "undefined") return;
+	// Execute liff.init() when the app is initialized
+	useEffect(() => {
 		// to avoid `window is not defined` error
 		import("@line/liff")
 			.then((liff) => liff.default)
 			.then((liff) => {
+				console.log("LIFF init...");
 				liff
 					.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID! })
 					.then(() => {
-						if (!liff.isInClient() && !liff.isLoggedIn()) {
-							liff.login();
-						}
-						const userData = liff.getDecodedIDToken();
-						dispatch(
-							setLiffData({
-								uid: userData?.sub,
-								//name: userData?.name,
-								//picture: userData?.picture,
-								isInClient: liff.isInClient(),
-								isLoggedIn: liff.isLoggedIn(),
-								token: liff.getAccessToken(),
-							})
-						);
+						console.log("LIFF init succeeded.");
+						setLiffObject(liff);
 					})
 					.catch((error: Error) => {
-						console.error(error);
+						console.log("LIFF init failed.");
+						setLiffError(error.toString());
 					});
 			});
-	}, []); */
+	}, []);
 
-	return (
-		<Provider store={store}>
-			<Component {...pageProps} />
-		</Provider>
-	);
-};
+	// Provide `liff` object and `liffError` object
+	// to page component as property
+	pageProps.liff = liffObject;
+	pageProps.liffError = liffError;
+	return <Component {...pageProps} />;
+}
 
 export default MyApp;
