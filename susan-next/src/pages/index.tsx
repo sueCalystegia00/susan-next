@@ -1,19 +1,11 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { AppDispatch, RootState } from "store";
+import { useSelector } from "react-redux";
+import { RootState } from "store";
 import styles from "../styles/Home.module.css";
 
-import { initializeLiff } from "store/user";
-
 const Home: NextPage = () => {
-	const dispatch: AppDispatch = useDispatch();
 	const user = useSelector((state: RootState) => state.user);
-
-	useEffect(() => {
-		if (!user.liff.isLoggedIn) dispatch(initializeLiff());
-	}, [user]);
 
 	const handleConfirm = () => {
 		console.log(user);

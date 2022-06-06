@@ -1,9 +1,4 @@
-import {
-	createSlice,
-	createAsyncThunk,
-	SerializedError,
-} from "@reduxjs/toolkit";
-import liff from "@line/liff";
+import { createSlice, SerializedError } from "@reduxjs/toolkit";
 
 export type UserState = {
 	liff: {
@@ -41,7 +36,7 @@ const initialState: UserState = {
 
 export type UpdateLiffPayload = UserState["liff"];
 
-export const initializeLiff = createAsyncThunk<UpdateLiffPayload>(
+/* export const initializeLiff = createAsyncThunk<UpdateLiffPayload>(
 	"user/initializeLiff",
 	async (): Promise<UpdateLiffPayload> => {
 		return await liff
@@ -64,17 +59,20 @@ export const initializeLiff = createAsyncThunk<UpdateLiffPayload>(
 				throw new Error(error);
 			});
 	}
-);
+); */
 
 export const userSlice = createSlice({
 	name: "user",
 	initialState,
 	reducers: {
-		/* reset(): UserState {
-			return initialState;
-		}, */
+		setLiffData: (state, action) => {
+			state.liff = action.payload;
+		},
+		reset: (state) => {
+			state = initialState;
+		},
 	},
-	extraReducers: (builder) => {
+	/* extraReducers: (builder) => {
 		builder
 			.addCase(initializeLiff.pending, (state) => {
 				state.loading = true;
@@ -90,7 +88,8 @@ export const userSlice = createSlice({
 				state.error.status = true;
 				state.error.message = action.error;
 			});
-	},
+	}, */
 });
 
+export const { setLiffData } = userSlice.actions;
 export default userSlice.reducer;
