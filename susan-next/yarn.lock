@@ -482,6 +482,11 @@
     file-type "^15.0.0"
     form-data "^3.0.0"
 
+"@line/liff-mock@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@line/liff-mock/-/liff-mock-1.0.1.tgz#1c0c80b249f0e6fb23de2b6b2af0b7942031c519"
+  integrity sha512-BbB41hjmDZYR6vgxOVg3pneofes5AfJRO5785jTTaUV4tRY/yspuxss6KaG3S3kmy+IU5PMCz4TC8UpMZfBWXw==
+
 "@line/liff@2.20.1":
   version "2.20.1"
   resolved "https://registry.npmjs.org/@line/liff/-/liff-2.20.1.tgz"
