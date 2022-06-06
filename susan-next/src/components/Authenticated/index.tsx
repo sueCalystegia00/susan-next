@@ -4,8 +4,6 @@ import { useContext } from "react";
 
 import { AuthContext } from "~/contexts/AuthContext";
 
-const liffId = process.env.NEXT_PUBLIC_LIFF_ID!;
-
 export const Authenticated = () => {
 	const { setUser: setUserContext } = useContext(AuthContext);
 
@@ -27,12 +25,17 @@ export const Authenticated = () => {
 		try {
 			if (process.env.NODE_ENV === "development") {
 				liff.use(new LiffMockPlugin());
-				await liff.init({ liffId, mock: true });
+				await liff.init({
+					liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
+					mock: true,
+				});
 				liff.login();
 			} else {
-				await liff.init({ liffId });
+				await liff.init({
+					liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
+					withLoginOnExternalBrowser: true, //外部ブラウザでも自動ログイン(LIFFブラウザは最初から自動でログインが走る)
+				});
 			}
-
 			const profile = await liff.getProfile();
 			setUser(profile.userId);
 
