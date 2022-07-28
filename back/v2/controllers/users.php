@@ -177,7 +177,7 @@ class UsersController
         if($stmt2->fetchColumn() > 0) return ["position" => "student"];
       }
 
-      return ["user_type" => "undefined"];
+      return ["position" => "Non-experimenter"];
   
     } catch(PDOException $error){
       $this -> code = 500;
