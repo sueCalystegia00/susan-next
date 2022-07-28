@@ -11,6 +11,7 @@ URL: ???
 .env ファイルに環境変数を設定する．書き方は .env.sample を参照．
 
 - LIFF ID([LINE Developer Console](https://developers.line.biz/console/)から LINE ログインのチャンネルの作成・ID を取得)
+- API BaseURL
 
 ### start developing
 

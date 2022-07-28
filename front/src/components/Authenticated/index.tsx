@@ -2,13 +2,14 @@ import { LiffMockPlugin } from "@line/liff-mock";
 import Script from "next/script";
 import { useContext } from "react";
 import { AuthContext } from "~/contexts/AuthContext";
+import axios from "axios";
 
 export const Authenticated = () => {
 	const { setUser: setUserContext } = useContext(AuthContext);
 
 	const setUser = async (userUid: string, token: string): Promise<void> => {
 		// TODO: APIを叩いてpositionを取得する
-		const position = "api response";
+		const position = await getUserPosition(token);
 
 		setUserContext({
 			userUid,
@@ -49,6 +50,25 @@ export const Authenticated = () => {
 		} catch (err) {
 			handleError(err);
 		}
+	};
+
+	const getUserPosition = async (token: string): Promise<string> => {
+		const userPosition = await axios
+			.post<string>(
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/users/position`,
+				{
+					userToken: token,
+				}
+			)
+			.then((response) => {
+				return response.data;
+			})
+			.catch((error) => {
+				alert("サーバーでエラーが発生しました．");
+				console.error(error);
+				return "unknown";
+			});
+		return userPosition;
 	};
 
 	return (
