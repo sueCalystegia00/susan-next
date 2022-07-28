@@ -61,8 +61,8 @@ class UsersController
         break;
       
       // 学生か教員・TAか確認する
-      case "type":
-        return $this->checkUserType($post["userId"]);
+      case "position":
+        return $this->checkUserPosition($post["userIdToken"]);
         break;
       /* 
       // 実験協力者であるか確認する
@@ -134,7 +134,7 @@ class UsersController
    * @param string $lineIdToken LINEのユーザIDトークン
    * @return array 
    */
-  private function checkUserType($lineIdToken) {
+  private function checkUserPosition($lineIdToken) {
     try{
       $verifyResult = $this->verifyLine($lineIdToken);
       $lineId = $verifyResult["sub"];
@@ -158,7 +158,7 @@ class UsersController
       if(!$res1){
         throw new Exception('pdo not response (check instructor)');
       }else{
-        if($stmt1->fetchColumn() > 0) return ["user_type" => "instructor"];
+        if($stmt1->fetchColumn() > 0) return ["position" => "instructor"];
       }
 
       // 教員・TAでなければ，学生(実験協力者)かどうか確認する
@@ -174,7 +174,7 @@ class UsersController
       if(!$res2){
         throw new Exception('pdo not response (check student)');
       }else{
-        if($stmt2->fetchColumn() > 0) return ["user_type" => "student"];
+        if($stmt2->fetchColumn() > 0) return ["position" => "student"];
       }
 
       return ["user_type" => "undefined"];

@@ -5,3 +5,8 @@ export interface User {
 	//displayName: string;
 	//pictureUrl: string;
 }
+
+export interface IErrorResponse {
+	type: string;
+	message: string;
+}
