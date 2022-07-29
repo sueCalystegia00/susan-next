@@ -63,7 +63,7 @@ export const Authenticated = () => {
 			})
 			.catch((error: AxiosError<IErrorResponse>) => {
 				alert("サーバーでエラーが発生しました．");
-				console.error(error);
+				handleError(error);
 				liff.logout();
 			});
 		return userPosition;
