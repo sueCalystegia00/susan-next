@@ -40,12 +40,23 @@ class UsersController
    */
   public function post($args) {
     $post = $this->request_body;
-    if(!array_key_exists("userId",$post)){
+    if(!array_key_exists("userIdToken",$post)){
       $this->code = 400;
       return ["error" => [
         "type" => "invalid_param"
       ]];
     }
+    try{
+      $verifyResult = $this->verifyLine($post["userIdToken"]);
+      $userId = $verifyResult["sub"];
+    }catch(Exception $error){
+      $this -> code = 400;
+      return ["error" => [
+        "type" => $error["error"], 
+        "message" => $error["error_description"]
+      ]];
+    }
+
     switch($args[0]){
       // 学生を実験協力者としてDBのリストに追加する
       case "new_subject":
@@ -56,25 +67,15 @@ class UsersController
             "type" => "invalid_param"
           ]];
         }else{
-          return $this->insertAcceptedUserData($post["userId"], $post["answerList"]);
+          return $this->insertAcceptedUserData($userId, $post["answerList"]);
         }
         break;
       
       // 学生か教員・TAか確認する
       case "position":
-        return $this->checkUserPosition($post["userIdToken"]);
+        return $this->checkUserPosition($userId);
         break;
-      /* 
-      // 実験協力者であるか確認する
-      case "subject":
-        return $this->checkIsUserAccepted($post["userId"]);
-        break;
-      
-      // 教員・TAであるか確認する
-      case "instructor":
-        return $this->checkIsInstructor($post["userId"]);
-        break;
-       */
+
       // 無効なアクセス
       default:
         $this -> code = 400;
@@ -131,18 +132,10 @@ class UsersController
 
   /**
    * DBからユーザが学生か，教員・TAであるか確認する
-   * @param string $lineIdToken LINEのユーザIDトークン
+   * @param string $lineId LINEのユーザID
    * @return array 
    */
-  private function checkUserPosition($lineIdToken) {
-    try{
-      $verifyResult = $this->verifyLine($lineIdToken);
-      $lineId = $verifyResult["sub"];
-    }catch(Exception $error){
-      $this -> code = 400;
-      return ["error" => $error];
-    }
-
+  private function checkUserPosition($lineId) {
     $db = new DB();
     $pdo = $db -> pdo();
     try{
