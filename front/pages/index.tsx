@@ -20,6 +20,14 @@ const HomePage: NextPage = () => {
 							<td>userUid</td>
 							<td>：{user ? user.userUid : "undefined"}</td>
 						</tr>
+						<tr>
+							<td>token</td>
+							<td>：{user ? user.token : "undefined"}</td>
+						</tr>
+						<tr>
+							<td>position</td>
+							<td>：{user ? user.position : "undefined"}</td>
+						</tr>
 					</tbody>
 				</table>
 			</div>

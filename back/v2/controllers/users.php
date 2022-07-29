@@ -203,7 +203,7 @@ class UsersController
 
     $data = [
       'id_token' => $id_token, // LIFFから送信されたIDトークン
-      'client_id' => file_get_contents(dirname( __FILE__).'/../../envs/line_client_id.txt'), // LIFFアプリを登録したLINEログインチャネルのチャネルID
+      'client_id' => file_get_contents(dirname( __FILE__).'/../../../Config/line_client_id.txt'), // LIFFアプリを登録したLINEログインチャネルのチャネルID
     ];
 
     // Set the url
