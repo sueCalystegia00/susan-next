@@ -7,7 +7,7 @@ export const QuestionCard = ({
 	lectureNumber,
 	questionText,
 }: QuestionCardProps) => (
-	<div>
+	<>
 		<div className='question-label'>
 			<div className='lecture-count'>第{lectureNumber}回</div>
 			<div className='answer-status'>
@@ -16,5 +16,5 @@ export const QuestionCard = ({
 			<time>{timestamp}</time>
 		</div>
 		<p className='question-text'>{questionText}</p>
-	</div>
+	</>
 );
