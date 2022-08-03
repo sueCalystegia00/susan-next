@@ -2,9 +2,9 @@ FROM node:16.14.2-alpine
 WORKDIR /app/
 
 # パッケージインストールのためのコマンド追加
-COPY ./susan-next/package.json ./susan-next/yarn.lock ./
+COPY ./package.json ./yarn.lock ./
 RUN yarn install --frozen-lockfile
 # 全ファイルをコピー
-COPY ./susan-next/ ./
+COPY ./ ./
 
 CMD [ "yarn", "build" ]

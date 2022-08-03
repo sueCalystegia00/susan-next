@@ -1,11 +1,15 @@
 version: "3"
 services:
   front:
-    build: .
+    container_name: susan-liff-next_front
+    build:
+      context: ./front
+      dockerfile: Dockerfile
     tty: true
     ports:
       - "3000:3000" # 開発用
       - "4000:4000" # 本番用
     volumes:
-      - ./susan-next:/app # カレントディレクトリのappとコンテナのappを対応させる
+      - ./front:/app/:cached
+      - ./front/node_modules:/app/node_modules
     command: yarn dev
