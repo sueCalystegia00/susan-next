@@ -10,6 +10,7 @@
     "plugin:tailwindcss/recommended" // class名を整形したりする
   ],
   "rules": {
+    "react/react-in-jsx-scope": "off", // v17からReactをimport不要になった
     // import の順番をルール化
     "import/order": [
       "error",

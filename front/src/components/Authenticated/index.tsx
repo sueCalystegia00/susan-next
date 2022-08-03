@@ -1,10 +1,10 @@
 import { LiffMockPlugin } from "@line/liff-mock";
 import Script from "next/script";
 import { useContext } from "react";
-import { AuthContext } from "~/contexts/AuthContext";
+import { AuthContext } from "@/contexts/AuthContext";
 import axios, { AxiosError } from "axios";
 
-import type { User, IErrorResponse } from "~/types/models";
+import type { User, IErrorResponse } from "@/types/models";
 
 export const Authenticated = () => {
 	const { setUser: setUserContext } = useContext(AuthContext);

@@ -1,8 +1,8 @@
 import type { NextPage } from "next";
 import { useContext } from "react";
 
-import { DefaultLayout } from "~/layouts/Default";
-import { QuestionCard } from "~/components/QuestionCard";
+import { DefaultLayout } from "@/layouts/Default";
+import { QuestionCard } from "@/components/QuestionCard";
 
 const QuestionListPage: NextPage = () => {
 	return (

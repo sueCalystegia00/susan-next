@@ -1,8 +1,8 @@
 import type { NextPage } from "next";
 import { useContext } from "react";
 
-import { AuthContext } from "~/contexts/AuthContext";
-import { DefaultLayout } from "~/layouts/Default";
+import { AuthContext } from "@/contexts/AuthContext";
+import { DefaultLayout } from "@/layouts/Default";
 
 const HomePage: NextPage = () => {
 	const { user } = useContext(AuthContext);
