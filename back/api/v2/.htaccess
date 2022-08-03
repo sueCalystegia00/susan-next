@@ -11,5 +11,5 @@
   # かつ，RewriteRuleを適用する条件 ファイルシステムのファイルパスに対して ディレクトリが存在しない場合
   RewriteCond %{REQUEST_FILENAME} !-d
   # apiのパスが前方一致していた場合，index.phpにrewriteする
-  RewriteRule . /~suzuki/susan/BackEnd/v2/index.php [L]
+  RewriteRule . /api/v2/index.php [L] # 開発用
 </IfModule>

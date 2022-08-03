@@ -1,6 +1,6 @@
 <?php
 
-include(dirname( __FILE__)."/../Config/dbInfo.php"); //DBに接続するための情報
+include(dirname( __FILE__)."/../envs/dbInfo.php"); //DBに接続するための情報
 
 /**
  * データベースに接続するために利用する
