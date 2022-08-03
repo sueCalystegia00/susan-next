@@ -17,12 +17,16 @@ const HomePage: NextPage = () => {
 				<table style={{ margin: "auto" }}>
 					<tbody>
 						<tr>
-							<td>LINE表示名</td>
-							<td>：{user ? user.name : "undefined"}</td>
-						</tr>
-						<tr>
 							<td>userUid</td>
 							<td>：{user ? user.userUid : "undefined"}</td>
+						</tr>
+						<tr>
+							<td>token</td>
+							<td>：{user ? user.token : "undefined"}</td>
+						</tr>
+						<tr>
+							<td>position</td>
+							<td>：{user ? user.position : "undefined"}</td>
 						</tr>
 					</tbody>
 				</table>
