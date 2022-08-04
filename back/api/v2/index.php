@@ -1,6 +1,9 @@
 <?php
 ini_set('display_errors',1);
 
+//header("Access-Control-Allow-Origin: https://susan-xi.vercel.app"); //本番用
+header("Access-Control-Allow-Origin: http://localhost:3000"); //開発用
+
 include(dirname( __FILE__)."/../database.php");
 
 // URL(REQUEST_URI)と「このindex.phpがあるディレクトリのパス」を比較
@@ -32,7 +35,6 @@ if(file_exists($file_path)){
     $response_code = $object->code;
   };
   
-  header("Access-Control-Allow-Origin: https://www2.yoslab.net");
   header("Content-Type: application/json; charset=utf-8", true, $response_code);
   echo $response;
 
