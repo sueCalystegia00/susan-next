@@ -32,7 +32,7 @@ if(file_exists($file_path)){
     $response_code = $object->code;
   };
   
-  header("Access-Control-Allow-Origin: https://www2.yoslab.net");
+  header("Access-Control-Allow-Origin: https://susan-xi.vercel.app");
   header("Content-Type: application/json; charset=utf-8", true, $response_code);
   echo $response;
 
