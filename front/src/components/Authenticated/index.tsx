@@ -26,10 +26,7 @@ export const Authenticated = () => {
 
 	const liffInit = async () => {
 		try {
-			if (
-				process.env.NODE_ENV === "development" ||
-				process.env.NODE_ENV === "test"
-			) {
+			if (process.env.NODE_ENV !== "production") {
 				liff.use(new LiffMockPlugin());
 				await liff.init({
 					liffId: process.env.LIFF_ID!,
