@@ -42,7 +42,7 @@ export const Authenticated = () => {
 			const profile = await liff.getProfile();
 			setUser(
 				profile.userId, // FEで扱うID
-				(await liff.getAccessToken()) as string // BEでIDを扱うためにtokenを取得しておく
+				(await liff.getIDToken()) as string // BEでIDを扱うためにtokenを取得しておく
 				//profile.displayName,
 				//profile.pictureUrl,
 			);
@@ -55,11 +55,9 @@ export const Authenticated = () => {
 
 	const getUserPosition = async (token: string): Promise<string | void> => {
 		const userPosition = await axios
-			.post<User>(
+			.get<User>(
 				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/users/position`,
-				{
-					userIdToken: token,
-				}
+				{ params: { userIdToken: token } }
 			)
 			.then((response) => {
 				return response.data.position;
