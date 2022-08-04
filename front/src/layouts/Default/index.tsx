@@ -1,8 +1,8 @@
 import type { FC } from "react";
 import { useContext } from "react";
 
-import { Loader } from "~/components/Loader";
-import { AuthContext } from "~/contexts/AuthContext";
+import { Loader } from "@/components/Loader";
+import { AuthContext } from "@/contexts/AuthContext";
 
 import type { LayoutProps } from "../types";
 

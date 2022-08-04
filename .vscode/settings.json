@@ -16,5 +16,7 @@
 		".vscode",
 		".vscode-insiders",
 		"yarn.lock"
-	]
+	],
+
+	"intelephense.environment.phpVersion": "5.6.0"
 }

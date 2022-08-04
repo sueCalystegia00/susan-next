@@ -1,15 +1,64 @@
 version: "3"
 services:
+  #フロントエンド
   front:
     container_name: susan-liff-next_front
     build:
       context: ./front
       dockerfile: Dockerfile
     tty: true
+    environment:
+      - WATCHPACK_POLLING=true
     ports:
       - "3000:3000" # 開発用
       - "4000:4000" # 本番用
     volumes:
       - ./front:/app/:cached
-      - ./front/node_modules:/app/node_modules
+      - node_modules_volume:/home/app/node_modules:delegated
+      - build_volume:/home/app/build:nocopy
     command: yarn dev
+
+  #バックエンド
+  back:
+    container_name: susan_back
+    build:
+      context: ./back
+      dockerfile: Dockerfile
+    volumes:
+      - ./back:/var/www/html
+      - ./back/php.ini:/usr/local/etc/php/php.ini
+    ports:
+      - 8080:80
+    depends_on:
+      - mysql
+
+  #MySQL用コンテナ
+  mysql:
+    container_name: mysql
+    image: mysql:5.7
+    volumes:
+      - ./mysql:/var/lib/mysql
+      - ./mysql/initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE=$MYSQL_DATABASE
+      - MYSQL_USER=$MYSQL_USER
+      - MYSQL_PASSWORD=$MYSQL_PASSWORD
+
+  #phpMyAdmin用コンテナ
+  phpmyadmin:
+    container_name: phpMyAdmin
+    depends_on:
+      - mysql
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: mysql
+    restart: always
+    ports:
+      - "80:80"
+
+volumes:
+  node_modules_volume:
+  build_volume:
