@@ -32,7 +32,10 @@ if(file_exists($file_path)){
     $response_code = $object->code;
   };
   
-  header("Access-Control-Allow-Origin: https://www2.yoslab.net");
+  $reqHeaders = apache_request_headers();
+  include(dirname( __FILE__)."/../../envs/accessAllowedOrigins.php");
+  if(in_array($reqHeaders['Origin'], $allowedOrigin)) header("Access-Control-Allow-Origin: {$reqHeaders['Origin']}");
+
   header("Content-Type: application/json; charset=utf-8", true, $response_code);
   echo $response;
 
