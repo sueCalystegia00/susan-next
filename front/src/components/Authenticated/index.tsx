@@ -36,7 +36,7 @@ const Authenticated = () => {
 					...p,
 					getProfile: {
 						displayName: "Developer",
-						userId: process.env.DEVELOPER_LINE_ID!,
+						userId: process.env.NEXT_PUBLIC_DEVELOPER_LINE_ID!,
 					},
 					getIDToken: "DUMMY_TOKEN",
 				}));
@@ -62,19 +62,22 @@ const Authenticated = () => {
 	};
 
 	const getUserPosition = async (token: string): Promise<string | void> => {
-		const userPosition = await axios
-			.get<User>(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/users/position`,
-				{ params: { userIdToken: token } }
-			)
-			.then((response) => {
-				return response.data.position;
-			})
-			.catch((error: AxiosError<IErrorResponse>) => {
-				alert("サーバーでエラーが発生しました．");
-				handleError(error);
-				liff.logout();
-			});
+		const userPosition =
+			process.env.NODE_ENV !== "production" // 開発中は"instructor"を返す
+				? "instructor"
+				: await axios
+						.get<User>(
+							`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/users/position`,
+							{ params: { userIdToken: token } }
+						)
+						.then((response) => {
+							return response.data.position;
+						})
+						.catch((error: AxiosError<IErrorResponse>) => {
+							alert("サーバーでエラーが発生しました．");
+							handleError(error);
+							liff.logout();
+						});
 		return userPosition;
 	};
 
