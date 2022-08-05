@@ -14,7 +14,7 @@ services:
       - "3000:3000" # 開発用
       - "4000:4000" # 本番用
     volumes:
-      - ./front:/app/:cached
+      - ./front:/home/app
       - node_modules_volume:/home/app/node_modules:delegated
       - build_volume:/home/app/build:nocopy
     # command: yarn dev
