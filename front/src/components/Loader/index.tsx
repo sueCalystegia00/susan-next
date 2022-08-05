@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-export const Loader = () => (
+const Loader = () => (
 	<div
 		style={{
 			position: "fixed",
@@ -21,3 +21,5 @@ export const Loader = () => (
 		/>
 	</div>
 );
+
+export default Loader;

@@ -4,7 +4,6 @@ const MyDocument = () => {
 	return (
 		<Html lang='ja-JP'>
 			<Head>
-				<title>SUSAN LIFF Next</title>
 				<meta name='application-name' content='SUSAN ver.Next.js' />
 				<link rel='stylesheet' />
 			</Head>

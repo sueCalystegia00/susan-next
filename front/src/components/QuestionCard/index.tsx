@@ -1,6 +1,6 @@
 import type { QuestionCardProps } from "./types";
 
-export const QuestionCard = ({
+const QuestionCard = ({
 	id,
 	timestamp,
 	answerStatus,
@@ -18,3 +18,5 @@ export const QuestionCard = ({
 		<p className='question-text'>{questionText}</p>
 	</>
 );
+
+export default QuestionCard;

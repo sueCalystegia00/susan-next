@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 services:
   #フロントエンド
   front:
@@ -8,7 +8,8 @@ services:
       dockerfile: Dockerfile
     tty: true
     environment:
-      - WATCHPACK_POLLING=true
+      #- CHOKIDAR_USEPOLLING=true # ホットリロードを有効にする(js)
+      - WATCHPACK_POLLING=true # ホットリロードを有効にする(ts)
     ports:
       - "3000:3000" # 開発用
       - "4000:4000" # 本番用
@@ -16,7 +17,7 @@ services:
       - ./front:/app/:cached
       - node_modules_volume:/home/app/node_modules:delegated
       - build_volume:/home/app/build:nocopy
-    command: yarn dev
+    # command: yarn dev
 
   #バックエンド
   back:

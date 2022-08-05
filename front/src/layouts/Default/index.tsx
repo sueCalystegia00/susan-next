@@ -1,12 +1,12 @@
 import type { FC } from "react";
 import { useContext } from "react";
 
-import { Loader } from "@/components/Loader";
+import Loader from "@/components/Loader";
 import { AuthContext } from "@/contexts/AuthContext";
 
 import type { LayoutProps } from "../types";
 
-export const DefaultLayout: FC<LayoutProps> = ({ children }) => {
+const DefaultLayout: FC<LayoutProps> = ({ children }) => {
 	const { isError, isLogIn } = useContext(AuthContext);
 
 	if (isError) {
@@ -56,3 +56,5 @@ export const DefaultLayout: FC<LayoutProps> = ({ children }) => {
 		</div>
 	);
 };
+
+export default DefaultLayout;
