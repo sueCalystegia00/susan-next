@@ -6,7 +6,7 @@ import axios, { AxiosError } from "axios";
 
 import type { User, IErrorResponse } from "@/types/models";
 
-export const Authenticated = () => {
+const Authenticated = () => {
 	const { setUser: setUserContext } = useContext(AuthContext);
 
 	const setUser = async (userUid: string, token: string): Promise<void> => {
@@ -32,6 +32,14 @@ export const Authenticated = () => {
 					liffId: process.env.LIFF_ID!,
 					mock: true,
 				});
+				liff.$mock.set((p) => ({
+					...p,
+					getProfile: {
+						displayName: "Developer",
+						userId: process.env.NEXT_PUBLIC_DEVELOPER_LINE_ID!,
+					},
+					getIDToken: process.env.NEXT_PUBLIC_DEVELOPING_ID_TOKEN!,
+				}));
 				liff.login();
 			} else {
 				await liff.init({
@@ -40,14 +48,16 @@ export const Authenticated = () => {
 				});
 			}
 			const profile = await liff.getProfile();
+			const idToken = await liff.getIDToken();
 			setUser(
 				profile.userId, // FEで扱うID
-				(await liff.getIDToken()) as string // BEでIDを扱うためにtokenを取得しておく
+				idToken as string // BEでIDを扱うためにtokenを取得しておく
 				//profile.displayName,
 				//profile.pictureUrl,
 			);
 
-			console.info(profile);
+			console.info(`uid: ${profile.userId}`);
+			console.info(`idToken: ${idToken}`);
 		} catch (err) {
 			handleError(err);
 		}
@@ -77,3 +87,5 @@ export const Authenticated = () => {
 		/>
 	);
 };
+
+export default Authenticated;
