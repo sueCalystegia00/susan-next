@@ -1,7 +1,7 @@
 import { useContext } from "react";
 
 import { AuthContext } from "@/contexts/AuthContext";
-import { DefaultLayout } from "@/layouts/Default";
+import DefaultLayout from "@/layouts/Default";
 
 const HomePage = () => {
 	const { user } = useContext(AuthContext);

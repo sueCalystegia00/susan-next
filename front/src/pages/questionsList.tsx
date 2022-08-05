@@ -1,5 +1,5 @@
-import { DefaultLayout } from "@/layouts/Default";
-import { QuestionCard } from "@/components/QuestionCard";
+import DefaultLayout from "@/layouts/Default";
+import QuestionCard from "@/components/QuestionCard";
 
 const QuestionListPage = () => {
 	return (

@@ -15,15 +15,13 @@ class AuthContextProps {
 	};
 }
 
-export const AuthContext = createContext<AuthContextProps>(
-	new AuthContextProps()
-);
+export const AuthContext = createContext<AuthContextProps>(new AuthContextProps());
 
 type Props = {
 	children: ReactNode;
 };
 
-export const AuthProvider = ({ children }: Props) => {
+const AuthProvider = ({ children }: Props) => {
 	const [isLogIn, setLogIn] = useState<boolean>(false);
 	const [user, setUserState] = useState<User | null | undefined>(undefined);
 
@@ -54,3 +52,5 @@ export const AuthProvider = ({ children }: Props) => {
 		</AuthContext.Provider>
 	);
 };
+
+export default AuthProvider;

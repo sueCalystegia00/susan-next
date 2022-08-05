@@ -5,7 +5,7 @@ interface Props {
 	height: number;
 }
 
-export const useWindowSize = (): Props => {
+const useWindowSize = (): Props => {
 	const [windowSize, setWindowSize] = useState<Props>({
 		width: 0,
 		height: 0,
@@ -30,3 +30,5 @@ export const useWindowSize = (): Props => {
 
 	return windowSize;
 };
+
+export default useWindowSize;
