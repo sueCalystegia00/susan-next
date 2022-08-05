@@ -38,7 +38,7 @@ const Authenticated = () => {
 						displayName: "Developer",
 						userId: process.env.NEXT_PUBLIC_DEVELOPER_LINE_ID!,
 					},
-					getIDToken: "DUMMY_TOKEN",
+					getIDToken: process.env.NEXT_PUBLIC_DEVELOPING_ID_TOKEN!,
 				}));
 				liff.login();
 			} else {
@@ -48,36 +48,35 @@ const Authenticated = () => {
 				});
 			}
 			const profile = await liff.getProfile();
+			const idToken = await liff.getIDToken();
 			setUser(
 				profile.userId, // FEで扱うID
-				(await liff.getIDToken()) as string // BEでIDを扱うためにtokenを取得しておく
+				idToken as string // BEでIDを扱うためにtokenを取得しておく
 				//profile.displayName,
 				//profile.pictureUrl,
 			);
 
-			console.info(profile);
+			console.info(`uid: ${profile.userId}`);
+			console.info(`idToken: ${idToken}`);
 		} catch (err) {
 			handleError(err);
 		}
 	};
 
 	const getUserPosition = async (token: string): Promise<string | void> => {
-		const userPosition =
-			process.env.NODE_ENV !== "production" // 開発中は"instructor"を返す
-				? "instructor"
-				: await axios
-						.get<User>(
-							`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/users/position`,
-							{ params: { userIdToken: token } }
-						)
-						.then((response) => {
-							return response.data.position;
-						})
-						.catch((error: AxiosError<IErrorResponse>) => {
-							alert("サーバーでエラーが発生しました．");
-							handleError(error);
-							liff.logout();
-						});
+		const userPosition = await axios
+			.get<User>(
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/users/position`,
+				{ params: { userIdToken: token } }
+			)
+			.then((response) => {
+				return response.data.position;
+			})
+			.catch((error: AxiosError<IErrorResponse>) => {
+				alert("サーバーでエラーが発生しました．");
+				handleError(error);
+				liff.logout();
+			});
 		return userPosition;
 	};
 
