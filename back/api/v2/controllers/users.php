@@ -242,7 +242,6 @@ class UsersController
     $result = json_decode($response, true);
 
     if(!array_key_exists("sub", $result)){
-      var_dump($result);
       throw new Exception($result["message"]);
 
     }else if(array_key_exists("error", $result)){
