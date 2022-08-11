@@ -1,5 +1,4 @@
 import type { QuestionCardProps } from "./types";
-
 const QuestionCard = ({
 	id,
 	timestamp,
@@ -7,16 +6,22 @@ const QuestionCard = ({
 	lectureNumber,
 	questionText,
 }: QuestionCardProps) => (
-	<>
-		<div className='question-label'>
-			<div className='lecture-count'>第{lectureNumber}回</div>
-			<div className='answer-status'>
-				<p>{answerStatus ? "回答済" : "未回答"}</p>
-			</div>
+	<li className='relative list-none cursor-pointer flex flex-col gap-y-2 border shadow-sm rounded-xl p-4 md:p-5 dark:border-gray-700 dark:shadow-slate-700/[.7]'>
+		<div className='flex flex-row gap-x-4 items-center'>
+			<span className='text-sm font-semibold inline-block py-1 px-2 rounded-lg text-indigo-600 bg-indigo-200'>
+				第{lectureNumber}回
+			</span>
 			<time>{timestamp}</time>
+			{answerStatus && (
+				<span className='absolute top-0 right-0 text-7xl font-bold opacity-40 -z-10'>
+					🏅
+				</span>
+			)}
 		</div>
-		<p className='question-text'>{questionText}</p>
-	</>
+		<div>
+			<p>{questionText}</p>
+		</div>
+	</li>
 );
 
 export default QuestionCard;

@@ -20,7 +20,7 @@ const QuestionListPage = () => {
 				loader={null} // ローディング中のコンポーネント
 				//height={420} // 高さ（なくても良い）
 			>
-				<ul>
+				<ul className='flex flex-col gap-3 p-2'>
 					{Object.keys(questions)
 						.reverse()
 						.map((key) => (
@@ -28,7 +28,7 @@ const QuestionListPage = () => {
 								key={key}
 								id={Number(key)} // questionId
 								timestamp={questions[key].timestamp} // timestamp
-								answerStatus={false} // answerStatus
+								answerStatus={questions[key].AnswerText != null} // answerStatus
 								lectureNumber={1} // lectureNumber
 								questionText={questions[key].QuestionText} // questionText
 							/>

@@ -7,7 +7,7 @@ const MyDocument = () => {
 				<meta name='application-name' content='SUSAN ver.Next.js' />
 				<link rel='stylesheet' />
 			</Head>
-			<body>
+			<body className='dark:text-slate-100 dark:bg-gray-800'>
 				<Main />
 				<NextScript />
 			</body>
