@@ -1,16 +1,24 @@
 import DefaultLayout from "@/layouts/Default";
 import QuestionCard from "@/components/QuestionCard";
+import useQuestionsData from "@/hooks/useQuestions";
 
 const QuestionListPage = () => {
+	const questionsData = useQuestionsData();
+
 	return (
 		<DefaultLayout>
-			<QuestionCard
-				id={1} // questionId
-				timestamp='2020-01-01 00:00:00' // timestamp
-				answerStatus={false} // answerStatus
-				lectureNumber={1} // lectureNumber
-				questionText='こんにちは' // questionText
-			/>
+			<ul>
+				{Object.keys(questionsData).map((key) => (
+					<QuestionCard
+						key={key}
+						id={Number(key)} // questionId
+						timestamp={questionsData[key].timestamp} // timestamp
+						answerStatus={false} // answerStatus
+						lectureNumber={1} // lectureNumber
+						questionText={questionsData[key].QuestionText} // questionText
+					/>
+				))}
+			</ul>
 		</DefaultLayout>
 	);
 };
