@@ -26,10 +26,10 @@ const Authenticated = () => {
 
 	const liffInit = async () => {
 		try {
-			if (process.env.NODE_ENV !== "production") {
+			if (process.env.NODE_ENV == "development") {
 				liff.use(new LiffMockPlugin());
 				await liff.init({
-					liffId: process.env.LIFF_ID!,
+					liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
 					mock: true,
 				});
 				liff.$mock.set((p) => ({
@@ -43,7 +43,7 @@ const Authenticated = () => {
 				liff.login();
 			} else {
 				await liff.init({
-					liffId: process.env.LIFF_ID!,
+					liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
 					withLoginOnExternalBrowser: true, //外部ブラウザでも自動ログイン(LIFFブラウザは最初から自動でログインが走る)
 				});
 			}
