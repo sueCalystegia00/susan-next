@@ -18,14 +18,14 @@ const QuestionListPage = () => {
 				<ul className='flex flex-col gap-3 p-2'>
 					{Object.keys(questions)
 						.reverse()
-						.map((key) => (
+						.map((StringOfKey) => (
 							<QuestionCard
-								key={key}
-								id={Number(key)} // questionId
-								timestamp={questions[key].timestamp} // timestamp
-								answerStatus={questions[key].AnswerText != null} // answerStatus
+								key={StringOfKey}
+								id={Number(StringOfKey)} // questionId
+								timestamp={questions[Number(StringOfKey)].timestamp} // timestamp
+								answerStatus={questions[Number(StringOfKey)].AnswerText != null} // answerStatus
 								lectureNumber={1} // lectureNumber
-								questionText={questions[key].QuestionText} // questionText
+								questionText={questions[Number(StringOfKey)].QuestionText} // questionText
 							/>
 						))}
 				</ul>

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import type { Question } from "@/types/models";
 
 interface Questions {
-	[key: string]: Question;
+	[key: number]: Question;
 }
 
 /**
