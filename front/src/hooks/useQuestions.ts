@@ -1,10 +1,15 @@
 import axios, { AxiosResponse, AxiosError } from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Question } from "@/types/models";
 
 interface Questions {
 	[key: string]: Question;
 }
+
+/**
+ * 質疑応答情報を保存するセッションストレージのキー
+ */
+const STORAGE_KEY_QUESTIONS = "yoslab/susan-next/questionsList";
 
 /**
  * 質疑応答情報の管理
@@ -14,14 +19,26 @@ interface Questions {
  *
  */
 const useQuestionsData = () => {
-	const [questions, setQuestions] = useState<Questions>({});
+	const sessionQuestionsData = sessionStorage.getItem(STORAGE_KEY_QUESTIONS); // セッションストレージから質疑応答情報を取得
+	const [questions, setQuestions] = useState<Questions>(
+		sessionQuestionsData ? JSON.parse(sessionQuestionsData) : {} // セッションストレージに質疑応答情報があればそれを利用，なければ空オブジェクトを利用
+	);
+	const [startIndex, setStartIndex] = useState(0); // 質疑応答情報の取得開始インデックス
 	const [isHasMore, setIsHasMore] = useState(true);
 
-	let dataKeys = Object.keys(questions);
-	const startIndex =
-		dataKeys.length < 30
-			? 0
-			: dataKeys.reverse()[((dataKeys.length / 30) | 0) * 30 - 1]; //(dataKeys.length/30 | 0)は少数以下切り捨ての除算(ビット演算子利用，Math.floorより気持ち速いらしい)
+	// 質疑応答情報が変わったら取得開始インデックスを更新する
+	useEffect(() => {
+		let dataKeys = questions ? Object.keys(questions) : [];
+		setStartIndex(
+			dataKeys.length < 30
+				? 0
+				: Number(dataKeys.reverse()[((dataKeys.length / 30) | 0) * 30 - 1]) //(dataKeys.length/30 | 0)は少数以下切り捨ての除算(ビット演算子利用，Math.floorより気持ち速いらしい)
+		);
+	}, [questions]);
+
+	useEffect(() => {
+		Object.keys(questions).length === 0 && getQuestionsDataHandler();
+	}, []);
 
 	/**
 	 * データベースから質疑応答情報を取得する
@@ -33,7 +50,12 @@ const useQuestionsData = () => {
 			})
 			.then((response: AxiosResponse<Questions>) => {
 				const { data } = response;
-				setQuestions({ ...questions, ...data });
+				// セッションストレージに保存
+				sessionStorage.setItem(
+					STORAGE_KEY_QUESTIONS,
+					JSON.stringify({ ...questions, ...data })
+				);
+				setQuestions({ ...questions, ...data }); // stateを更新
 				Object.keys(data).length < 30 && setIsHasMore(false); //取得数が30件未満なら追加取得できないことを示す
 			})
 			.catch((error: AxiosError) => {

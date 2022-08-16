@@ -1,15 +1,10 @@
 import DefaultLayout from "@/layouts/Default";
 import QuestionCard from "@/components/QuestionCard";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useEffect } from "react";
 import useQuestions from "@/hooks/useQuestions";
 
 const QuestionListPage = () => {
 	const { questions, isHasMore, getQuestionsDataHandler } = useQuestions();
-
-	useEffect(() => {
-		getQuestionsDataHandler();
-	}, []);
 
 	return (
 		<DefaultLayout>
