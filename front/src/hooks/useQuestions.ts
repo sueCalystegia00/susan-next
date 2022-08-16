@@ -1,6 +1,7 @@
 import axios, { AxiosResponse, AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import type { Question } from "@/types/models";
+import router from "next/router";
 
 interface Questions {
 	[key: number]: Question;
@@ -46,9 +47,9 @@ const useQuestionsData = () => {
 	 */
 	const getQuestionsDataHandler = () => {
 		axios
-			.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/list`, {
-				params: { startIndex: startIndex },
-			})
+			.get(
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/list?startIndex=${startIndex}`
+			)
 			.then((response: AxiosResponse<Questions>) => {
 				const { data } = response;
 				// セッションストレージに保存
@@ -64,7 +65,38 @@ const useQuestionsData = () => {
 			});
 	};
 
-	return { questions, isHasMore, getQuestionsDataHandler };
+	/**
+	 * 指定したインデックスの質疑応答情報を取得する
+	 * @param questionId 質疑応答情報のID
+	 * @returns
+	 */
+	const getOneQuestionDataHandler = (questionId: number) => {
+		return axios
+			.get(
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/specified?index=${questionId}`
+			)
+			.then((response: AxiosResponse<Question>) => {
+				const { data } = response;
+				return data;
+			})
+			.catch((error: AxiosError) => {
+				const { response } = error;
+				if (response!.status === 404) {
+					alert("指定の質問が見つかりませんでした．");
+					router.push(`/questionsList`);
+				} else {
+					alert("サーバーでエラーが発生しました．");
+					console.error(error);
+				}
+			});
+	};
+
+	return {
+		questions,
+		isHasMore,
+		getQuestionsDataHandler,
+		getOneQuestionDataHandler,
+	};
 };
 
 export default useQuestionsData;
