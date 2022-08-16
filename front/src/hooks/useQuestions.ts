@@ -34,6 +34,7 @@ const useQuestionsData = () => {
 				? 0
 				: Number(dataKeys.reverse()[((dataKeys.length / 30) | 0) * 30 - 1]) //(dataKeys.length/30 | 0)は少数以下切り捨ての除算(ビット演算子利用，Math.floorより気持ち速いらしい)
 		);
+		setIsHasMore("1" in dataKeys); // index:1 が含まれているかどうかで追加取得可能かどうかを判断
 	}, [questions]);
 
 	useEffect(() => {
@@ -43,8 +44,8 @@ const useQuestionsData = () => {
 	/**
 	 * データベースから質疑応答情報を取得する
 	 */
-	const getQuestionsDataHandler = async () => {
-		await axios
+	const getQuestionsDataHandler = () => {
+		axios
 			.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/list`, {
 				params: { startIndex: startIndex },
 			})
@@ -56,7 +57,6 @@ const useQuestionsData = () => {
 					JSON.stringify({ ...questions, ...data })
 				);
 				setQuestions({ ...questions, ...data }); // stateを更新
-				Object.keys(data).length < 30 && setIsHasMore(false); //取得数が30件未満なら追加取得できないことを示す
 			})
 			.catch((error: AxiosError) => {
 				alert("サーバーでエラーが発生しました．");
