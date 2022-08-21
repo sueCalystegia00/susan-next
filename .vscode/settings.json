@@ -7,6 +7,17 @@
 	"editor.codeActionsOnSave": {
 		"source.fixAll": true
 	},
+	// コード補完高速化
+	"editor.quickSuggestions": {
+		"strings": true
+	},
+	"css.validate": false,
+	"editor.inlineSuggest.enabled": true,
+	// tailwindCSSの補完対象
+	"tailwindCSS.includeLanguages": {
+		"typescriptreact": "html"
+	},
+	"tailwindCSS.classAttributes": ["className"],
 	"cSpell.words": ["liff"],
 	"cSpell.ignorePaths": [
 		"package-lock.json",

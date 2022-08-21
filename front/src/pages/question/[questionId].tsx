@@ -1,4 +1,7 @@
+import AnswerTextDisplay from "@/components/AnswerTextDisplay";
+import QuestionTextDisplay from "@/components/QuestionTextDisplay";
 import useQuestions from "@/hooks/useQuestions";
+import DefaultLayout from "@/layouts/Default";
 import { Question } from "@/types/models";
 import { useRouter } from "next/router";
 
@@ -11,7 +14,15 @@ const QuestionDetailsPage = () => {
 		questions[Number(questionId)] ||
 		getOneQuestionDataHandler(Number(questionId));
 
-	return <div>{question.QuestionText}</div>;
+	return (
+		<DefaultLayout>
+			<QuestionTextDisplay
+				questionText={question.QuestionText}
+				lectureNumber={1}
+			/>
+			<AnswerTextDisplay answerText={question.AnswerText} />
+		</DefaultLayout>
+	);
 };
 
 export default QuestionDetailsPage;

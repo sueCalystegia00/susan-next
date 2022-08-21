@@ -5,7 +5,16 @@ module.exports = {
 		"./src/components/**/*.{js,ts,jsx,tsx}",
 	],
 	theme: {
-		extend: {},
+		extend: {
+			colors: {
+				"susan-blue": {
+					50: "#e0eafe",
+					100: "#284275",
+					500: "#182846",
+					1000: "#04070c",
+				},
+			},
+		},
 	},
 	plugins: [],
 };
