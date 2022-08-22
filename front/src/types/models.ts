@@ -18,3 +18,15 @@ export interface Question {
 	Shared: number;
 	timestamp: string;
 }
+
+export interface Questions {
+	[key: number]: Question;
+}
+
+export interface ConversationMessage {
+	index: number;
+	timestamp: string;
+	SenderType: string;
+	MessageType: string;
+	MessageText: string;
+}

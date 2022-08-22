@@ -1,11 +1,7 @@
 import axios, { AxiosResponse, AxiosError } from "axios";
 import { useEffect, useState } from "react";
-import type { Question } from "@/types/models";
+import type { Question, Questions } from "@/types/models";
 import router from "next/router";
-
-interface Questions {
-	[key: number]: Question;
-}
 
 /**
  * 質疑応答情報を保存するセッションストレージのキー
