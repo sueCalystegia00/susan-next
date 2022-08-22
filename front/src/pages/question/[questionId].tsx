@@ -4,7 +4,7 @@ import QuestionTextDisplay from "@/components/QuestionTextDisplay";
 import useConversationData from "@/hooks/useConversation";
 import useQuestions from "@/hooks/useQuestions";
 import DefaultLayout from "@/layouts/Default";
-import { Question } from "@/types/models";
+import type { Question } from "@/types/models";
 import { useRouter } from "next/router";
 
 const QuestionDetailsPage = () => {

@@ -1,3 +1,4 @@
+import type { Question } from "@/types/models";
 export interface AnswerTextDisplayProps {
-	answerText: string;
+	answerText: Question["AnswerText"];
 }
