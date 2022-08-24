@@ -13,6 +13,7 @@ module.exports = {
 					500: "#182846",
 					1000: "#04070c",
 				},
+				"forest-green": "#06C755", // LINE official color
 			},
 		},
 	},

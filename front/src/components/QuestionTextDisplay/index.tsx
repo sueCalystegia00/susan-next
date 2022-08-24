@@ -1,3 +1,4 @@
+import InnerUrlText from "../InnerUrlText";
 import type { QuestionTextDisplayProps } from "./types";
 
 const QuestionTextDisplay = ({
@@ -13,9 +14,10 @@ const QuestionTextDisplay = ({
 				<h2 className='text-2xl font-bold'>🤔 質問</h2>
 				<p className='text-xs'>Question</p>
 			</div>
-			<p className='text-lg whitespace-pre-line break-words leading-relaxed'>
-				{questionText}
-			</p>
+			<InnerUrlText
+				settingClass='w-full text-lg whitespace-pre-line break-words leading-relaxed'
+				innerText={questionText}
+			/>
 		</div>
 	);
 };

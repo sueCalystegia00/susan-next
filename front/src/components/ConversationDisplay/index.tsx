@@ -1,11 +1,11 @@
-import ChatMessage from "./ChatMessage";
+import Message from "./Message";
 import { ConversationDisplayProps } from "./types";
 
 const ConversationDisplay = ({ messages }: ConversationDisplayProps) => {
 	return (
-		<div className='w-screen flex flex-col gap-y-2 py-2'>
+		<div className='w-screen flex flex-col items-center gap-y-3 p-4'>
 			{messages.map((message, index) => (
-				<ChatMessage
+				<Message
 					key={index}
 					timestamp={message.timestamp}
 					SenderType={message.SenderType}

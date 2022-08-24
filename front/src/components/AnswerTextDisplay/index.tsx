@@ -1,3 +1,4 @@
+import InnerUrlText from "@/components/InnerUrlText";
 import type { AnswerTextDisplayProps } from "./types";
 
 const AnswerTextDisplay = ({ answerText }: AnswerTextDisplayProps) => {
@@ -7,9 +8,10 @@ const AnswerTextDisplay = ({ answerText }: AnswerTextDisplayProps) => {
 				<h2 className='text-2xl font-bold'>💡 回答</h2>
 				<p className='text-xs'>Answer</p>
 			</div>
-			<p className='text-lg whitespace-pre-line break-words leading-relaxed'>
-				{answerText}
-			</p>
+			<InnerUrlText
+				settingClass='w-full text-lg whitespace-pre-line break-words leading-relaxed'
+				innerText={answerText}
+			/>
 		</div>
 	);
 };
