@@ -3,7 +3,6 @@ import ConversationDisplay from "@/components/ConversationDisplay";
 import QuestionTextDisplay from "@/components/QuestionTextDisplay";
 import useConversationData from "@/hooks/useConversation";
 import useQuestions from "@/hooks/useQuestions";
-import DefaultLayout from "@/layouts/Default";
 import type { Question } from "@/types/models";
 import { useRouter } from "next/router";
 
@@ -19,7 +18,7 @@ const QuestionDetailsPage = () => {
 	const conversationMessages = useConversationData(Number(questionId));
 
 	return (
-		<DefaultLayout>
+		<>
 			<QuestionTextDisplay
 				questionText={question.QuestionText}
 				lectureNumber={1}
@@ -30,7 +29,7 @@ const QuestionDetailsPage = () => {
 			{!!conversationMessages.length && (
 				<ConversationDisplay messages={conversationMessages} />
 			)}
-		</DefaultLayout>
+		</>
 	);
 };
 

@@ -1,4 +1,3 @@
-import DefaultLayout from "@/layouts/Default";
 import QuestionCard from "@/components/QuestionCard";
 import InfiniteScroll from "react-infinite-scroll-component";
 import useQuestions from "@/hooks/useQuestions";
@@ -7,7 +6,7 @@ const QuestionListPage = () => {
 	const { questions, isHasMore, getQuestionsDataHandler } = useQuestions();
 
 	return (
-		<DefaultLayout>
+		<>
 			<InfiniteScroll
 				dataLength={Object.keys(questions).length} //現在のデータの長さ
 				next={getQuestionsDataHandler} // スクロール位置を監視してコールバック（次のデータを読み込ませる）
@@ -30,7 +29,7 @@ const QuestionListPage = () => {
 						))}
 				</ul>
 			</InfiniteScroll>
-		</DefaultLayout>
+		</>
 	);
 };
 

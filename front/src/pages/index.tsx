@@ -1,13 +1,11 @@
 import { useContext } from "react";
-
 import { AuthContext } from "@/contexts/AuthContext";
-import DefaultLayout from "@/layouts/Default";
 
 const HomePage = () => {
 	const { user } = useContext(AuthContext);
 
 	return (
-		<DefaultLayout>
+		<>
 			<div style={{ marginTop: "20%" }}>
 				<h1 style={{ fontSize: "2rem", marginBottom: 8, textAlign: "center" }}>
 					ようこそ、LIFFの世界へ
@@ -30,7 +28,7 @@ const HomePage = () => {
 					</tbody>
 				</table>
 			</div>
-		</DefaultLayout>
+		</>
 	);
 };
 
