@@ -9,8 +9,11 @@ import type { User, IErrorResponse } from "@/types/models";
 const Authenticated = () => {
 	const { setUser: setUserContext } = useContext(AuthContext);
 
-	const setUser = async (userUid: string, token: string): Promise<void> => {
-		const position = (await getUserPosition(token)) || "";
+	const setUser = async (
+		userUid: User["userUid"],
+		token: User["token"]
+	): Promise<void> => {
+		const position = await getUserPosition(token);
 
 		setUserContext({
 			userUid,
@@ -63,8 +66,10 @@ const Authenticated = () => {
 		}
 	};
 
-	const getUserPosition = async (token: string): Promise<string | void> => {
-		const userPosition = await axios
+	const getUserPosition = async (
+		token: User["token"]
+	): Promise<User["position"] | void> => {
+		await axios
 			.get<User>(
 				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/users/position`,
 				{ params: { userIdToken: token } }
@@ -77,7 +82,6 @@ const Authenticated = () => {
 				handleError(error);
 				liff.logout();
 			});
-		return userPosition;
 	};
 
 	return (

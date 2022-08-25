@@ -3,7 +3,7 @@ import { ConversationDisplayProps } from "./types";
 
 const ConversationDisplay = ({ messages }: ConversationDisplayProps) => {
 	return (
-		<div className='w-screen flex flex-col items-center gap-y-3 p-4'>
+		<div className='w-screen flex flex-col items-center gap-y-3 px-4 py-10'>
 			{messages.map((message, index) => (
 				<Message
 					key={index}
