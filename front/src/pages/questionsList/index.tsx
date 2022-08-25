@@ -2,7 +2,7 @@ import QuestionCard from "@/components/QuestionCard";
 import InfiniteScroll from "react-infinite-scroll-component";
 import useQuestions from "@/hooks/useQuestions";
 
-const QuestionListPage = () => {
+const QuestionsListPage = () => {
 	const { questions, isHasMore, getQuestionsDataHandler } = useQuestions();
 
 	return (
@@ -33,4 +33,4 @@ const QuestionListPage = () => {
 	);
 };
 
-export default QuestionListPage;
+export default QuestionsListPage;

@@ -17,7 +17,8 @@ const QuestionDetailsPage = () => {
 		questions[Number(questionId)] ||
 		getOneQuestionDataHandler(Number(questionId));
 
-	const conversationMessages = useConversationData(Number(questionId));
+	const conversationMessages =
+		question && useConversationData(Number(questionId));
 
 	const [selectedMessageType, setSelectedMessageType] = useState("");
 

@@ -14,17 +14,19 @@ const Authenticated = () => {
 		token: User["token"]
 	): Promise<void> => {
 		const position = await getUserPosition(token);
-
-		setUserContext({
-			userUid,
-			token,
-			position,
-		});
+		position
+			? setUserContext({
+					userUid,
+					token,
+					position,
+			  })
+			: handleError(new Error("position is not found"));
 	};
 
 	const handleError = (err: any) => {
 		console.error(err);
 		setUserContext(null);
+		liff.logout();
 	};
 
 	const liffInit = async () => {
@@ -69,7 +71,7 @@ const Authenticated = () => {
 	const getUserPosition = async (
 		token: User["token"]
 	): Promise<User["position"] | void> => {
-		await axios
+		const position = await axios
 			.get<User>(
 				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/users/position`,
 				{ params: { userIdToken: token } }
@@ -82,6 +84,7 @@ const Authenticated = () => {
 				handleError(error);
 				liff.logout();
 			});
+		return position;
 	};
 
 	return (

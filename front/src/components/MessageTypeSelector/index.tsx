@@ -3,27 +3,25 @@ import ChatIcon from "@/assets/chat_black_24dp.svg";
 import ImageIcon from "@/assets/image_black_24dp.svg";
 import AnswerIcon from "@/assets/reviews_FILL1_wght400_GRAD0_opsz24.svg";
 import { MessageTypeSelectorProps } from "./types";
+import { useContext } from "react";
+import { AuthContext } from "@/contexts/AuthContext";
 
 const MessageTypeSelector = ({
 	selectedValue,
 	selectHandler,
 }: MessageTypeSelectorProps) => {
+	const { user } = useContext(AuthContext);
 
 	const buttons = [
 		{
 			value: "chat",
 			imageComponent: <ChatIcon width='30' height='30' viewBox='0 0 24 24' />,
-			displayText: "チャット",
+			displayText: "テキスト",
 		},
 		{
 			value: "image",
 			imageComponent: <ImageIcon width='30' height='30' viewBox='0 0 24 24' />,
 			displayText: "画像",
-		},
-		{
-			value: "answer",
-			imageComponent: <AnswerIcon width='30' height='30' viewBox='0 0 24 24' />,
-			displayText: "回答",
 		},
 	];
 
