@@ -7,6 +7,7 @@ const TileRadioButton = ({
 	imageComponent,
 	displayText,
 	onChange,
+	defaultCheckedValue,
 }: TileRadioButtonProps) => {
 	return (
 		<div>
@@ -17,6 +18,7 @@ const TileRadioButton = ({
 				value={value}
 				className='hidden peer'
 				onChange={onChange}
+				defaultChecked={value === defaultCheckedValue}
 			/>
 			<label
 				htmlFor={`${name}_${id}`}

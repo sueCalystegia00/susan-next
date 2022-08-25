@@ -1,4 +1,7 @@
+import type { ConversationMessage } from "@/types/models";
+import { Dispatch, SetStateAction } from "react";
+
 export interface MessageTypeSelectorProps {
-	selectedValue: any;
-	selectHandler: (value: string) => void;
+	selectedValue: ConversationMessage["MessageType"];
+	selectHandler: Dispatch<SetStateAction<ConversationMessage["MessageType"]>>;
 }

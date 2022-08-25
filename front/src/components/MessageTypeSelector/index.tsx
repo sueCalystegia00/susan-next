@@ -3,23 +3,20 @@ import ChatIcon from "@/assets/chat_black_24dp.svg";
 import ImageIcon from "@/assets/image_black_24dp.svg";
 import AnswerIcon from "@/assets/reviews_FILL1_wght400_GRAD0_opsz24.svg";
 import { MessageTypeSelectorProps } from "./types";
-import { useContext } from "react";
-import { AuthContext } from "@/contexts/AuthContext";
+import { ConversationMessage } from "@/types/models";
 
 const MessageTypeSelector = ({
 	selectedValue,
 	selectHandler,
 }: MessageTypeSelectorProps) => {
-	const { user } = useContext(AuthContext);
-
 	const buttons = [
 		{
-			value: "chat",
+			value: "chat" as ConversationMessage["MessageType"],
 			imageComponent: <ChatIcon width='30' height='30' viewBox='0 0 24 24' />,
 			displayText: "テキスト",
 		},
 		{
-			value: "image",
+			value: "image" as ConversationMessage["MessageType"],
 			imageComponent: <ImageIcon width='30' height='30' viewBox='0 0 24 24' />,
 			displayText: "画像",
 		},
@@ -36,6 +33,7 @@ const MessageTypeSelector = ({
 					imageComponent={button.imageComponent}
 					displayText={button.displayText}
 					onChange={() => selectHandler(button.value)}
+					defaultCheckedValue={selectedValue}
 				/>
 			))}
 		</div>
