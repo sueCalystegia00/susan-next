@@ -4,12 +4,12 @@ import type { ConversationMessage } from "@/types/models";
 import { PostConversationMessagePayload } from "@/types/payloads";
 import { AuthContext } from "@/contexts/AuthContext";
 
-const usePostMessage = (questionIndex: number) => {
+const usePostMessage = (
+	questionIndex: number,
+	messageType: ConversationMessage["MessageType"]
+) => {
 	const { user } = useContext(AuthContext);
-	const [text, setText] = useState("");
-	const [messageType, setMessageType] = useState(
-		"chat" as ConversationMessage["MessageType"]
-	);
+	const [text, setText] = useState<ConversationMessage["MessageText"]>("");
 	const [payload, setPayload] = useState<PostConversationMessagePayload>();
 
 	useEffect(() => {
@@ -21,7 +21,7 @@ const usePostMessage = (questionIndex: number) => {
 				message: text,
 				userType: user?.position,
 			});
-	}, [text, messageType]);
+	}, [text]);
 
 	const postConversationMessage = (payload: PostConversationMessagePayload) => {
 		axios
@@ -40,16 +40,12 @@ const usePostMessage = (questionIndex: number) => {
 	};
 
 	const postHandler = () => {
-		payload?.message
-			? postConversationMessage(payload)
-			: alert("メッセージの入力が必要です．");
+		!!payload?.message && postConversationMessage(payload);
 	};
 
 	return {
 		text,
 		setText,
-		messageType,
-		setMessageType,
 		postHandler,
 	};
 };
