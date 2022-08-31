@@ -1,5 +1,6 @@
 import AnswerTextDisplay from "@/components/AnswerTextDisplay";
 import ConversationDisplay from "@/components/ConversationDisplay";
+import InputImageField from "@/components/InputImageField";
 import InputMessageField from "@/components/InputMessageField";
 import MessageTypeSelector from "@/components/MessageTypeSelector";
 import QuestionTextDisplay from "@/components/QuestionTextDisplay";
@@ -44,7 +45,9 @@ const QuestionDetailsPage = () => {
 			{selectedMessageType === "chat" && (
 				<InputMessageField questionIndex={Number(questionId)} />
 			)}
-			{selectedMessageType === "image" && <div>image</div>}
+			{selectedMessageType === "image" && (
+				<InputImageField questionIndex={Number(questionId)} />
+			)}
 		</>
 	);
 };

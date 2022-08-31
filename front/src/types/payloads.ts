@@ -7,3 +7,9 @@ export interface PostConversationMessagePayload {
 	message: ConversationMessage["MessageText"];
 	userType: User["position"];
 }
+
+export interface PostConversationImagePayload {
+	index: number;
+	userId: User["userUid"];
+	file: File | undefined;
+}
