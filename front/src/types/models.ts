@@ -15,7 +15,7 @@ export interface Question {
 	AnswerText: string;
 	IntentName: string;
 	QuestionText: string;
-	Shared: number;
+	Shared: boolean;
 	timestamp: string;
 }
 

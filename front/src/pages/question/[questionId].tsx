@@ -44,13 +44,16 @@ const QuestionDetailsPage = () => {
 				selectHandler={setSelectedMessageType}
 			/>
 			{selectedMessageType === "chat" && (
-				<InputMessageField
-					questionIndex={Number(questionId)}
-					question={question}
-				/>
+				<InputMessageField questionIndex={Number(questionId)} />
 			)}
 			{selectedMessageType === "image" && (
 				<InputImageField questionIndex={Number(questionId)} />
+			)}
+			{selectedMessageType === "answer" && (
+				<InputAnswerField
+					questionIndex={Number(questionId)}
+					question={question}
+				/>
 			)}
 		</>
 	);

@@ -12,7 +12,8 @@ const usePostAnswer = (questionIndex: number, question: Question) => {
 	const [intent, setIntent] = useState<DialogflowIntent>();
 
 	useEffect(() => {
-		!!question.IntentName && getIntentTrainingPhrases(question.IntentName);
+		//TODO: ここでDialogflowからIntent情報(トレーニングフレーズ)を取得する
+		//!!question.IntentName && getIntentTrainingPhrases(question.IntentName);
 	}, []);
 
 	/**
@@ -22,7 +23,7 @@ const usePostAnswer = (questionIndex: number, question: Question) => {
 	const getIntentTrainingPhrases = (intentName: string) => {
 		axios
 			.get(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/v2/dialogflow/trainingPhrases?intentName=${intentName}`
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/dialogflow/trainingPhrases?intentName=${intentName}`
 			)
 			.then((response: AxiosResponse) => {
 				const { data } = response;
@@ -32,7 +33,7 @@ const usePostAnswer = (questionIndex: number, question: Question) => {
 			})
 			.catch((error: AxiosError) => {
 				alert("サーバーでエラーが発生しました．");
-				console.error(error);
+				throw new Error(error.message);
 			});
 	};
 
@@ -41,26 +42,29 @@ const usePostAnswer = (questionIndex: number, question: Question) => {
 	 */
 	const setIntentToDialogflowAndMySQL = async () => {
 		await axios
-			.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v2/dialogflow/response`, {
-				intentName: question.IntentName,
-				trainingPhrases,
-				responseText: answerText,
-			})
-			.then((response) => {
+			.post(
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/dialogflow/response`,
+				{
+					intentName: question.IntentName,
+					trainingPhrases,
+					responseText: answerText,
+				}
+			)
+			.then((response: AxiosResponse) => {
 				setIntent({
 					intentName: response.data.intentName,
 					trainingPhrases,
 					responseText: answerText,
 				});
 			})
-			.catch((error) => {
+			.catch((error: AxiosError) => {
 				alert("サーバーでエラーが発生しました．(Dialogflow intent更新)");
-				console.error(error);
+				throw new Error(error.message);
 			});
 
 		await axios
 			.put(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/v2/questions/${questionIndex}/answer`,
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/${questionIndex}/answer`,
 				{
 					questionText: questionText,
 					answerText: answerText,
@@ -73,7 +77,7 @@ const usePostAnswer = (questionIndex: number, question: Question) => {
 			})
 			.catch((error: AxiosError) => {
 				alert("サーバーでエラーが発生しました．(DB 回答追加)");
-				console.error(error);
+				throw new Error(error.message);
 			});
 	};
 
