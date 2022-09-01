@@ -7,6 +7,12 @@ import { ConversationMessage } from "@/types/models";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/contexts/AuthContext";
 
+/**
+ * @param selectedValue 選択されている値
+ * @param selectHandler 選択された値をセットする関数
+ * @returns 質問対応メッセージの形式を選択するコンポーネント
+ * @description ユーザが教員権限を持っている場合のみ「回答」が追加される
+ */
 const MessageTypeSelector = ({
 	selectedValue,
 	selectHandler,

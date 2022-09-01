@@ -3,10 +3,14 @@ import MessageTextArea from "@/components/MessageTextArea";
 import { InputMessageFieldProps } from "./types";
 import { useEffect } from "react";
 
+/**
+ * @param questionIndex: 質問のインデックス
+ * @returns 質問対応のメッセージを入力するフォームおよび送信ボタン
+ */
 const InputMessageField = ({ questionIndex }: InputMessageFieldProps) => {
 	const { text, setText, setMessageType, postConversationMessage } =
 		usePostMessage(questionIndex);
-	
+
 	useEffect(() => {
 		setMessageType("chat");
 	}, []);

@@ -2,6 +2,9 @@ import QuestionCard from "@/components/QuestionCard";
 import InfiniteScroll from "react-infinite-scroll-component";
 import useQuestions from "@/hooks/useQuestions";
 
+/**
+ * @returns 質問一覧ページ
+ */
 const QuestionsListPage = () => {
 	const { questions, isHasMore, getQuestionsDataHandler } = useQuestions();
 

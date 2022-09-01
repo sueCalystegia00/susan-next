@@ -12,8 +12,8 @@ const STORAGE_KEY_QUESTIONS = "yoslab/susan-next/questionsList";
  * 質疑応答情報の管理
  * @returns questions: 質疑応答情報
  * @returns isHasMore: 追加取得可能かどうか
- * @returns getQuestionsDataHandler: 質疑応答情報を取得する関数
- *
+ * @returns getQuestionsDataHandler: 質疑応答情報を30件取得する関数
+ * @returns getOneQuestionDataHandler: 指定の質疑応答情報を1件取得する関数
  */
 const useQuestionsData = () => {
 	const sessionQuestionsData = sessionStorage.getItem(STORAGE_KEY_QUESTIONS); // セッションストレージから質疑応答情報を取得
@@ -62,9 +62,9 @@ const useQuestionsData = () => {
 	};
 
 	/**
-	 * 指定したインデックスの質疑応答情報を取得する
+	 * 指定の質疑応答情報を1件取得する関数
 	 * @param questionId 質疑応答情報のID
-	 * @returns
+	 * @returns question: 質疑応答情報
 	 */
 	const getOneQuestionDataHandler = (questionId: number) => {
 		return axios

@@ -6,6 +6,11 @@ import { useEffect } from "react";
 import usePostAnswer from "@/hooks/usePostAnswer";
 import CheckedToggle from "../CheckedToggle";
 
+/**
+ * @param questionIndex: 質問のインデックス
+ * @param question: 質問情報
+ * @returns 質問対応の回答メッセージを入力するフォームおよび送信ボタン
+ */
 const InputAnswerField = ({
 	questionIndex,
 	question,

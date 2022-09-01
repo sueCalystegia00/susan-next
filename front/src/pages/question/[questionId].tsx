@@ -11,6 +11,10 @@ import type { ConversationMessage, Question } from "@/types/models";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
+/**
+ * @returns 質問詳細ページ
+ * @description クエリパラメータよりquestionIdを指定する必要がある
+ */
 const QuestionDetailsPage = () => {
 	const { questions, getOneQuestionDataHandler } = useQuestions();
 	const router = useRouter();

@@ -1,6 +1,10 @@
 import InnerUrlText from "@/components/InnerUrlText";
 import type { AnswerTextDisplayProps } from "./types";
 
+/**
+ * @param answerText: 回答テキスト
+ * @returns 回答テキストを表示するコンポーネント
+ */
 const AnswerTextDisplay = ({ answerText }: AnswerTextDisplayProps) => {
 	return (
 		<div className='w-screen flex flex-col items-center p-4 gap-2 text-susan-blue-100 bg-susan-blue-50 dark:text-slate-50 dark:bg-slate-600'>

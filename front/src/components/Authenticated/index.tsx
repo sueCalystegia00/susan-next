@@ -3,9 +3,11 @@ import Script from "next/script";
 import { useContext } from "react";
 import { AuthContext } from "@/contexts/AuthContext";
 import axios, { AxiosError } from "axios";
-
 import type { User, IErrorResponse } from "@/types/models";
 
+/**
+ * @description ユーザ認証を行う
+ */
 const Authenticated = () => {
 	const { setUser: setUserContext } = useContext(AuthContext);
 

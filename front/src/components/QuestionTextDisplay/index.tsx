@@ -1,6 +1,11 @@
 import InnerUrlText from "../InnerUrlText";
 import type { QuestionTextDisplayProps } from "./types";
 
+/**
+ * @param questionText: 質問文
+ * @param lectureNumber: 講義回
+ * @returns 質問文を表示するカードコンポーネント
+ */
 const QuestionTextDisplay = ({
 	questionText,
 	lectureNumber,

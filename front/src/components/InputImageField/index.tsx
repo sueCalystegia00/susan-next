@@ -1,6 +1,10 @@
 import usePostImage from "@/hooks/usePostImage";
 import { InputImageFieldProps } from "./types";
 
+/**
+ * @param questionIndex: 質問のインデックス
+ * @returns 質問対応の画像を入力するフォームおよび送信ボタン 
+ */
 const InputImageField = ({ questionIndex }: InputImageFieldProps) => {
 	const { image, setImage, postHandler } = usePostImage(questionIndex);
 

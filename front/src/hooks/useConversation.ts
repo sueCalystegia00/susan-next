@@ -30,6 +30,8 @@ const useConversationData = (questionId: number) => {
 			});
 	};
 
+	// TODO: メッセージを送信する関数として，usePostMessage, usePostImageを統合する
+
 	return conversationMessages;
 };
 

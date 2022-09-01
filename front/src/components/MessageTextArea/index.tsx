@@ -1,5 +1,9 @@
 import { MessageTextAreaProps } from "./types";
 
+/**
+ * @param setText: テキストエリアの値をセットする関数
+ * @returns テキストエリア
+ */
 const MessageTextArea = ({ setText }: MessageTextAreaProps) => {
 	return (
 		<>
