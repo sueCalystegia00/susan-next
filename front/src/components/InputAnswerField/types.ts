@@ -1,6 +1,6 @@
 import { Question } from "@/types/models";
 
-export interface InputMessageFieldProps {
+export interface InputAnswerFieldProps {
 	questionIndex: number;
 	question: Question;
 }

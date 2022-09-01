@@ -1,6 +1,6 @@
 <?php
 ini_set('display_errors',1);
-require dirname( __FILE__).'/../../../vendor/autoload.php';
+require dirname( __FILE__).'/../../vendor/autoload.php';
 
 use Google\Cloud\Dialogflow\V2\AgentsClient;
 use Google\Cloud\Dialogflow\V2\EntityTypesClient;
@@ -66,6 +66,16 @@ class DialogflowController
         return $this->getIntentListFromDialogflow();
         break;
       
+      case "trainingPhrases":
+        if(!array_key_exists("intentName",$_GET)){
+          $this->code = 400;
+          return ["error" => [
+            "type" => "invalid_param"
+          ]];
+        }else{
+          return $this->getIntentTrainingPhrases($_GET['intentName']);
+        }
+        break;
       // 無効なアクセス
       default:
         $this -> code = 400;
@@ -95,6 +105,39 @@ class DialogflowController
     } finally {
       $this->intentsClient->close();
     }
+  }
+
+  /**
+   * 指定されたインテントに登録されているトレーニングフレーズを取得
+   * @param string $intentName Format: projects/<Project ID>/agent/intents/<Intent ID>
+   * @return string[]
+   */
+  private function getIntentTrainingPhrases($intentName){
+    try {
+      // 既存インテントの取得(オプションでintentViewを設定することでIntentオブジェクトのまま取得できる)
+      $intent = $this->intentsClient->getIntent($intentName, [
+        'intentView' => IntentView::INTENT_VIEW_FULL
+      ]);
+      
+      // 登録済みのトレーニングデータを取得
+      $phraseTexts = array();
+      foreach($intent->getTrainingPhrases() as $trainingPhrase){
+        foreach($trainingPhrase->getParts() as $trainingPhrasePart){
+          $phraseTexts[] = $trainingPhrasePart->getText();
+        }
+      }
+      $response = array_slice($phraseTexts, 1); // １つ目はもとの質問文なので省く
+  
+    } catch(Exception $error){
+      $this -> code = 500;
+      return ["error" => [
+        "message" => $error
+      ]];
+  
+    } finally {
+      $this->intentsClient->close();
+    }
+    return $response;
   }
 
   /**************************************************************************** */

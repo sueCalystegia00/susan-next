@@ -1,34 +1,23 @@
 import axios, { AxiosResponse, AxiosError } from "axios";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import type { ConversationMessage } from "@/types/models";
-import { PostConversationMessagePayload } from "@/types/payloads";
 import { AuthContext } from "@/contexts/AuthContext";
 
-const usePostMessage = (
-	questionIndex: number,
-	messageType: ConversationMessage["MessageType"]
-) => {
+const usePostMessage = (questionIndex: number) => {
 	const { user } = useContext(AuthContext);
 	const [text, setText] = useState<ConversationMessage["MessageText"]>("");
-	const [payload, setPayload] = useState<PostConversationMessagePayload>();
+	const [messageType, setMessageType] =
+		useState<ConversationMessage["MessageType"]>("chat");
 
-	useEffect(() => {
-		user &&
-			setPayload({
+	const postConversationMessage = () => {
+		axios
+			.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/message`, {
 				index: questionIndex,
 				userId: user?.userUid,
 				messageType: messageType,
 				message: text,
 				userType: user?.position,
-			});
-	}, [text]);
-
-	const postConversationMessage = (payload: PostConversationMessagePayload) => {
-		axios
-			.post(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/message`,
-				payload
-			)
+			})
 			.then((response: AxiosResponse<ConversationMessage>) => {
 				const { data } = response;
 				console.log(data);
@@ -39,14 +28,12 @@ const usePostMessage = (
 			});
 	};
 
-	const postHandler = () => {
-		!!payload?.message && postConversationMessage(payload);
-	};
-
 	return {
 		text,
 		setText,
-		postHandler,
+		messageType,
+		setMessageType,
+		postConversationMessage,
 	};
 };
 

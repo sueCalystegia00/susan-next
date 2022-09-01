@@ -30,3 +30,9 @@ export interface ConversationMessage {
 	MessageType: "chat" | "image" | "answer";
 	MessageText: string;
 }
+
+export interface DialogflowIntent {
+	intentName: string;
+	trainingPhrases: string[];
+	responseText: string;
+}
