@@ -9,27 +9,32 @@ import type { User, IErrorResponse } from "@/types/models";
 const Authenticated = () => {
 	const { setUser: setUserContext } = useContext(AuthContext);
 
-	const setUser = async (userUid: string, token: string): Promise<void> => {
-		const position = (await getUserPosition(token)) || "";
-
-		setUserContext({
-			userUid,
-			token,
-			position,
-		});
+	const setUser = async (
+		userUid: User["userUid"],
+		token: User["token"]
+	): Promise<void> => {
+		const position = await getUserPosition(token);
+		position
+			? setUserContext({
+					userUid,
+					token,
+					position,
+			  })
+			: handleError(new Error("position is not found"));
 	};
 
 	const handleError = (err: any) => {
 		console.error(err);
 		setUserContext(null);
+		liff.logout();
 	};
 
 	const liffInit = async () => {
 		try {
-			if (process.env.NODE_ENV !== "production") {
+			if (process.env.NODE_ENV == "development") {
 				liff.use(new LiffMockPlugin());
 				await liff.init({
-					liffId: process.env.LIFF_ID!,
+					liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
 					mock: true,
 				});
 				liff.$mock.set((p) => ({
@@ -43,7 +48,7 @@ const Authenticated = () => {
 				liff.login();
 			} else {
 				await liff.init({
-					liffId: process.env.LIFF_ID!,
+					liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
 					withLoginOnExternalBrowser: true, //外部ブラウザでも自動ログイン(LIFFブラウザは最初から自動でログインが走る)
 				});
 			}
@@ -63,8 +68,10 @@ const Authenticated = () => {
 		}
 	};
 
-	const getUserPosition = async (token: string): Promise<string | void> => {
-		const userPosition = await axios
+	const getUserPosition = async (
+		token: User["token"]
+	): Promise<User["position"] | void> => {
+		const position = await axios
 			.get<User>(
 				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/users/position`,
 				{ params: { userIdToken: token } }
@@ -77,7 +84,7 @@ const Authenticated = () => {
 				handleError(error);
 				liff.logout();
 			});
-		return userPosition;
+		return position;
 	};
 
 	return (
