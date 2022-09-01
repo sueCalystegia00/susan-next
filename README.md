@@ -37,7 +37,31 @@ www2 サーバーの PHP バージョンが 5.6 なので対応できるバー�
 
 # ⚙️Installation
 
-そのうち追記...
+## 📝Set Environment File
+
+- 各ディレクトリの.env.sample を参考に環境変数を設定
+
+## 🤖Start Developing
+
+- 下記コマンドより Docker を起動．
+
+```Shell
+docker-compose build
+docker-compose up -d
+```
+
+- (開発中ファイルの変更などがキャッシュビルドによって反映されない場合は以下のコマンドを使用)
+
+```Shell
+docker-compose up --build --force-recreate -d
+```
+
+- LIFF ページを開けるか確認 → http://localhost:3000
+- 必要に応じて Docker コンテナ内のシェルからコマンドを実行
+
+```Shell
+docker-compose run --rm <<コンテナ名>> sh
+```
 
 # 🙋🏻‍♂️Author
 

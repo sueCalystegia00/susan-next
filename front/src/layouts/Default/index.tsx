@@ -43,15 +43,7 @@ const DefaultLayout: FC<LayoutProps> = ({ children }) => {
 	}
 
 	return (
-		<div
-			style={{
-				margin: "auto",
-				maxWidth: "600",
-				height: "100vh",
-				minHeight: "100vh",
-				paddingBottom: 2,
-			}}
-		>
+		<div className='relative w-screen min-w-80 h-full flex flex-col items-center'>
 			{isLogIn ? children : <Loader />}
 		</div>
 	);

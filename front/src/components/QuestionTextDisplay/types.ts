@@ -1,9 +1,6 @@
 import type { Question } from "@/types/models";
 
-export interface QuestionCardProps {
-	id: number;
-	timestamp: Question["timestamp"];
-	answerStatus: boolean;
+export interface QuestionTextDisplayProps {
 	lectureNumber: number;
 	questionText: Question["QuestionText"];
 }

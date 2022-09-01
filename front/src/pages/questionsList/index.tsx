@@ -1,18 +1,12 @@
-import DefaultLayout from "@/layouts/Default";
 import QuestionCard from "@/components/QuestionCard";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useEffect } from "react";
 import useQuestions from "@/hooks/useQuestions";
 
-const QuestionListPage = () => {
+const QuestionsListPage = () => {
 	const { questions, isHasMore, getQuestionsDataHandler } = useQuestions();
 
-	useEffect(() => {
-		getQuestionsDataHandler();
-	}, []);
-
 	return (
-		<DefaultLayout>
+		<>
 			<InfiniteScroll
 				dataLength={Object.keys(questions).length} //現在のデータの長さ
 				next={getQuestionsDataHandler} // スクロール位置を監視してコールバック（次のデータを読み込ませる）
@@ -23,20 +17,20 @@ const QuestionListPage = () => {
 				<ul className='flex flex-col gap-3 p-2'>
 					{Object.keys(questions)
 						.reverse()
-						.map((key) => (
+						.map((StringOfKey) => (
 							<QuestionCard
-								key={key}
-								id={Number(key)} // questionId
-								timestamp={questions[key].timestamp} // timestamp
-								answerStatus={questions[key].AnswerText != null} // answerStatus
+								key={StringOfKey}
+								id={Number(StringOfKey)} // questionId
+								timestamp={questions[Number(StringOfKey)].timestamp} // timestamp
+								answerStatus={questions[Number(StringOfKey)].AnswerText != null} // answerStatus
 								lectureNumber={1} // lectureNumber
-								questionText={questions[key].QuestionText} // questionText
+								questionText={questions[Number(StringOfKey)].QuestionText} // questionText
 							/>
 						))}
 				</ul>
 			</InfiniteScroll>
-		</DefaultLayout>
+		</>
 	);
 };
 
-export default QuestionListPage;
+export default QuestionsListPage;
