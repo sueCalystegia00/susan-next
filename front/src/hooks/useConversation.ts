@@ -43,22 +43,25 @@ const useConversationData = (questionId: number) => {
 	const [text, setText] = useState<ConversationMessage["MessageText"]>("");
 
 	const postConversationMessage = () => {
-		axios
-			.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/message`, {
-				index: questionId,
-				userId: user?.userUid,
-				messageType: messageType,
-				message: text,
-				userType: user?.position,
-			})
-			.then((response: AxiosResponse<ConversationMessage>) => {
-				const { data } = response;
-				console.log(data);
-			})
-			.catch((error: AxiosError) => {
-				alert("サーバーでエラーが発生しました．");
-				console.error(error);
-			});
+		try {
+			axios
+				.post(
+					`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/message`,
+					{
+						index: questionId,
+						userId: user?.userUid,
+						messageType: messageType,
+						message: text,
+						userType: user?.position,
+					}
+				)
+				.then((response: AxiosResponse<ConversationMessage>) => {
+					console.info(response);
+					getConversationMessages(questionId);
+				});
+		} catch (error: any) {
+			console.error(error);
+		}
 	};
 
 	// 画像

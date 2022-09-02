@@ -7,12 +7,8 @@ import { ConversationContext } from "@/contexts/ConversationContext";
  * @returns 質問対応のメッセージを入力するフォームおよび送信ボタン
  */
 const InputMessageField = () => {
-	const { postText, setPostText, setMessageType, postConversationMessage } =
+	const { postText, setPostText, postConversationMessage } =
 		useContext(ConversationContext);
-
-	useEffect(() => {
-		setMessageType("chat");
-	}, []);
 
 	return (
 		<div className='w-full flex flex-col items-center gap-2 p-4 '>
