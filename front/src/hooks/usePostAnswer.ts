@@ -6,6 +6,7 @@ const usePostAnswer = (questionIndex: number, question: Question) => {
 	const [questionText, setQuestionText] = useState(question.QuestionText || "");
 	const [answerText, setAnswerText] = useState(question.AnswerText || "");
 	const [shared, setShared] = useState(question.Shared || false);
+
 	const [trainingPhrases, setTrainingPhrases] = useState<
 		DialogflowIntent["trainingPhrases"]
 	>([question.QuestionText] || []);
@@ -18,7 +19,9 @@ const usePostAnswer = (questionIndex: number, question: Question) => {
 
 	/**
 	 * DialogflowのIntentに登録されているトレーニングフレーズを取得する
+	 * TODO: Next.jsのAPI Routesを使って，DialogflowのAPIを叩く
 	 * @param intentName
+	 * @return intent
 	 */
 	const getIntentTrainingPhrases = (intentName: string) => {
 		axios
@@ -39,6 +42,8 @@ const usePostAnswer = (questionIndex: number, question: Question) => {
 
 	/**
 	 * DialogflowのIntentを更新する
+	 * TODO: Next.jsのAPI Routesを使って，DialogflowのAPIを叩く
+	 * TODO: 処理の分離
 	 */
 	const setIntentToDialogflowAndMySQL = async () => {
 		try {
