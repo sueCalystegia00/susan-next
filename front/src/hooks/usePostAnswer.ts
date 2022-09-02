@@ -41,44 +41,48 @@ const usePostAnswer = (questionIndex: number, question: Question) => {
 	 * DialogflowのIntentを更新する
 	 */
 	const setIntentToDialogflowAndMySQL = async () => {
-		await axios
-			.post(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/dialogflow/response`,
-				{
-					intentName: question.IntentName,
-					trainingPhrases,
-					responseText: answerText,
-				}
-			)
-			.then((response: AxiosResponse) => {
-				setIntent({
-					intentName: response.data.intentName,
-					trainingPhrases,
-					responseText: answerText,
+		try {
+			await axios
+				.post(
+					`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/dialogflow/response`,
+					{
+						intentName: question.IntentName,
+						trainingPhrases,
+						responseText: answerText,
+					}
+				)
+				.then((response: AxiosResponse) => {
+					setIntent({
+						intentName: response.data.intentName,
+						trainingPhrases,
+						responseText: answerText,
+					});
+				})
+				.catch((error: AxiosError) => {
+					alert("サーバーでエラーが発生しました．(Dialogflow intent更新)");
+					throw new Error(error.message);
 				});
-			})
-			.catch((error: AxiosError) => {
-				alert("サーバーでエラーが発生しました．(Dialogflow intent更新)");
-				throw new Error(error.message);
-			});
 
-		await axios
-			.put(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/${questionIndex}/answer`,
-				{
-					questionText: questionText,
-					answerText: answerText,
-					isShared: shared,
-					intentName: intent?.intentName,
-				}
-			)
-			.then((response: AxiosResponse) => {
-				console.log(response);
-			})
-			.catch((error: AxiosError) => {
-				alert("サーバーでエラーが発生しました．(DB 回答追加)");
-				throw new Error(error.message);
-			});
+			await axios
+				.put(
+					`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/${questionIndex}/answer`,
+					{
+						questionText: questionText,
+						answerText: answerText,
+						isShared: shared,
+						intentName: intent?.intentName,
+					}
+				)
+				.then((response: AxiosResponse) => {
+					console.log(response);
+				})
+				.catch((error: AxiosError) => {
+					alert("サーバーでエラーが発生しました．(DB 回答追加)");
+					throw new Error(error.message);
+				});
+		} catch (e) {
+			console.error(e);
+		}
 	};
 
 	return {
