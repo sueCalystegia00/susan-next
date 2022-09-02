@@ -20,7 +20,7 @@ const TileRadioButton = ({
 	defaultCheckedValue,
 }: TileRadioButtonProps) => {
 	return (
-		<div>
+		<div className='w-full'>
 			<input
 				type='radio'
 				name={name}

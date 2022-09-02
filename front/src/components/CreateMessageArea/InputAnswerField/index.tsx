@@ -1,33 +1,29 @@
-import usePostMessage from "@/hooks/usePostMessage";
-import { ConversationMessage } from "@/types/models";
 import MessageTextArea from "@/components/MessageTextArea";
-import { InputAnswerFieldProps } from "./types";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import usePostAnswer from "@/hooks/usePostAnswer";
-import CheckedToggle from "../CheckedToggle";
+import CheckedToggle from "../../CheckedToggle";
+import { ConversationContext } from "@/contexts/ConversationContext";
 
 /**
  * @param questionIndex: 質問のインデックス
  * @param question: 質問情報
  * @returns 質問対応の回答メッセージを入力するフォームおよび送信ボタン
  */
-const InputAnswerField = ({
-	questionIndex,
-	question,
-}: InputAnswerFieldProps) => {
-	const { text, setText, setMessageType, postConversationMessage } =
-		usePostMessage(questionIndex);
-
-	useEffect(() => {
-		setMessageType("answer");
-	}, []);
+const InputAnswerField = () => {
+	const {
+		questionIndex,
+		question,
+		postText,
+		setPostText,
+		postConversationMessage,
+	} = useContext(ConversationContext);
 
 	const { setAnswerText, shared, setShared, setIntentToDialogflowAndMySQL } =
 		usePostAnswer(questionIndex, question);
 
 	useEffect(() => {
-		setAnswerText(text);
-	}, [text]);
+		setAnswerText(postText);
+	}, [postText]);
 
 	const submitHandler = async () => {
 		try {
@@ -40,7 +36,7 @@ const InputAnswerField = ({
 
 	return (
 		<div className='w-full flex flex-col items-center gap-2 p-4 '>
-			<MessageTextArea setText={setText} />
+			<MessageTextArea setText={setPostText} />
 			<CheckedToggle
 				checked={shared}
 				onChange={() => setShared(!shared)}
@@ -53,7 +49,7 @@ const InputAnswerField = ({
 			<button
 				className='bg-susan-blue-100 text-white disabled:text-slate-500 disabled:bg-slate-700 active:bg-susan-blue-50 font-bold px-8 py-2 rounded-2xl shadow-inner shadow-susan-blue-1000 outline-none focus:outline-none ease-linear transition-all duration-150'
 				onClick={submitHandler}
-				disabled={!text}
+				disabled={!postText}
 			>
 				送信
 			</button>

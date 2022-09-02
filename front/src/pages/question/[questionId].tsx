@@ -1,15 +1,15 @@
 import AnswerTextDisplay from "@/components/AnswerTextDisplay";
 import ConversationDisplay from "@/components/ConversationDisplay";
-import InputAnswerField from "@/components/InputAnswerField";
-import InputImageField from "@/components/InputImageField";
-import InputMessageField from "@/components/InputMessageField";
+import CreateMessageArea from "@/components/CreateMessageArea";
 import MessageTypeSelector from "@/components/MessageTypeSelector";
 import QuestionTextDisplay from "@/components/QuestionTextDisplay";
-import useConversationData from "@/hooks/useConversation";
+import ConversationProvider, {
+	ConversationContext,
+} from "@/contexts/ConversationContext";
 import useQuestions from "@/hooks/useQuestions";
-import type { ConversationMessage, Question } from "@/types/models";
+import type { Question } from "@/types/models";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useContext } from "react";
 
 /**
  * @returns 質問詳細ページ
@@ -24,13 +24,6 @@ const QuestionDetailsPage = () => {
 		questions[Number(questionId)] ||
 		getOneQuestionDataHandler(Number(questionId));
 
-	const conversationMessages =
-		question && useConversationData(Number(questionId));
-
-	const [selectedMessageType, setSelectedMessageType] = useState(
-		"chat" as ConversationMessage["MessageType"]
-	);
-
 	return (
 		<>
 			<QuestionTextDisplay
@@ -40,25 +33,14 @@ const QuestionDetailsPage = () => {
 			{!!question.AnswerText && (
 				<AnswerTextDisplay answerText={question.AnswerText} />
 			)}
-			{!!conversationMessages.length && (
-				<ConversationDisplay messages={conversationMessages} />
-			)}
-			<MessageTypeSelector
-				selectedValue={selectedMessageType}
-				selectHandler={setSelectedMessageType}
-			/>
-			{selectedMessageType === "chat" && (
-				<InputMessageField questionIndex={Number(questionId)} />
-			)}
-			{selectedMessageType === "image" && (
-				<InputImageField questionIndex={Number(questionId)} />
-			)}
-			{selectedMessageType === "answer" && (
-				<InputAnswerField
-					questionIndex={Number(questionId)}
-					question={question}
-				/>
-			)}
+			<ConversationProvider
+				questionIndex={Number(questionId)}
+				question={question}
+			>
+				<ConversationDisplay />
+				<MessageTypeSelector />
+				<CreateMessageArea />
+			</ConversationProvider>
 		</>
 	);
 };
