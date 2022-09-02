@@ -83,8 +83,8 @@ const useConversationData = (questionId: number) => {
 				}
 			)
 			.then((response: AxiosResponse<ConversationMessage>) => {
-				const { data } = response;
-				console.log(data);
+				console.info(response);
+				getConversationMessages(questionId);
 			})
 			.catch((error: AxiosError) => {
 				alert("サーバーでエラーが発生しました．");
