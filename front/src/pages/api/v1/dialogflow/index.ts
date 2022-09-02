@@ -35,6 +35,7 @@ export default function DialogflowIntentHandler(
 				res.status(500).json({ error: error });
 			}
 			break;
+
 		case "POST":
 			try {
 				const response = !!req.body.intentName
@@ -44,9 +45,24 @@ export default function DialogflowIntentHandler(
 			} catch (error) {
 				res.status(500).json({ error: error });
 			}
+			break;
+
+		/* case "PUT":
+			if (!!query.intentName) {
+				res.status(400).json({ error: "intentName is required" });
+				return;
+			}
+			try {
+				const response = updateQuestionIntent(req.body);
+				res.status(200).json(response);
+			} catch (error) {
+				res.status(500).json({ error: error });
+			}
+			break;
+			 */
 
 		default:
-			res.setHeader("Allow", ["GET", "PUT"]);
+			res.setHeader("Allow", ["GET", "POST"]);
 			res.status(405).end(`Method ${method} Not Allowed`);
 	}
 }
@@ -144,19 +160,35 @@ const createQuestionIntent = async (req: NextApiRequest) => {
 const updateQuestionIntent = async (req: NextApiRequest) => {
 	const {
 		intentName,
-		questionIndex,
 		trainingPhrases,
 		responseText,
 	}: PostDialogflowIntentPayload = req.body;
-	//TODO: check if intentName exists
 	try {
-		const intent = await intentsClient.createIntent();
+		const existsIntent = await intentsClient.getIntent({ name: intentName });
+		existsIntent[0].trainingPhrases = trainingPhrases.map((phrase: string) => {
+			return {
+				parts: [
+					{
+						text: phrase,
+					},
+				],
+			};
+		});
+		existsIntent[0].messages![0].text!.text![0] = responseText;
+		const updateIntentRequest = {
+			intent: existsIntent[0],
+			updateMask: {
+				paths: ["training_phrases", "messages"],
+			},
+			intentView: "INTENT_VIEW_FULL" as "INTENT_VIEW_FULL",
+		};
+		const updatedIntent = await intentsClient.updateIntent(updateIntentRequest);
 		return {
-			intentName: intent[0].name,
+			intentName: updatedIntent[0].name,
 			trainingPhrases,
-			responseText: intent[0].messages![0].text!.text![0],
-			displayName: intent[0].displayName,
-			priority: intent[0].priority,
+			responseText: updatedIntent[0].messages![0].text!.text![0],
+			displayName: updatedIntent[0].displayName,
+			priority: updatedIntent[0].priority,
 		} as DialogflowIntent;
 	} catch (error: any) {
 		throw new Error(error);
