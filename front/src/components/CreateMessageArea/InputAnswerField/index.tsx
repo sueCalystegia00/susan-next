@@ -18,8 +18,10 @@ const InputAnswerField = () => {
 		postConversationMessage,
 	} = useContext(ConversationContext);
 
-	const { setAnswerText, shared, setShared, setIntentToDialogflowAndMySQL } =
-		usePostAnswer(questionIndex, question);
+	const { setAnswerText, shared, setShared, setAnswerHandler } = usePostAnswer(
+		questionIndex,
+		question
+	);
 
 	useEffect(() => {
 		setAnswerText(postText);
@@ -27,7 +29,7 @@ const InputAnswerField = () => {
 
 	const submitHandler = async () => {
 		try {
-			await setIntentToDialogflowAndMySQL();
+			await setAnswerHandler();
 			postConversationMessage();
 		} catch (error) {
 			console.error(error);

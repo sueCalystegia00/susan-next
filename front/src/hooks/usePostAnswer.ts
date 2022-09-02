@@ -1,4 +1,5 @@
 import { DialogflowIntent, Question } from "@/types/models";
+import { PostDialogflowIntentPayload } from "@/types/payloads";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { useEffect, useState } from "react";
 
@@ -6,15 +7,10 @@ const usePostAnswer = (questionIndex: number, question: Question) => {
 	const [questionText, setQuestionText] = useState(question.QuestionText || "");
 	const [answerText, setAnswerText] = useState(question.AnswerText || "");
 	const [shared, setShared] = useState(question.Shared || false);
-
-	const [trainingPhrases, setTrainingPhrases] = useState<
-		DialogflowIntent["trainingPhrases"]
-	>([question.QuestionText] || []);
 	const [intent, setIntent] = useState<DialogflowIntent>();
 
 	useEffect(() => {
-		//TODO: ここでDialogflowからIntent情報(トレーニングフレーズ)を取得する
-		//!!question.IntentName && getIntentTrainingPhrases(question.IntentName);
+		!!question.IntentName && getIntentData(question.IntentName);
 	}, []);
 
 	/**
@@ -23,16 +19,11 @@ const usePostAnswer = (questionIndex: number, question: Question) => {
 	 * @param intentName
 	 * @return intent
 	 */
-	const getIntentTrainingPhrases = (intentName: string) => {
+	const getIntentData = (intentName: string) => {
 		axios
-			.get(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/dialogflow/trainingPhrases?intentName=${intentName}`
-			)
+			.get(`/api/v1/dialogflow?intentName=${intentName}`)
 			.then((response: AxiosResponse) => {
-				const { data } = response;
-				data.map((phrase: string) =>
-					setTrainingPhrases([...trainingPhrases, phrase])
-				);
+				setIntent(response.data);
 			})
 			.catch((error: AxiosError) => {
 				alert("サーバーでエラーが発生しました．");
@@ -42,32 +33,35 @@ const usePostAnswer = (questionIndex: number, question: Question) => {
 
 	/**
 	 * DialogflowのIntentを更新する
-	 * TODO: Next.jsのAPI Routesを使って，DialogflowのAPIを叩く
-	 * TODO: 処理の分離
 	 */
-	const setIntentToDialogflowAndMySQL = async () => {
+	const postIntent = () => {
 		try {
-			await axios
+			axios
 				.post(
-					`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/dialogflow/response`,
+					`/api/v1/dialogflow${
+						!!question.IntentName && "?intentName=" + question.IntentName
+					}`,
 					{
+						questionIndex: questionIndex,
 						intentName: question.IntentName,
-						trainingPhrases,
+						trainingPhrases: intent?.trainingPhrases,
 						responseText: answerText,
-					}
+					} as PostDialogflowIntentPayload
 				)
 				.then((response: AxiosResponse) => {
-					setIntent({
-						intentName: response.data.intentName,
-						trainingPhrases,
-						responseText: answerText,
-					});
+					setIntent(response.data);
 				})
 				.catch((error: AxiosError) => {
 					alert("サーバーでエラーが発生しました．(Dialogflow intent更新)");
 					throw new Error(error.message);
 				});
+		} catch (error: any) {
+			console.error(error);
+		}
+	};
 
+	const updateQandA = async () => {
+		try {
 			await axios
 				.put(
 					`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/${questionIndex}/answer`,
@@ -90,12 +84,21 @@ const usePostAnswer = (questionIndex: number, question: Question) => {
 		}
 	};
 
+	const setAnswerHandler = async () => {
+		try {
+			await postIntent();
+			await updateQandA();
+		} catch (e) {
+			console.error(e);
+		}
+	};
+
 	return {
 		answerText,
 		setAnswerText,
 		shared,
 		setShared,
-		setIntentToDialogflowAndMySQL,
+		setAnswerHandler,
 	};
 };
 
