@@ -11,6 +11,7 @@ import { ConversationContext } from "@/contexts/ConversationContext";
  */
 const InputAnswerField = () => {
 	const {
+		getConversationMessages,
 		questionIndex,
 		question,
 		postText,
@@ -30,7 +31,9 @@ const InputAnswerField = () => {
 	const submitHandler = async () => {
 		try {
 			await setAnswerHandler();
-			postConversationMessage();
+			await postConversationMessage();
+			getConversationMessages(questionIndex);
+			setPostText("");
 		} catch (error) {
 			console.error(error);
 		}

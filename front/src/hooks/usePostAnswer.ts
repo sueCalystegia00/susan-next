@@ -39,7 +39,7 @@ const usePostAnswer = (questionIndex: number, question: Question) => {
 			axios
 				.post(
 					`/api/v1/dialogflow${
-						!!question.IntentName && "?intentName=" + question.IntentName
+						question.IntentName ? "?intentName=" + question.IntentName : ""
 					}`,
 					{
 						questionIndex: questionIndex,

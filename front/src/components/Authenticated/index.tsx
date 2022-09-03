@@ -4,6 +4,7 @@ import { useContext } from "react";
 import { AuthContext } from "@/contexts/AuthContext";
 import axios, { AxiosError } from "axios";
 import type { User, IErrorResponse } from "@/types/models";
+import router from "next/router";
 
 /**
  * @description ユーザ認証を行う
@@ -82,9 +83,8 @@ const Authenticated = () => {
 				return response.data.position;
 			})
 			.catch((error: AxiosError<IErrorResponse>) => {
-				alert("サーバーでエラーが発生しました．");
 				handleError(error);
-				liff.logout();
+				router.reload();
 			});
 		return position;
 	};

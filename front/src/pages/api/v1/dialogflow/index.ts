@@ -1,7 +1,6 @@
 import { DialogflowIntent } from "@/types/models";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { v2 } from "@google-cloud/dialogflow";
-import { PostDialogflowIntentPayload } from "@/types/payloads";
 
 const intentsClient = new v2.IntentsClient({
 	/* credentials: {
@@ -15,19 +14,19 @@ const agentPath = intentsClient.projectAgentPath(
 	process.env.DIALOGFLOW_PROJECT_ID!
 );
 
-export default function DialogflowIntentHandler(
+export default async function DialogflowIntentHandler(
 	req: NextApiRequest,
 	res: NextApiResponse
 ) {
-	const { method, query } = req;
+	const { method, query, body } = req;
 	switch (method) {
 		case "GET":
-			if (!!query.intentName) {
+			if (!query.intentName) {
 				res.status(400).json({ error: "intentName is required" });
 				return;
 			}
 			try {
-				const response = getIntent(
+				const response = await getIntent(
 					query.intentName as DialogflowIntent["intentName"]
 				);
 				res.status(200).json(response);
@@ -38,22 +37,31 @@ export default function DialogflowIntentHandler(
 
 		case "POST":
 			try {
-				const response = !!req.body.intentName
-					? createQuestionIntent(req.body)
-					: updateQuestionIntent(req.body);
+				const response = !body.intentName
+					? await createQuestionIntent(
+							//TODO: createがエラーになる，updateは動いた
+							Number(body.questionIndex),
+							body.trainingPhrases as DialogflowIntent["trainingPhrases"],
+							body.responseText as DialogflowIntent["responseText"]
+					  )
+					: await updateQuestionIntent(
+							body.trainingPhrases as DialogflowIntent["trainingPhrases"],
+							body.responseText as DialogflowIntent["responseText"],
+							body.intentName as DialogflowIntent["intentName"]
+					  );
 				res.status(200).json(response);
 			} catch (error) {
-				res.status(500).json({ error: error });
+				res.status(500).json({ error: error, requestBody: body });
 			}
 			break;
 
 		/* case "PUT":
-			if (!!query.intentName) {
+			if (!query.intentName) {
 				res.status(400).json({ error: "intentName is required" });
 				return;
 			}
 			try {
-				const response = updateQuestionIntent(req.body);
+				const response = await updateQuestionIntent(req.body);
 				res.status(200).json(response);
 			} catch (error) {
 				res.status(500).json({ error: error });
@@ -86,16 +94,15 @@ const getIntent = async (intentName: DialogflowIntent["intentName"]) => {
 			priority: intent[0].priority,
 		} as DialogflowIntent;
 	} catch (error: any) {
-		throw new Error(error.message);
+		throw new Error(JSON.stringify(error));
 	}
 };
 
-const createQuestionIntent = async (req: NextApiRequest) => {
-	const {
-		questionIndex,
-		trainingPhrases,
-		responseText,
-	}: PostDialogflowIntentPayload = req.body;
+const createQuestionIntent = async (
+	questionIndex: number,
+	trainingPhrases: DialogflowIntent["trainingPhrases"],
+	responseText: DialogflowIntent["responseText"]
+) => {
 	const createIntentRequest = {
 		parent: agentPath,
 		intentView: "INTENT_VIEW_FULL" as "INTENT_VIEW_FULL",
@@ -153,16 +160,15 @@ const createQuestionIntent = async (req: NextApiRequest) => {
 			priority: intent[0].priority,
 		} as DialogflowIntent;
 	} catch (error: any) {
-		throw new Error(error);
+		throw new Error(JSON.stringify(error));
 	}
 };
 
-const updateQuestionIntent = async (req: NextApiRequest) => {
-	const {
-		intentName,
-		trainingPhrases,
-		responseText,
-	}: PostDialogflowIntentPayload = req.body;
+const updateQuestionIntent = async (
+	trainingPhrases: DialogflowIntent["trainingPhrases"],
+	responseText: DialogflowIntent["responseText"],
+	intentName: DialogflowIntent["intentName"]
+) => {
 	try {
 		const existsIntent = await intentsClient.getIntent({ name: intentName });
 		existsIntent[0].trainingPhrases = trainingPhrases.map((phrase: string) => {
@@ -191,6 +197,6 @@ const updateQuestionIntent = async (req: NextApiRequest) => {
 			priority: updatedIntent[0].priority,
 		} as DialogflowIntent;
 	} catch (error: any) {
-		throw new Error(error);
+		throw new Error(JSON.stringify(error));
 	}
 };
