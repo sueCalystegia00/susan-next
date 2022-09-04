@@ -1,5 +1,8 @@
 import Image from "next/image";
 
+/**
+ * @returns 読込中のローディングアイコン
+ */
 const Loader = () => (
 	<div
 		style={{

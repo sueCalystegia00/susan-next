@@ -420,7 +420,15 @@ class QuestionsController
       // 実行
       $res = $stmt->execute();
       if($res){
-        return [];
+        $this->code = 201;
+        return [
+          $questionIndex => [
+            "IsShared" => $isShared,
+            "QuestionText" => $questionText,
+            "AnswerText" => $answerText,
+            "IntentName" => $intentName
+          ]
+        ];
       }else{
         $this->code = 500;
         return ["error" => [

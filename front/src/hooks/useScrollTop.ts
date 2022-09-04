@@ -1,6 +1,9 @@
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
+/**
+ * ページ遷移時にページトップにスクロールする
+ */
 const useScrollTop = () => {
 	const location = useRouter();
 

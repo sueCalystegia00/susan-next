@@ -10,8 +10,10 @@
 		"format": "prettier --write --ignore-path .gitignore './**/*.{js,jsx,ts,tsx,json,css}'"
 	},
 	"dependencies": {
+		"@google-cloud/dialogflow": "^5.2.0",
 		"@line/liff": "2.20.1",
 		"@line/liff-mock": "^1.0.1",
+		"@types/dialogflow": "^4.0.4",
 		"@types/react-infinite-scroll-component": "^5.0.0",
 		"axios": "0.27.2",
 		"next": "^12.1.6",

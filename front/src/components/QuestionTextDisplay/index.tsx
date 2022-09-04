@@ -1,10 +1,16 @@
+import { QuestionContext } from "@/contexts/QuestionContext";
+import { useContext } from "react";
 import InnerUrlText from "../InnerUrlText";
 import type { QuestionTextDisplayProps } from "./types";
 
-const QuestionTextDisplay = ({
-	questionText,
-	lectureNumber,
-}: QuestionTextDisplayProps) => {
+/**
+ * @param questionText: 質問文
+ * @param lectureNumber: 講義回
+ * @returns 質問文を表示するカードコンポーネント
+ */
+const QuestionTextDisplay = ({ lectureNumber }: QuestionTextDisplayProps) => {
+	const { question } = useContext(QuestionContext);
+
 	return (
 		<div className='w-screen flex flex-col items-center p-4 gap-2 text-slate-50 bg-susan-blue-100'>
 			<div className='relative w-full max-w-5xl flex flex-col items-center'>
@@ -16,7 +22,7 @@ const QuestionTextDisplay = ({
 			</div>
 			<InnerUrlText
 				settingClass='w-full text-lg whitespace-pre-line break-words leading-relaxed'
-				innerText={questionText}
+				innerText={question.QuestionText}
 			/>
 		</div>
 	);

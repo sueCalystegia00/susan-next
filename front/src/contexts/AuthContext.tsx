@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { createContext, useState } from "react";
-
 import type { User } from "@/types/models";
 
 class AuthContextProps {
@@ -21,6 +20,11 @@ type Props = {
 	children: ReactNode;
 };
 
+/**
+ * ユーザの認証状態を管理
+ * @param children 子要素(ユーザ情報の利用が可能なコンポーネントとなる)
+ * @returns JSX.Element
+ */
 const AuthProvider = ({ children }: Props) => {
 	const [isLogIn, setLogIn] = useState<boolean>(false);
 	const [user, setUserState] = useState<User | null | undefined>(undefined);

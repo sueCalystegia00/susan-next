@@ -96,8 +96,8 @@ class ThreadsController
             "type" => "invalid_param"
           ]];
         }else{
-          $res = $this->setChatMessageToThreadConversation($post["index"], $post["userId"], $post["messageType"], $post["message"]);
-          if(!array_key_exists("error",$res)){
+          return $this->setChatMessageToThreadConversation($post["index"], $post["userId"], $post["messageType"], $post["message"]);
+          /*if(!array_key_exists("error",$res)){
             // 教員側のメッセージの場合は学生へLINEのプッシュ通知を送る
             include dirname( __FILE__).'/../../../susan_bot/functions/PushMessages.php';
             if($post["userType"] == 'instructor') $res["line_bot"] = pushNewThreadMessageToStudent($post["index"], $post["messageType"], $post["isShared"], $post["message"]);
@@ -105,11 +105,11 @@ class ThreadsController
             include dirname( __FILE__).'/../../../susan_bot/functions/CallbackToSusanPro.php';
             $payload = array('message' => $post["message"], 'index' => $post["index"]);
             $res["mail"] = sendEmailToInstructors("message", $payload);
-            echo $res;
+            echo $res; 
             return $res;
           }else{
             return $res;
-          }
+          }*/
         }
         break;
       
@@ -184,10 +184,17 @@ class ThreadsController
       // 実行
       $res = $stmt->execute();
       $lastIndex = $pdo->lastInsertId();
+      $timestamp = date("Y-m-d H:i:s");
       if($res){
         $this->code = 201;
-        header("Location: ".$this->url.$lastIndex);
-        return [];
+        //header("Location: ".$this->url.$lastIndex);
+        return [
+          "index" => $lastIndex,
+          "timestamp" => $timestamp,
+          "SenderType" => $messageType,
+          "MessageType" => $messageType,
+          "MessageText" => $message
+        ];
       }else{
         $this->code = 500;
         return ["error" => [

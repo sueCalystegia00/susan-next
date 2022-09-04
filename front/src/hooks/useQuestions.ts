@@ -2,6 +2,7 @@ import axios, { AxiosResponse, AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import type { Question, Questions } from "@/types/models";
 import router from "next/router";
+import { UpdateAnswerPayload } from "@/types/payloads";
 
 /**
  * 質疑応答情報を保存するセッションストレージのキー
@@ -12,8 +13,8 @@ const STORAGE_KEY_QUESTIONS = "yoslab/susan-next/questionsList";
  * 質疑応答情報の管理
  * @returns questions: 質疑応答情報
  * @returns isHasMore: 追加取得可能かどうか
- * @returns getQuestionsDataHandler: 質疑応答情報を取得する関数
- *
+ * @returns getQuestionsDataHandler: 質疑応答情報を30件取得する関数
+ * @returns getOneQuestionDataHandler: 指定の質疑応答情報を1件取得する関数
  */
 const useQuestionsData = () => {
 	const sessionQuestionsData = sessionStorage.getItem(STORAGE_KEY_QUESTIONS); // セッションストレージから質疑応答情報を取得
@@ -62,9 +63,9 @@ const useQuestionsData = () => {
 	};
 
 	/**
-	 * 指定したインデックスの質疑応答情報を取得する
+	 * 指定の質疑応答情報を1件取得する関数
 	 * @param questionId 質疑応答情報のID
-	 * @returns
+	 * @returns question: 質疑応答情報
 	 */
 	const getOneQuestionDataHandler = (questionId: number) => {
 		return axios
@@ -87,11 +88,58 @@ const useQuestionsData = () => {
 			});
 	};
 
+	/**
+	 * 質疑応答情報を更新する
+	 * @param questionIndex 質疑応答情報のID
+	 * @param updatedQandA 更新する質疑応答情報
+	 */
+	const updateQandA = async (
+		questionIndex: number,
+		payload: UpdateAnswerPayload
+	) => {
+		try {
+			return await axios
+				.put(
+					`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/${questionIndex}/answer`,
+					{
+						questionText: payload.questionText,
+						answerText: payload.answerText,
+						isShared: payload.isShared,
+						intentName: payload.intentName,
+					}
+				)
+				.then((response: AxiosResponse<Questions>) => {
+					const { data } = response;
+					return data;
+				})
+				.catch((error: AxiosError) => {
+					alert("サーバーでエラーが発生しました．(DB 回答追加)");
+					throw new Error(error.message);
+				});
+		} catch (e) {
+			console.error(e);
+		}
+	};
+
+	const updateQuestionsCallback = async (
+		questionIndex: number,
+		question: Question
+	) => {
+		if (!questions[questionIndex]) return;
+		await setQuestions({ ...questions, [questionIndex]: question });
+		sessionStorage.setItem(
+			STORAGE_KEY_QUESTIONS,
+			JSON.stringify({ ...questions, [questionIndex]: question })
+		);
+	};
+
 	return {
 		questions,
 		isHasMore,
 		getQuestionsDataHandler,
 		getOneQuestionDataHandler,
+		updateQandA,
+		updateQuestionsCallback,
 	};
 };
 
