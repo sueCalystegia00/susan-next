@@ -14,7 +14,6 @@ class QuestionContextProps {
 		questionIndex: number,
 		updatedQandA: UpdateAnswerPayload
 	) => Promise<Questions | undefined>;
-	updateQuestionsCallback!: (questionIndex: number, question: Question) => void;
 }
 
 export const QuestionContext = createContext<QuestionContextProps>(
@@ -27,12 +26,8 @@ type Props = {
 };
 
 const QuestionProvider = ({ questionIndex, children }: Props) => {
-	const {
-		questions,
-		updateQandA,
-		getOneQuestionDataHandler,
-		updateQuestionsCallback,
-	} = useQuestionsData();
+	const { questions, updateQandA, getOneQuestionDataHandler } =
+		useQuestionsData();
 
 	const [question, setQuestion] = useState<Question>(
 		questions[Number(questionIndex)] ||
@@ -56,7 +51,6 @@ const QuestionProvider = ({ questionIndex, children }: Props) => {
 				updateAnswerPayload,
 				setUpdateAnswerPayload,
 				updateQandA,
-				updateQuestionsCallback,
 			}}
 		>
 			{children}

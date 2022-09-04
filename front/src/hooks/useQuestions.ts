@@ -110,6 +110,14 @@ const useQuestionsData = () => {
 				)
 				.then((response: AxiosResponse<Questions>) => {
 					const { data } = response;
+					Object.entries(data).map(([questionIndex, question]) => {
+						if (!questions[Number(questionIndex)]) return;
+						setQuestions({ ...questions, [questionIndex]: question });
+						sessionStorage.setItem(
+							STORAGE_KEY_QUESTIONS,
+							JSON.stringify({ ...questions, [questionIndex]: question })
+						);
+					});
 					return data;
 				})
 				.catch((error: AxiosError) => {
@@ -121,25 +129,12 @@ const useQuestionsData = () => {
 		}
 	};
 
-	const updateQuestionsCallback = async (
-		questionIndex: number,
-		question: Question
-	) => {
-		if (!questions[questionIndex]) return;
-		await setQuestions({ ...questions, [questionIndex]: question });
-		sessionStorage.setItem(
-			STORAGE_KEY_QUESTIONS,
-			JSON.stringify({ ...questions, [questionIndex]: question })
-		);
-	};
-
 	return {
 		questions,
 		isHasMore,
 		getQuestionsDataHandler,
 		getOneQuestionDataHandler,
 		updateQandA,
-		updateQuestionsCallback,
 	};
 };
 
