@@ -1,8 +1,10 @@
 import MessageTextArea from "@/components/MessageTextArea";
 import { useContext, useEffect } from "react";
-import usePostAnswer from "@/hooks/usePostAnswer";
 import CheckedToggle from "../../CheckedToggle";
 import { ConversationContext } from "@/contexts/ConversationContext";
+import { QuestionContext } from "@/contexts/QuestionContext";
+import useDialogflowIntent from "@/hooks/useDialogflowIntent";
+import { DialogflowIntent, Question } from "@/types/models";
 
 /**
  * @param questionIndex: 質問のインデックス
@@ -11,29 +13,49 @@ import { ConversationContext } from "@/contexts/ConversationContext";
  */
 const InputAnswerField = () => {
 	const {
-		getConversationMessages,
 		questionIndex,
 		question,
-		postText,
-		setPostText,
-		postConversationMessage,
-	} = useContext(ConversationContext);
-
-	const { setAnswerText, shared, setShared, setAnswerHandler } = usePostAnswer(
-		questionIndex,
-		question
+		setQuestion,
+		updateAnswerPayload,
+		setUpdateAnswerPayload,
+		updateQandA,
+		updateQuestionsCallback,
+	} = useContext(QuestionContext);
+	const { inputtedText, setInputtedText, postConversationMessage } =
+		useContext(ConversationContext);
+	const { intent, setIntent, postIntent } = useDialogflowIntent(
+		question.IntentName
 	);
 
 	useEffect(() => {
-		setAnswerText(postText);
-	}, [postText]);
+		setUpdateAnswerPayload({
+			...updateAnswerPayload,
+			answerText: inputtedText,
+		});
+		setIntent({
+			...intent,
+			responseText: inputtedText,
+		});
+	}, [inputtedText]);
 
 	const submitHandler = async () => {
+		setIntent({
+			...intent,
+			trainingPhrases: [question.QuestionText],
+		});
 		try {
-			await setAnswerHandler();
+			await postIntent(questionIndex).then((intent?: DialogflowIntent) => {
+				setUpdateAnswerPayload({
+					...updateAnswerPayload,
+					intentName: intent!.intentName,
+				});
+			});
+			await updateQandA(questionIndex, updateAnswerPayload).then((response) => {
+				setQuestion(response![questionIndex] as Question);
+				updateQuestionsCallback(questionIndex, response![questionIndex]);
+			});
 			await postConversationMessage();
-			getConversationMessages(questionIndex);
-			setPostText("");
+			setInputtedText("");
 		} catch (error) {
 			console.error(error);
 		}
@@ -41,10 +63,15 @@ const InputAnswerField = () => {
 
 	return (
 		<div className='w-full flex flex-col items-center gap-2 p-4 '>
-			<MessageTextArea setText={setPostText} />
+			<MessageTextArea text={inputtedText} setText={setInputtedText} />
 			<CheckedToggle
-				checked={shared}
-				onChange={() => setShared(!shared)}
+				checked={updateAnswerPayload.isShared}
+				onChange={() =>
+					setUpdateAnswerPayload({
+						...updateAnswerPayload,
+						isShared: !updateAnswerPayload.isShared,
+					})
+				}
 				children={
 					<span className='text-sm text-gray-500'>
 						質問者以外の学生にも回答を通知する
@@ -54,7 +81,7 @@ const InputAnswerField = () => {
 			<button
 				className='bg-susan-blue-100 text-white disabled:text-slate-500 disabled:bg-slate-700 active:bg-susan-blue-50 font-bold px-8 py-2 rounded-2xl shadow-inner shadow-susan-blue-1000 outline-none focus:outline-none ease-linear transition-all duration-150'
 				onClick={submitHandler}
-				disabled={!postText}
+				disabled={!inputtedText}
 			>
 				送信
 			</button>

@@ -49,7 +49,7 @@ export default async function DialogflowIntentHandler(
 							body.responseText as DialogflowIntent["responseText"],
 							body.intentName as DialogflowIntent["intentName"]
 					  );
-				res.status(200).json(response);
+				res.status(201).json(response);
 			} catch (error) {
 				res.status(500).json({ error: error, requestBody: body });
 			}

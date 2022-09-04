@@ -2,6 +2,7 @@ import axios, { AxiosResponse, AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import type { Question, Questions } from "@/types/models";
 import router from "next/router";
+import { UpdateAnswerPayload } from "@/types/payloads";
 
 /**
  * 質疑応答情報を保存するセッションストレージのキー
@@ -87,11 +88,58 @@ const useQuestionsData = () => {
 			});
 	};
 
+	/**
+	 * 質疑応答情報を更新する
+	 * @param questionIndex 質疑応答情報のID
+	 * @param updatedQandA 更新する質疑応答情報
+	 */
+	const updateQandA = async (
+		questionIndex: number,
+		payload: UpdateAnswerPayload
+	) => {
+		try {
+			return await axios
+				.put(
+					`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/${questionIndex}/answer`,
+					{
+						questionText: payload.questionText,
+						answerText: payload.answerText,
+						isShared: payload.isShared,
+						intentName: payload.intentName,
+					}
+				)
+				.then((response: AxiosResponse<Questions>) => {
+					const { data } = response;
+					return data;
+				})
+				.catch((error: AxiosError) => {
+					alert("サーバーでエラーが発生しました．(DB 回答追加)");
+					throw new Error(error.message);
+				});
+		} catch (e) {
+			console.error(e);
+		}
+	};
+
+	const updateQuestionsCallback = async (
+		questionIndex: number,
+		question: Question
+	) => {
+		if (!questions[questionIndex]) return;
+		await setQuestions({ ...questions, [questionIndex]: question });
+		sessionStorage.setItem(
+			STORAGE_KEY_QUESTIONS,
+			JSON.stringify({ ...questions, [questionIndex]: question })
+		);
+	};
+
 	return {
 		questions,
 		isHasMore,
 		getQuestionsDataHandler,
 		getOneQuestionDataHandler,
+		updateQandA,
+		updateQuestionsCallback,
 	};
 };
 

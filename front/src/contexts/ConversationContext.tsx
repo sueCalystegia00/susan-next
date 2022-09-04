@@ -1,18 +1,17 @@
 import type { ReactNode } from "react";
 import { createContext } from "react";
-import type { ConversationMessage, Question } from "@/types/models";
+import type { ConversationMessage } from "@/types/models";
 import useConversationData from "@/hooks/useConversation";
 import { Dispatch, SetStateAction } from "react";
 
 class ConversationContextProps {
 	questionIndex!: number;
-	question!: Question;
 	conversationMessages: ConversationMessage[] = [];
 	getConversationMessages: (questionId: number) => void = () => {
 		//
 	};
-	postText: ConversationMessage["MessageText"] = "";
-	setPostText!: Dispatch<SetStateAction<ConversationMessage["MessageText"]>>;
+	inputtedText: ConversationMessage["MessageText"] = "";
+	setInputtedText!: Dispatch<SetStateAction<ConversationMessage["MessageText"]>>;
 	postImage: File | undefined = undefined;
 	setPostImage!: Dispatch<SetStateAction<File | undefined>>;
 	messageType: ConversationMessage["MessageType"] = "chat";
@@ -34,11 +33,10 @@ export const ConversationContext = createContext<ConversationContextProps>(
 
 type Props = {
 	questionIndex: number;
-	question: Question;
 	children: ReactNode;
 };
 
-const ConversationProvider = ({ questionIndex, question, children }: Props) => {
+const ConversationProvider = ({ questionIndex, children }: Props) => {
 	const {
 		conversationMessages,
 		getConversationMessages,
@@ -50,17 +48,16 @@ const ConversationProvider = ({ questionIndex, question, children }: Props) => {
 		image,
 		setImage,
 		postConversationImage,
-	} = question && useConversationData(questionIndex);
+	} =  useConversationData(questionIndex);
 
 	return (
 		<ConversationContext.Provider
 			value={{
 				questionIndex,
-				question,
 				conversationMessages,
 				getConversationMessages,
-				postText: text,
-				setPostText: setText,
+				inputtedText: text,
+				setInputtedText: setText,
 				postImage: image,
 				setPostImage: setImage,
 				messageType,

@@ -56,8 +56,8 @@ const useConversationData = (questionId: number) => {
 					}
 				)
 				.then((response: AxiosResponse<ConversationMessage>) => {
-					console.info(response);
-					getConversationMessages(questionId);
+					const { status, data } = response;
+					if (status === 201) setConversationMessages([...conversationMessages, data]);
 				});
 		} catch (error: any) {
 			console.error(error);

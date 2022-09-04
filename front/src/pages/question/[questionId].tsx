@@ -4,8 +4,7 @@ import CreateMessageArea from "@/components/CreateMessageArea";
 import MessageTypeSelector from "@/components/MessageTypeSelector";
 import QuestionTextDisplay from "@/components/QuestionTextDisplay";
 import ConversationProvider from "@/contexts/ConversationContext";
-import useQuestions from "@/hooks/useQuestions";
-import type { Question } from "@/types/models";
+import QuestionProvider from "@/contexts/QuestionContext";
 import { useRouter } from "next/router";
 
 /**
@@ -13,31 +12,20 @@ import { useRouter } from "next/router";
  * @description クエリパラメータよりquestionIdを指定する必要がある
  */
 const QuestionDetailsPage = () => {
-	const { questions, getOneQuestionDataHandler } = useQuestions();
 	const router = useRouter();
 	const { questionId } = router.query;
 
-	const question: Question =
-		questions[Number(questionId)] ||
-		getOneQuestionDataHandler(Number(questionId));
-
 	return (
 		<>
-			<QuestionTextDisplay
-				questionText={question.QuestionText}
-				lectureNumber={1}
-			/>
-			{!!question.AnswerText && (
-				<AnswerTextDisplay answerText={question.AnswerText} />
-			)}
-			<ConversationProvider
-				questionIndex={Number(questionId)}
-				question={question}
-			>
-				<ConversationDisplay />
-				<MessageTypeSelector />
-				<CreateMessageArea />
-			</ConversationProvider>
+			<QuestionProvider questionIndex={Number(questionId)}>
+				<QuestionTextDisplay lectureNumber={1} />
+				<AnswerTextDisplay />
+				<ConversationProvider questionIndex={Number(questionId)}>
+					<ConversationDisplay />
+					<MessageTypeSelector />
+					<CreateMessageArea />
+				</ConversationProvider>
+			</QuestionProvider>
 		</>
 	);
 };
