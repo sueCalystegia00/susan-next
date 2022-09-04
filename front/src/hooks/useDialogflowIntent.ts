@@ -3,31 +3,36 @@ import { PostDialogflowIntentPayload } from "@/types/payloads";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { useEffect, useState } from "react";
 
-const useDialogflowIntent = (existedintentName: string | undefined) => {
-	const [intent, setIntent] = useState<DialogflowIntent>(
-		{} as DialogflowIntent
-	);
+const useDialogflowIntent = (
+	questionText: Question["QuestionText"],
+	existedIntentName: DialogflowIntent["intentName"] | undefined
+) => {
+	const [intent, setIntent] = useState<DialogflowIntent>({
+		trainingPhrases: [questionText],
+	} as DialogflowIntent);
 
 	useEffect(() => {
-		!!existedintentName && getIntentData(existedintentName);
+		!!existedIntentName && getIntentData(existedIntentName);
 	}, []);
 
 	/**
 	 * DialogflowのIntentに登録されているトレーニングフレーズを取得する
-	 * TODO: Next.jsのAPI Routesを使って，DialogflowのAPIを叩く
 	 * @param intentName
 	 * @return intent
 	 */
 	const getIntentData = (intentName: string) => {
-		axios
-			.get(`/api/v1/dialogflow?intentName=${intentName}`)
-			.then((response: AxiosResponse) => {
-				setIntent(response.data);
-			})
-			.catch((error: AxiosError) => {
+		try {
+			axios
+				.get(`/api/v1/dialogflow?intentName=${intentName}`)
+				.then((response: AxiosResponse) => {
+					setIntent(response.data);
+				});
+		} catch (error: any) {
+			if (error instanceof AxiosError) {
 				alert("サーバーでエラーが発生しました．");
 				throw new Error(error.message);
-			});
+			}
+		}
 	};
 
 	/**
@@ -55,6 +60,8 @@ const useDialogflowIntent = (existedintentName: string | undefined) => {
 			if (error instanceof AxiosError) {
 				alert("サーバーでエラーが発生しました．(Dialogflow intent更新)");
 				throw new Error(error.message);
+			} else {
+				console.error(error);
 			}
 		}
 	};

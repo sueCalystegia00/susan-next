@@ -39,7 +39,6 @@ export default async function DialogflowIntentHandler(
 			try {
 				const response = !body.intentName
 					? await createQuestionIntent(
-							//TODO: createがエラーになる，updateは動いた
 							Number(body.questionIndex),
 							body.trainingPhrases as DialogflowIntent["trainingPhrases"],
 							body.responseText as DialogflowIntent["responseText"]

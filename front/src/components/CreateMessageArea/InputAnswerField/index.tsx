@@ -24,7 +24,7 @@ const InputAnswerField = () => {
 	const { inputtedText, setInputtedText, postConversationMessage } =
 		useContext(ConversationContext);
 	const { intent, setIntent, postIntent } = useDialogflowIntent(
-		question.IntentName
+		question.QuestionText, question.IntentName
 	);
 
 	useEffect(() => {
@@ -39,7 +39,7 @@ const InputAnswerField = () => {
 	}, [inputtedText]);
 
 	const submitHandler = async () => {
-		setIntent({
+		await setIntent({
 			...intent,
 			trainingPhrases: [question.QuestionText],
 		});
