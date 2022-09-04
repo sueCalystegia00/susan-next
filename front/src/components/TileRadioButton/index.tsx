@@ -1,5 +1,15 @@
 import { TileRadioButtonProps } from "./types";
 
+/**
+ * @param id: ラジオボタンのID
+ * @param name: ラジオボタンのname属性(これを揃えることでグループ化される)
+ * @param value: ラジオボタンのvalue属性
+ * @param imageComponent: ラジオボタンに追加する画像(svg)
+ * @param displayText: ラジオボタンに追加するテキスト
+ * @param onChange: ラジオボタンの変更時のイベントハンドラ
+ * @param defaultCheckedValue: ラジオボタンの初期値
+ * @returns タイル形式のラジオボタン
+ */
 const TileRadioButton = ({
 	id,
 	name,
@@ -10,7 +20,7 @@ const TileRadioButton = ({
 	defaultCheckedValue,
 }: TileRadioButtonProps) => {
 	return (
-		<div>
+		<div className='w-full'>
 			<input
 				type='radio'
 				name={name}

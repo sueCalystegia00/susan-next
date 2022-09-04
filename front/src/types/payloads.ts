@@ -1,4 +1,9 @@
-import { User, ConversationMessage } from "./models";
+import {
+	User,
+	ConversationMessage,
+	DialogflowIntent,
+	Question,
+} from "./models";
 
 export interface PostConversationMessagePayload {
 	index: number;
@@ -12,4 +17,18 @@ export interface PostConversationImagePayload {
 	index: number;
 	userId: User["userUid"];
 	file: File | undefined;
+}
+
+export interface PostDialogflowIntentPayload {
+	questionIndex: number;
+	trainingPhrases: DialogflowIntent["trainingPhrases"];
+	responseText: DialogflowIntent["responseText"];
+	intentName?: DialogflowIntent["intentName"];
+}
+
+export interface UpdateAnswerPayload {
+	questionText: Question["QuestionText"];
+	answerText: Question["AnswerText"];
+	isShared: Question["Shared"];
+	intentName: DialogflowIntent["intentName"];
 }

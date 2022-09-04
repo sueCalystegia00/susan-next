@@ -1,6 +1,13 @@
 import InnerUrlText from "@/components/InnerUrlText";
 import type { MessageProps } from "./types";
 
+/**
+ * @param timestamp: メッセージのタイムスタンプ
+ * @param SenderType: メッセージの送信者の種類
+ * @param MessageType: メッセージの種類
+ * @param MessageText: メッセージのテキスト
+ * @returns 質問対応メッセージ1件分を表示するコンポーネント
+ */
 const Message = ({
 	timestamp,
 	SenderType,
@@ -23,9 +30,7 @@ const Message = ({
 			);
 		case "image":
 			return (
-				<div
-					className={`relative max-w-full p-2 rounded-lg ${senderClass}`}
-				>
+				<div className={`relative max-w-full p-2 rounded-lg ${senderClass}`}>
 					<img
 						src={`https://www2.yoslab.net/${MessageText}`}
 						alt={`${SenderType}'s image message`}

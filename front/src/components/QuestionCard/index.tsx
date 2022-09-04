@@ -2,6 +2,13 @@ import type { QuestionCardProps } from "./types";
 import { useRouter } from "next/router";
 import CheckIcon from "@/assets/task_alt_FILL1_wght400_GRAD0_opsz48.svg";
 
+/**
+ * @param id: 質問のID
+ * @param timestamp: 質問の投稿日時
+ * @param answerStatus: 回答の状態
+ * @param questionText: 質問文
+ * @returns 質問一覧に表示するカードコンポーネント
+ */
 const QuestionCard = ({
 	id,
 	timestamp,

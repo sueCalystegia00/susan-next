@@ -35,4 +35,6 @@ export interface DialogflowIntent {
 	intentName: string;
 	trainingPhrases: string[];
 	responseText: string;
+	displayName: string;
+	priority: number;
 }

@@ -1,5 +1,11 @@
 import { CheckedToggleProps } from "./types";
 
+/**
+ * @param checked: チェックボックスの状態
+ * @param onChange: チェックボックスの状態を変更する関数
+ * @param children: チェックボックスのラベル(spanテキストなど想定)
+ * @returns トグルスイッチ
+ */
 const CheckedToggle = ({ checked, onChange, children }: CheckedToggleProps) => {
 	return (
 		<label
