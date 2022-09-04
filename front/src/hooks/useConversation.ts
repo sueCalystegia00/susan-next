@@ -57,7 +57,8 @@ const useConversationData = (questionId: number) => {
 				)
 				.then((response: AxiosResponse<ConversationMessage>) => {
 					const { status, data } = response;
-					if (status === 201) setConversationMessages([...conversationMessages, data]);
+					if (status === 201)
+						setConversationMessages([...conversationMessages, data]);
 				});
 		} catch (error: any) {
 			console.error(error);
@@ -83,8 +84,9 @@ const useConversationData = (questionId: number) => {
 				}
 			)
 			.then((response: AxiosResponse<ConversationMessage>) => {
-				console.info(response);
-				getConversationMessages(questionId);
+				const { status, data } = response;
+				if (status === 201)
+					setConversationMessages([...conversationMessages, data]);
 			})
 			.catch((error: AxiosError) => {
 				alert("サーバーでエラーが発生しました．");

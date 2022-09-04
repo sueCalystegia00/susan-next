@@ -6,12 +6,14 @@ import { Dispatch, SetStateAction } from "react";
 
 class ConversationContextProps {
 	questionIndex!: number;
-	conversationMessages: ConversationMessage[] = [];
+	conversationMessages!: ConversationMessage[];
 	getConversationMessages: (questionId: number) => void = () => {
 		//
 	};
 	inputtedText: ConversationMessage["MessageText"] = "";
-	setInputtedText!: Dispatch<SetStateAction<ConversationMessage["MessageText"]>>;
+	setInputtedText!: Dispatch<
+		SetStateAction<ConversationMessage["MessageText"]>
+	>;
 	postImage: File | undefined = undefined;
 	setPostImage!: Dispatch<SetStateAction<File | undefined>>;
 	messageType: ConversationMessage["MessageType"] = "chat";
@@ -48,7 +50,7 @@ const ConversationProvider = ({ questionIndex, children }: Props) => {
 		image,
 		setImage,
 		postConversationImage,
-	} =  useConversationData(questionIndex);
+	} = useConversationData(questionIndex);
 
 	return (
 		<ConversationContext.Provider

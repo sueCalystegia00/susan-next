@@ -9,7 +9,7 @@ import Message from "./Message";
 const ConversationDisplay = () => {
 	const { conversationMessages } = useContext(ConversationContext);
 
-	return (
+	return !!conversationMessages && conversationMessages.length > 0 ? (
 		<div className='w-screen flex flex-col items-center gap-y-3 px-4 py-10'>
 			{!conversationMessages.length && <></>}
 			{conversationMessages.map((message, index) => (
@@ -22,6 +22,8 @@ const ConversationDisplay = () => {
 				/>
 			))}
 		</div>
+	) : (
+		<></>
 	);
 };
 
