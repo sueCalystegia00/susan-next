@@ -19,7 +19,6 @@ const InputAnswerField = () => {
 		updateAnswerPayload,
 		setUpdateAnswerPayload,
 		updateQandA,
-		updateQuestionsCallback,
 	} = useContext(QuestionContext);
 	const { inputtedText, setInputtedText, postConversationMessage } =
 		useContext(ConversationContext);
@@ -52,7 +51,6 @@ const InputAnswerField = () => {
 			});
 			await updateQandA(questionIndex, updateAnswerPayload).then((response) => {
 				setQuestion(response![questionIndex] as Question);
-				updateQuestionsCallback(questionIndex, response![questionIndex]);
 			});
 			await postConversationMessage();
 			setInputtedText("");
