@@ -538,6 +538,18 @@
     file-type "^15.0.0"
     form-data "^3.0.0"
 
+"@line/bot-sdk@^7.5.0":
+  version "7.5.0"
+  resolved "https://registry.yarnpkg.com/@line/bot-sdk/-/bot-sdk-7.5.0.tgz#db280e7733bcf990deb893646ba12d4d76b67c85"
+  integrity sha512-1PQW/tlg13olH93Ue+X4LwD4JvTK7JR5k59z2xM/rNNKWINbCigBgvwB0lwqnpQmehN7EvxolkN2aEPoSQ+JGw==
+  dependencies:
+    "@types/body-parser" "^1.19.2"
+    "@types/node" "^14.18.12"
+    axios "^0.21.1"
+    body-parser "^1.20.0"
+    file-type "^15.0.0"
+    form-data "^3.0.0"
+
 "@line/liff-mock@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@line/liff-mock/-/liff-mock-1.0.1.tgz#1c0c80b249f0e6fb23de2b6b2af0b7942031c519"
