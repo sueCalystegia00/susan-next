@@ -1,3 +1,3 @@
 import getLatestContexts from "./getLatestContext";
-
-export { getLatestContexts };
+import postMessageLog from "./postMessageLog";
+export { getLatestContexts, postMessageLog };

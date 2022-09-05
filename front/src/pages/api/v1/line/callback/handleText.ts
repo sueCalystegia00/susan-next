@@ -1,7 +1,7 @@
 import { Client, TextEventMessage } from "@line/bot-sdk";
 import type { TextMessage, EventSource } from "@line/bot-sdk";
 import { config } from "../libs/config";
-import { getLatestContexts } from "../libs/connectDB";
+import { getLatestContexts, postMessageLog } from "../libs/connectDB";
 import { AxiosError } from "axios";
 import { replyText } from "../libs/replyText";
 import { contextLog } from "@/types/models";
@@ -25,6 +25,15 @@ const handleText = async (
 				return contexts.map((context) => pickContextName(context));
 			}
 		);
+		// 受信メッセージをログに保存
+		postMessageLog(
+			source.userId!,
+			event.type,
+			event.text,
+			"student",
+			latestContexts[0]
+		);
+
 		// create a echoing text message
 		const echo: TextMessage[] = [
 			{ type: "text", text: event.text },
