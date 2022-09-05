@@ -1,6 +1,7 @@
 import { Client, TextEventMessage } from "@line/bot-sdk";
 import type { TextMessage, EventSource } from "@line/bot-sdk";
 import { config } from "../libs/config";
+import { getLatestContext } from "../libs/connectDB";
 
 // create LINE SDK client
 const client = new Client(config);
