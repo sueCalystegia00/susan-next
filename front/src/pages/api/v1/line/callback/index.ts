@@ -30,7 +30,7 @@ export default async function LineCallbackHandler(
 			// check signature
 			if (
 				!validateSignature(
-					body,
+					JSON.stringify(body),
 					config.channelSecret,
 					req.headers["x-line-signature"] as string
 				)
