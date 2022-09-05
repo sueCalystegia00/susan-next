@@ -3,11 +3,11 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { v2 } from "@google-cloud/dialogflow";
 
 const intentsClient = new v2.IntentsClient({
-	/* credentials: {
+	credentials: {
 		private_key: process.env.DIALOGFLOW_PRIVATE_KEY!.replace(/\\n/gm, "\n"),
 		client_email: process.env.DIALOGFLOW_CLIENT_EMAIL,
-	}, */
-	keyFilename: process.env.DIALOGFLOW_KEYFILE_PATH,
+	},
+	//keyFilename: process.env.DIALOGFLOW_KEYFILE_PATH,
 	projectId: process.env.DIALOGFLOW_PROJECT_ID,
 });
 const agentPath = intentsClient.projectAgentPath(
