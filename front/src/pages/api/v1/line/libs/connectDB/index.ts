@@ -1,3 +1,3 @@
-import getLatestContext from "./getLatestContext";
+import getLatestContexts from "./getLatestContext";
 
-export { getLatestContext };
+export { getLatestContexts };
