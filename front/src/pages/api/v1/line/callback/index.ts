@@ -33,7 +33,7 @@ export default async function LineCallbackHandler(
 	res: NextApiResponse
 ) {
 	const { method, body } = req;
-	if (method == "GET") {
+	/* if (method == "GET") {
 		res.status(200).json({ message: "active!" });
 		return;
 	}
@@ -51,7 +51,7 @@ export default async function LineCallbackHandler(
 	) {
 		res.status(401).end("Unauthorized");
 		return;
-	}
+	} */
 
 	body.events.map(async (event: WebhookEvent) => {
 		if (event.type !== "message" || event.message.type !== "text") {
