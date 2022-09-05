@@ -1,11 +1,12 @@
 import { Client, TextEventMessage } from "@line/bot-sdk";
 import type { TextMessage, EventSource } from "@line/bot-sdk";
 import { config } from "../libs/config";
-import { getLatestContexts, postMessageLog } from "../libs/connectDB";
+import { postMessageLog } from "../libs/connectDB";
 import { AxiosError } from "axios";
 import { replyText } from "../libs/replyText";
-import { contextLog } from "@/types/models";
+import { DialogflowContext } from "@/types/models";
 import { pickContextName } from "../libs/pickContextName";
+import { detectIntent } from "../../dialogflow/sessions";
 
 // create LINE SDK client
 const client = new Client(config);
@@ -15,29 +16,25 @@ const client = new Client(config);
  */
 const handleText = async (
 	event: TextEventMessage,
+	contexts: DialogflowContext[],
 	replyToken: string,
 	source: EventSource
 ) => {
 	try {
-		// ユーザーの最新のコンテキストを取得
-		const latestContexts = await getLatestContexts(source.userId!).then(
-			(contexts: contextLog[]) => {
-				return contexts.map((context) => pickContextName(context));
-			}
-		);
 		// 受信メッセージをログに保存
 		postMessageLog(
 			source.userId!,
 			event.type,
 			event.text,
 			"student",
-			latestContexts[0]
+			contexts[0]
 		);
+
+		const nlpResult = await detectIntent(event.text, contexts);
 
 		// create a echoing text message
 		const echo: TextMessage[] = [
-			{ type: "text", text: event.text },
-			{ type: "text", text: `context: ${latestContexts[0]}` },
+			{ type: "text", text: JSON.stringify(nlpResult) },
 		];
 		// use reply API
 		await client.replyMessage(replyToken, echo);

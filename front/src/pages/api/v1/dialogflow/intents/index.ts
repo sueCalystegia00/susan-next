@@ -14,10 +14,10 @@ const agentPath = intentsClient.projectAgentPath(
 	process.env.DIALOGFLOW_PROJECT_ID!
 );
 
-export default async function DialogflowIntentHandler(
+const DialogflowIntentHandler = async (
 	req: NextApiRequest,
 	res: NextApiResponse
-) {
+) => {
 	const { method, query, body } = req;
 	switch (method) {
 		case "GET":
@@ -72,7 +72,7 @@ export default async function DialogflowIntentHandler(
 			res.setHeader("Allow", ["GET", "POST"]);
 			res.status(405).end(`Method ${method} Not Allowed`);
 	}
-}
+};
 
 const getIntent = async (intentName: DialogflowIntent["intentName"]) => {
 	const request = {
@@ -199,3 +199,5 @@ const updateQuestionIntent = async (
 		throw new Error(JSON.stringify(error));
 	}
 };
+
+export default DialogflowIntentHandler;

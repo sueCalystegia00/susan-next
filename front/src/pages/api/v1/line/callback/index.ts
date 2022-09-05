@@ -6,6 +6,9 @@ import type { WebhookEvent } from "@line/bot-sdk";
 import handleText from "./handleText";
 import { replyText } from "../libs/replyText";
 import handleFollow from "./handleFollow";
+import { getLatestContexts } from "../libs/connectDB";
+import { DialogflowContext } from "@/types/models";
+import { pickContextName } from "../libs/pickContextName";
 
 export default async function LineCallbackHandler(
 	req: NextApiRequest,
@@ -48,10 +51,21 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 	switch (event.type) {
 		case "message":
 			const message = event.message;
+			// ユーザーの最新のコンテキストを取得
+			const latestContexts = await getLatestContexts(event.source.userId!).then(
+				(contexts: DialogflowContext[]) => {
+					return contexts.map((context) => pickContextName(context));
+				}
+			);
 			switch (message.type) {
 				case "text":
 					return message.text.length < 256
-						? handleText(message, event.replyToken, event.source)
+						? handleText(
+								message,
+								latestContexts,
+								event.replyToken,
+								event.source
+						  )
 						: replyText(
 								event.replyToken,
 								"ごめんなさい．こんなに長い文章はしんどいです😫256文字未満でお願いしていい？"

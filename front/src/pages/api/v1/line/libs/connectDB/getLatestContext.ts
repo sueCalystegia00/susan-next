@@ -1,4 +1,4 @@
-import { contextLog, User } from "@/types/models";
+import { DialogflowContext, User } from "@/types/models";
 import axios, { AxiosError, AxiosResponse } from "axios";
 
 const getLatestContexts = async (userId: User["userUid"]) => {
@@ -6,7 +6,7 @@ const getLatestContexts = async (userId: User["userUid"]) => {
 		.get(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/line/context/${userId}`
 		)
-		.then((response: AxiosResponse<contextLog[]>) => {
+		.then((response: AxiosResponse<DialogflowContext[]>) => {
 			const { data } = response;
 			return data;
 		})

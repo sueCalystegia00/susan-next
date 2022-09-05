@@ -1,4 +1,4 @@
-import type { contextLog, User } from "@/types/models";
+import type { DialogflowContext, User } from "@/types/models";
 import type { EventMessage } from "@line/bot-sdk";
 import axios, { AxiosError, AxiosResponse } from "axios";
 
@@ -7,7 +7,7 @@ const postMessageLog = async (
 	messageType: EventMessage["type"],
 	message: string,
 	userPosition: User["position"] | "bot",
-	context: contextLog
+	context: DialogflowContext
 ) => {
 	return await axios
 		.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/line/message`, {
@@ -15,7 +15,7 @@ const postMessageLog = async (
 			messageType,
 			message,
 			sender: userPosition,
-			contextName: context.contextName,
+			contextName: context.name,
 			lifespanCount: context.lifespanCount,
 		})
 		.then((response: AxiosResponse) => {
