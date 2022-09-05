@@ -34,7 +34,11 @@ const handleText = async (
 
 		// create a echoing text message
 		const echo: TextMessage[] = [
-			{ type: "text", text: JSON.stringify(nlpResult) },
+			{
+				type: "text",
+				text:
+					nlpResult.queryResult!.fulfillmentText || "fulfillmentText is none",
+			},
 		];
 		// use reply API
 		await client.replyMessage(replyToken, echo);
