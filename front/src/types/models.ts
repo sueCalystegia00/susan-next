@@ -39,7 +39,7 @@ export interface DialogflowIntent {
 	priority: number;
 }
 
-export interface contextLog {
-	contextName: string | undefined;
-	lifespanCount: number;
+export interface DialogflowContext {
+	name: string | null;
+	lifespanCount: number | null;
 }

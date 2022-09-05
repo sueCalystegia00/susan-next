@@ -3,21 +3,21 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { v2 } from "@google-cloud/dialogflow";
 
 const intentsClient = new v2.IntentsClient({
-	/* credentials: {
+	credentials: {
 		private_key: process.env.DIALOGFLOW_PRIVATE_KEY!.replace(/\\n/gm, "\n"),
 		client_email: process.env.DIALOGFLOW_CLIENT_EMAIL,
-	}, */
-	keyFilename: process.env.DIALOGFLOW_KEYFILE_PATH,
+	},
+	//keyFilename: process.env.DIALOGFLOW_KEYFILE_PATH,
 	projectId: process.env.DIALOGFLOW_PROJECT_ID,
 });
 const agentPath = intentsClient.projectAgentPath(
 	process.env.DIALOGFLOW_PROJECT_ID!
 );
 
-export default async function DialogflowIntentHandler(
+const DialogflowIntentHandler = async (
 	req: NextApiRequest,
 	res: NextApiResponse
-) {
+) => {
 	const { method, query, body } = req;
 	switch (method) {
 		case "GET":
@@ -72,7 +72,7 @@ export default async function DialogflowIntentHandler(
 			res.setHeader("Allow", ["GET", "POST"]);
 			res.status(405).end(`Method ${method} Not Allowed`);
 	}
-}
+};
 
 const getIntent = async (intentName: DialogflowIntent["intentName"]) => {
 	const request = {
@@ -199,3 +199,5 @@ const updateQuestionIntent = async (
 		throw new Error(JSON.stringify(error));
 	}
 };
+
+export default DialogflowIntentHandler;
