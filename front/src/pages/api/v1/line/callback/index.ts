@@ -1,7 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import Cors from "cors";
 import { Client, validateSignature } from "@line/bot-sdk";
 import type { WebhookEvent, TextMessage } from "@line/bot-sdk";
-import crypto from "crypto";
+
+// CORS のミドルウェアを初期化
+const cors = Cors({
+	methods: ["GET", "HEAD"],
+});
 
 // create LINE SDK config from env variables
 const config = {
@@ -12,28 +17,15 @@ const config = {
 // create LINE SDK client
 const client = new Client(config);
 
-/**
- * Compare x-line-signature request header and the signature
- * @param signature
- * @param body request body
- * @returns boolean
- */
-/* const validateSignature = (signature: string, body: string) => {
-	return (
-		signature ==
-		crypto
-			.createHmac("SHA256", config.channelSecret)
-			.update(body)
-			.digest("base64")
-	);
-}; */
-
 export default async function LineCallbackHandler(
 	req: NextApiRequest,
 	res: NextApiResponse
 ) {
+	// Run the middleware
+	await runMiddleware(req, res, cors);
+
 	const { method, body } = req;
-	/* if (method == "GET") {
+	if (method == "GET") {
 		res.status(200).json({ message: "active!" });
 		return;
 	}
@@ -51,7 +43,7 @@ export default async function LineCallbackHandler(
 	) {
 		res.status(401).end("Unauthorized");
 		return;
-	} */
+	}
 
 	body.events.map(async (event: WebhookEvent) => {
 		if (event.type !== "message" || event.message.type !== "text") {
@@ -67,3 +59,20 @@ export default async function LineCallbackHandler(
 	});
 	res.status(200).end();
 }
+
+// Helper method to wait for a middleware to execute before continuing
+// And to throw an error when an error happens in a middleware
+const runMiddleware = (
+	req: NextApiRequest,
+	res: NextApiResponse,
+	fn: Function
+) => {
+	return new Promise((resolve, reject) => {
+		fn(req, res, (result: any) => {
+			if (result instanceof Error) {
+				return reject(result);
+			}
+			return resolve(result);
+		});
+	});
+};
