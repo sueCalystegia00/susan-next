@@ -35,7 +35,7 @@ export default async function LineCallbackHandler(
 					req.headers["x-line-signature"] as string
 				)
 			) {
-				res.status(400).json({ message: "invalid signature" });
+				res.status(401).json({ message: "invalid signature" });
 				return;
 			}
 			// check request body is not empty
