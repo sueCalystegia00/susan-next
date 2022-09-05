@@ -1,16 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { Client } from "@line/bot-sdk";
-import type { WebhookEvent, TextMessage } from "@line/bot-sdk";
 import { validateSignature } from "../libs/validateSignature";
 import { cors, runMiddleware } from "../libs/cors";
-
-// create LINE SDK config from env variables
-const config = {
-	channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN!,
-	channelSecret: process.env.CHANNEL_SECRET!,
-};
-// create LINE SDK client
-const client = new Client(config);
+import { config } from "../libs/config";
+import type { WebhookEvent } from "@line/bot-sdk";
+import handleText from "./handleText";
+import { replyText } from "../libs/replyText";
+import handleFollow from "./handleFollow";
 
 export default async function LineCallbackHandler(
 	req: NextApiRequest,
@@ -39,20 +34,7 @@ export default async function LineCallbackHandler(
 				return;
 			}
 			// handle webhook body
-			await Promise.all(
-				body.events.map(async (event: WebhookEvent) => {
-					if (event.type !== "message" || event.message.type !== "text") {
-						return;
-					}
-					const replyToken = event.replyToken;
-					const message = event.message.text;
-					const replyMessage: TextMessage = {
-						type: "text",
-						text: message,
-					};
-					await client.replyMessage(replyToken, replyMessage);
-				})
-			);
+			await Promise.all(body.events.map(webhookEventHandler));
 			res.status(200).json({ message: "ok" });
 			break;
 
@@ -61,3 +43,60 @@ export default async function LineCallbackHandler(
 			res.status(405).end(`Method ${method} Not Allowed`);
 	}
 }
+
+const webhookEventHandler = async (event: WebhookEvent) => {
+	switch (event.type) {
+		case "message":
+			const message = event.message;
+			switch (message.type) {
+				case "text":
+					return message.text.length < 256
+						? handleText(message, event.replyToken, event.source)
+						: replyText(
+								event.replyToken,
+								"ごめんなさい．こんなに長い文章はしんどいです😫256文字未満でお願いしていい？"
+						  );
+				// case "image":
+				// 	return handleImage(message, event.replyToken);
+				// case "video":
+				// 	return handleVideo(message, event.replyToken);
+				// case "audio":
+				// 	return handleAudio(message, event.replyToken);
+				// case "location":
+				// 	return handleLocation(message, event.replyToken);
+				// case "sticker":
+				// 	return handleSticker(message, event.replyToken);
+				default:
+					replyText(
+						event.replyToken,
+						"ごめんなさい．まだその種類のメッセージには対応できません😫"
+					);
+					throw new Error(`Unknown message: ${JSON.stringify(message)}`);
+			}
+
+		case "follow":
+			return handleFollow(event.replyToken, event.source);
+
+		// case "unfollow":
+		// 	return console.log(`Unfollowed this bot: ${JSON.stringify(event)}`);
+
+		// case "join":
+		// 	return replyText(event.replyToken, `Joined ${event.source.type}`);
+
+		// case "leave":
+		// 	return console.log(`Left: ${JSON.stringify(event)}`);
+
+		// case "postback":
+		// 	let data = event.postback.data;
+		// 	if (data === "DATE" || data === "TIME" || data === "DATETIME") {
+		// 		data += `(${JSON.stringify(event.postback.params)})`;
+		// 	}
+		// 	return replyText(event.replyToken, `Got postback: ${data}`);
+
+		// case "beacon":
+		// 	return replyText(event.replyToken, `Got beacon: ${event.beacon.hwid}`);
+
+		default:
+			throw new Error(`Unknown event: ${JSON.stringify(event)}`);
+	}
+};
