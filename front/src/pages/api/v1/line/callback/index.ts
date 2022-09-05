@@ -29,7 +29,11 @@ export default async function LineCallbackHandler(
 		res.status(200).json({ message: "active!" });
 		return;
 	}
-	if (method != "POST") {
+	if (method == "POST") {
+		res.status(202).json({ message: "ok" });
+		return;
+	}
+	/* if (method != "POST") {
 		res.setHeader("Allow", ["POST"]);
 		res.status(405).end(`Method ${method} Not Allowed`);
 		return;
@@ -57,7 +61,7 @@ export default async function LineCallbackHandler(
 		};
 		await client.replyMessage(replyToken, replyMessage);
 	});
-	res.status(200).end();
+	res.status(200).end(); */
 }
 
 // Helper method to wait for a middleware to execute before continuing
