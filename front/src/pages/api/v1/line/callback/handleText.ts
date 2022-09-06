@@ -6,7 +6,7 @@ import { AxiosError } from "axios";
 import { replyText } from "../libs/replyText";
 import type { DialogflowContext } from "@/types/models";
 import { pickContextId } from "../libs/pickContextId";
-import { detectIntent } from "@/pages/api/v1/dialogflow/sessions";
+import detectIntent from "../libs/dialogflowNLP";
 
 // create LINE SDK client
 const client = new Client(config);
@@ -30,7 +30,7 @@ const handleText = async (
 			contexts[0]
 		);
 
-		//const nlpResult = await detectIntent(event.text, contexts);
+		const nlpResult = await detectIntent(event.text, contexts);
 
 		// create a echoing text message
 		const echo: TextMessage[] = [
@@ -42,10 +42,10 @@ const handleText = async (
 				type: "text",
 				text: `${JSON.stringify(contexts)}`,
 			},
-			/* {
+			{
 				type: "text",
-				text: `${JSON.stringify(nlpResult)}`,
-			}, */
+				text: `${nlpResult.queryResult?.fulfillmentText || "no text"}`,
+			},
 		];
 		// use reply API
 		await client.replyMessage(replyToken, echo);
