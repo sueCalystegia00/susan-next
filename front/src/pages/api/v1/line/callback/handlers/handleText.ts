@@ -30,7 +30,7 @@ const handleText = async (
 			contexts[0]
 		);
 
-		const nlpResult = await detectIntent(event.text, contexts);
+		//const nlpResult = await detectIntent(event.text, contexts);
 
 		// create a echoing text message
 		const echo: TextMessage[] = [
@@ -38,10 +38,10 @@ const handleText = async (
 				type: "text",
 				text: `${JSON.stringify(event)}`,
 			},
-			{
+			/* {
 				type: "text",
 				text: `${nlpResult.queryResult?.action || "no action"}`,
-			},
+			}, */
 		];
 		// use reply API
 		client.replyMessage(replyToken, echo).then(() => {
