@@ -1,12 +1,12 @@
 import { Client, TextEventMessage } from "@line/bot-sdk";
 import type { TextMessage, EventSource } from "@line/bot-sdk";
-import { config } from "../libs/config";
-import { postMessageLog } from "../libs/connectDB";
+import { config } from "@/pages/api/v1/line/libs/config";
+import { postMessageLog } from "@/pages/api/v1/line/libs/connectDB";
 import { AxiosError } from "axios";
-import { replyText } from "../libs/replyText";
+import { replyText } from "@/pages/api/v1/line/libs/replyText";
 import type { DialogflowContext } from "@/types/models";
-import { pickContextId } from "../libs/pickContextId";
-import { detectIntent } from "@/pages/api/v1/dialogflow/sessions";
+import { pickContextId } from "@/pages/api/v1/line/libs/pickContextId";
+import { detectIntent } from "@/pages/api/v1/dialogflow/sessions/detectIntent";
 
 // create LINE SDK client
 const client = new Client(config);
@@ -30,7 +30,7 @@ const handleText = async (
 			contexts[0]
 		);
 
-		//const nlpResult = await detectIntent(event.text, contexts);
+		const nlpResult = await detectIntent(event.text, contexts);
 
 		// create a echoing text message
 		const echo: TextMessage[] = [
@@ -42,10 +42,10 @@ const handleText = async (
 				type: "text",
 				text: `${JSON.stringify(contexts)}`,
 			},
-			/* {
+			{
 				type: "text",
 				text: `${JSON.stringify(nlpResult)}`,
-			}, */
+			},
 		];
 		// use reply API
 		await client.replyMessage(replyToken, echo);

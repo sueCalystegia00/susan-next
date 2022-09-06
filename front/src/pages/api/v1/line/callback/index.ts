@@ -3,9 +3,8 @@ import { validateSignature } from "../libs/validateSignature";
 import { cors, runMiddleware } from "../libs/cors";
 import { config } from "../libs/config";
 import type { WebhookEvent } from "@line/bot-sdk";
-import handleText from "./handleText";
+import { handleFollow, handleText } from "./handlers";
 import { replyText } from "../libs/replyText";
-import handleFollow from "./handleFollow";
 import { getLatestContexts } from "../libs/connectDB";
 import { DialogflowContext } from "@/types/models";
 import { pickContextId } from "../libs/pickContextId";
@@ -62,7 +61,12 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 					case "text":
 						if (message.text.length > 256)
 							throw new RangeError(`${message.text.length}`); // 文字数オーバー
-						return handleText(message, latestContexts, event.replyToken, event.source);
+						return handleText(
+							message,
+							latestContexts,
+							event.replyToken,
+							event.source
+						);
 					// case "image":
 					// 	return handleImage(message, event.replyToken);
 					// case "video":

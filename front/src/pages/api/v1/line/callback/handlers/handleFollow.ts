@@ -1,7 +1,7 @@
 import { Client } from "@line/bot-sdk";
 import type { EventSource } from "@line/bot-sdk";
-import { config } from "../libs/config";
-import { followFlexMessage } from "../libs/flexMessages";
+import { config } from "@/pages/api/v1/line/libs/config";
+import { followFlexMessage } from "@/pages/api/v1/line/libs/flexMessages";
 
 // create LINE SDK client
 const client = new Client(config);
