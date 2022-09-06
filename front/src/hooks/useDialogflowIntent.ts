@@ -23,7 +23,7 @@ const useDialogflowIntent = (
 	const getIntentData = (intentName: string) => {
 		try {
 			axios
-				.get(`/api/v1/dialogflow?intentName=${intentName}`)
+				.get(`/api/v1/dialogflow/intents?intentName=${intentName}`)
 				.then((response: AxiosResponse) => {
 					setIntent(response.data);
 				});
@@ -42,7 +42,7 @@ const useDialogflowIntent = (
 		try {
 			return await axios
 				.post(
-					`/api/v1/dialogflow${
+					`/api/v1/dialogflow/intents${
 						intent?.intentName ? "?intentName=" + intent.intentName : ""
 					}`,
 					{

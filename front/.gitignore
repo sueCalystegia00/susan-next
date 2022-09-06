@@ -30,7 +30,6 @@ yarn-error.log*
 .env.development
 .env.production
 .env.test.local
-susanbotdialogflowagent-u9qh-7187c420010a.json
 
 # vercel
 .vercel

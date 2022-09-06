@@ -38,3 +38,8 @@ export interface DialogflowIntent {
 	displayName: string;
 	priority: number;
 }
+
+export interface DialogflowContext {
+	name: string | null;
+	lifespanCount: number | null;
+}
