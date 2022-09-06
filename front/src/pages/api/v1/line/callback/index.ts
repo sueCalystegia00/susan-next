@@ -43,16 +43,7 @@ const LineCallbackHandler = async (
 						await webhookEventHandler(event);
 					} catch (error: any) {
 						console.error(error);
-						if ("replyToken" in event) {
-							replyText(
-								event.replyToken,
-								error.message ||
-									"ごめんなさい．エラーが発生しました😫 しばらくしてからもう一度お試しください．"
-							);
-							return res.status(200).end("handled expected error");
-						} else {
-							return res.status(500).end(error.message);
-						}
+						return res.status(500).end(error.message);
 					}
 				})
 			);
@@ -79,17 +70,18 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 			);
 			switch (message.type) {
 				case "text":
-					if (message.text.length > 256)
-						throw new RangeError(
+					if (message.text.length > 256) {
+						return await replyText(
+							event.replyToken,
 							`ごめんなさい．メッセージが長すぎます😫．256文字以下にしてください．(${message.text.length}文字でした)`
 						);
-					await handleText(
+					}
+					return await handleText(
 						message,
 						latestContexts,
 						event.replyToken,
 						event.source
 					);
-					break;
 
 				// case "image":
 				// 	return handleImage(message, event.replyToken);
@@ -103,11 +95,11 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 				// 	return handleSticker(message, event.replyToken);
 
 				default:
-					throw new TypeError(
+					return await replyText(
+						event.replyToken,
 						`ごめんなさい．まだその種類のメッセージ(${message.type})には対応できません😫 `
 					);
 			}
-			break;
 
 		case "follow":
 			return handleFollow(event.replyToken, event.source);
@@ -132,7 +124,14 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 		// 	return replyText(event.replyToken, `Got beacon: ${event.beacon.hwid}`);
 
 		default:
-			throw new Error("予期せぬ入力によりエラーが発生しました😫");
+			if ("replyToken" in event) {
+				return await replyText(
+					event.replyToken,
+					"予期せぬ入力によりエラーが発生しました😫"
+				);
+			} else {
+				throw new Error("unexpected event type");
+			}
 	}
 };
 
