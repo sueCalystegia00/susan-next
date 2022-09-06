@@ -30,14 +30,13 @@ const handleText = async (
 			contexts[0]
 		);
 
-		const nlpResult = await detectIntent(event.text, contexts);
+		//const nlpResult = await detectIntent(event.text, contexts);
 
 		// create a echoing text message
 		const echo: TextMessage[] = [
 			{
 				type: "text",
-				text:
-					nlpResult.queryResult!.fulfillmentText || "fulfillmentText is none",
+				text: /* nlpResult.queryResult!.fulfillmentText ||  */ "fulfillmentText is none",
 			},
 		];
 		// use reply API
