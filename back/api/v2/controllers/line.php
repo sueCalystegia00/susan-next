@@ -73,10 +73,19 @@ class LineController
       $res = $stmt->execute();
 
       if($res){ //成功
-        $contexts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return count($contexts) > 0 
-          ? $contexts
-          : [["contextName" => null, "lifespanCount" => null]];
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if(is_array($data) && empty($data)){
+          return [["contextName" => null, "lifespanCount" => null]];
+        }else{
+          $contexts = [];
+          foreach($data as $context){
+            $contexts[] = [
+              "name" => $context["contextName"],
+              "lifespanCount" => $context["lifespanCount"]
+            ];
+          }
+          return $contexts;
+        }
 
       }else{ //失敗
         $log_message = print_r(date("Y/m/d H:i:s"), true)."\n".

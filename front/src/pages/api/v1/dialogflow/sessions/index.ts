@@ -60,8 +60,8 @@ export const detectIntent = async (
 	);
 
 	const inputContexts = contexts.reduce((acc, cur) => {
-		if (!cur.name) return acc;
-		if (cur.name == "__system_counters__") return acc;
+		if (!cur.name || cur.name == "__system_counters__") return acc;
+		cur.name = sessionPath + "/contexts/" + cur.name;
 		acc.push(cur);
 		return acc;
 	}, [] as DialogflowContext[]);

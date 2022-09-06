@@ -1,4 +1,4 @@
-import { DialogflowContext, User } from "@/types/models";
+import type { DialogflowContext, User } from "@/types/models";
 import axios, { AxiosError, AxiosResponse } from "axios";
 
 const getLatestContexts = async (userId: User["userUid"]) => {
