@@ -1,5 +1,4 @@
 import { DialogflowContext } from "@/types/models";
-import createUniqueString from "@/utils/createUniqueString";
 import { v2 } from "@google-cloud/dialogflow";
 
 const sessionsClient = new v2.SessionsClient({
@@ -13,15 +12,17 @@ const sessionsClient = new v2.SessionsClient({
 const languageCode = "ja-JP";
 
 /**
+ * @param uniqueId sessionIDとして使用する一意のID(expected: LINE Message ID)
  * @param inputText ユーザーの発話
  * @param contexts ユーザーの最新のコンテキスト
  * @returns Dialogflowからのレスポンス(NLP解析結果)
  */
 export const detectIntent = async (
+	uniqueId: string,
 	inputText: string,
 	contexts: DialogflowContext[]
 ) => {
-	const sessionId = createUniqueString();
+	const sessionId = uniqueId;
 	const sessionPath = sessionsClient.projectAgentSessionPath(
 		process.env.DIALOGFLOW_PROJECT_ID!,
 		sessionId
@@ -46,12 +47,6 @@ export const detectIntent = async (
 			contexts: inputContexts.length > 0 ? inputContexts : null,
 		},
 	};
-	console.log(request);
-	try {
-		const [response] = await sessionsClient.detectIntent(request);
-		return response;
-	} catch (error) {
-		console.log(error);
-		throw new Error("Dialogflowのエラー");
-	}
+	const [response] = await sessionsClient.detectIntent(request);
+	return response;
 };
