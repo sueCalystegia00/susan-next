@@ -8,7 +8,7 @@ import { replyText } from "../libs/replyText";
 import handleFollow from "./handleFollow";
 import { getLatestContexts } from "../libs/connectDB";
 import { DialogflowContext } from "@/types/models";
-import { pickContextName } from "../libs/pickContextName";
+import { pickContextId } from "../libs/pickContextId";
 
 export default async function LineCallbackHandler(
 	req: NextApiRequest,
@@ -54,7 +54,7 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 			// ユーザーの最新のコンテキストを取得
 			const latestContexts = await getLatestContexts(event.source.userId!).then(
 				(contexts: DialogflowContext[]) => {
-					return contexts.map((context) => pickContextName(context));
+					return contexts.map((context) => pickContextId(context));
 				}
 			);
 			switch (message.type) {

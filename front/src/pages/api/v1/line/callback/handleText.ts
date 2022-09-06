@@ -5,7 +5,7 @@ import { postMessageLog } from "../libs/connectDB";
 import { AxiosError } from "axios";
 import { replyText } from "../libs/replyText";
 import { DialogflowContext } from "@/types/models";
-import { pickContextName } from "../libs/pickContextName";
+import { pickContextId } from "../libs/pickContextId";
 import { detectIntent } from "../../dialogflow/sessions";
 
 // create LINE SDK client
@@ -30,17 +30,13 @@ const handleText = async (
 			contexts[0]
 		);
 
-		//const nlpResult = await detectIntent(event.text, contexts);
+		const nlpResult = await detectIntent(event.text, contexts);
 
 		// create a echoing text message
 		const echo: TextMessage[] = [
 			{
 				type: "text",
-				text: `${JSON.stringify(event)}`,
-			},
-			{
-				type: "text",
-				text: `${JSON.stringify(contexts)}`,
+				text: `${JSON.stringify(nlpResult)}`,
 			},
 		];
 		// use reply API
