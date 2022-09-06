@@ -1,6 +1,6 @@
 import { Client, TextEventMessage } from "@line/bot-sdk";
 import type { TextMessage, EventSource } from "@line/bot-sdk";
-import { config } from "@/pages/api/v1/line/libs/config";
+import { linebotConfig } from "@/pages/api/v1/line/libs/linebotConfig";
 import { postMessageLog } from "@/pages/api/v1/line/libs/connectDB";
 import { AxiosError } from "axios";
 import { replyText } from "@/pages/api/v1/line/libs/replyText";
@@ -9,7 +9,7 @@ import { pickContextId } from "@/pages/api/v1/line/libs/pickContextId";
 import { detectIntent } from "@/pages/api/v1/dialogflow/sessions/detectIntent";
 
 // create LINE SDK client
-const client = new Client(config);
+const client = new Client(linebotConfig);
 
 /**
  * LINEbotのテキストメッセージを受け取ったときの処理

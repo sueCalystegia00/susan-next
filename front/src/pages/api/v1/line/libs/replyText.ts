@@ -1,8 +1,8 @@
 import { Client } from "@line/bot-sdk";
-import { config } from "../libs/config";
+import { linebotConfig } from "./linebotConfig";
 
 // create LINE SDK client
-const client = new Client(config);
+const client = new Client(linebotConfig);
 
 // simple reply function
 export const replyText = (token: string, texts: string | string[]) => {

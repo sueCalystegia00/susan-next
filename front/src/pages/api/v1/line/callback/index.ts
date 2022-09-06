@@ -1,20 +1,28 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { validateSignature } from "../libs/validateSignature";
-import { cors, runMiddleware } from "../libs/cors";
-import { config } from "../libs/config";
+import runMiddleware from "../libs/runMiddleware";
+import { linebotConfig } from "../libs/linebotConfig";
 import type { WebhookEvent } from "@line/bot-sdk";
+import { middleware } from "@line/bot-sdk";
 import { handleFollow, handleText } from "./handlers";
 import { replyText } from "../libs/replyText";
 import { getLatestContexts } from "../libs/connectDB";
 import { DialogflowContext } from "@/types/models";
 import { pickContextId } from "../libs/pickContextId";
 
-export default async function LineCallbackHandler(
+// ref: https://nextjs.org/docs/api-routes/api-middlewares#custom-config
+export const config = {
+	api: {
+		bodyParser: false,
+	},
+};
+
+const LineCallbackHandler = async (
 	req: NextApiRequest,
 	res: NextApiResponse
-) {
+) => {
 	// Run the middleware
-	//await runMiddleware(req, res, cors);
+	await runMiddleware(req, res, middleware(linebotConfig));
 
 	const { method, body } = req;
 	switch (method) {
@@ -28,27 +36,39 @@ export default async function LineCallbackHandler(
 			if (
 				!validateSignature(
 					JSON.stringify(body),
-					config.channelSecret,
+					linebotConfig.channelSecret,
 					req.headers["x-line-signature"] as string
 				)
 			) {
 				res.status(400).json({ message: "invalid signature" });
 				return;
 			}
+
+			const events: WebhookEvent[] = req.body.events;
 			// handle webhook body
-			Promise.all(body.events.map(webhookEventHandler))
-				.then(() => res.status(200).end())
-				.catch((error) => {
-					console.error(error);
-					res.status(500).end();
-				});
-			break;
+			const results = await Promise.all(
+				events.map(async (event: WebhookEvent) => {
+					try {
+						await webhookEventHandler(event);
+					} catch (error) {
+						if (error instanceof Error) {
+							console.error(error);
+						}
+						return res.status(500).json({ message: "internal server error" });
+					}
+				})
+			);
+			return res.status(200).json({
+				status: "success",
+				results,
+			});
 
 		default:
 			res.setHeader("Allow", ["GET", "POST"]);
 			res.status(405).end(`Method ${method} Not Allowed`);
 	}
-}
+};
+export default LineCallbackHandler;
 
 const webhookEventHandler = async (event: WebhookEvent) => {
 	try {
@@ -65,12 +85,13 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 					case "text":
 						if (message.text.length > 256)
 							throw new RangeError(`${message.text.length}`); // 文字数オーバー
-						return handleText(
+						await handleText(
 							message,
 							latestContexts,
 							event.replyToken,
 							event.source
 						);
+						break;
 
 					// case "image":
 					// 	return handleImage(message, event.replyToken);
