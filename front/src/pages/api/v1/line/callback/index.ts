@@ -1,6 +1,6 @@
 import type { DialogflowContext } from "@/types/models";
 import type { NextApiRequest, NextApiResponse } from "next";
-import type { WebhookEvent } from "@line/bot-sdk";
+import { SignatureValidationFailed, WebhookEvent } from "@line/bot-sdk";
 import { handleFollow, handleText } from "./handlers";
 import { middleware, runMiddleware, replyText, pickContextId } from "../libs";
 import { getLatestContexts } from "../libs/connectDB";
@@ -40,9 +40,11 @@ const LineCallbackHandler = async (
 								error.message ||
 									"ごめんなさい．エラーが発生しました😫 しばらくしてからもう一度お試しください．"
 							);
-							return res.status(200).end();
+							return res.status(200).end("handled expected error");
+						} else if (error instanceof SignatureValidationFailed) {
+							return res.status(401).end("invalid signature");
 						} else {
-							return res.status(500).json({ message: "internal server error" });
+							return res.status(500).end(error.message);
 						}
 					}
 				})
