@@ -1,5 +1,5 @@
 import { Client } from "@line/bot-sdk";
-import { linebotConfig } from "./linebotConfig";
+import linebotConfig from "./linebotConfig";
 
 // create LINE SDK client
 const client = new Client(linebotConfig);

@@ -1,14 +1,9 @@
-import { DialogflowContext } from "@/types/models";
+import type { DialogflowContext } from "@/types/models";
 import type { NextApiRequest, NextApiResponse } from "next";
 import type { WebhookEvent } from "@line/bot-sdk";
-import { middleware } from "@line/bot-sdk";
 import { handleFollow, handleText } from "./handlers";
-import { validateSignature } from "../libs/validateSignature";
-import runMiddleware from "../libs/runMiddleware";
-import { linebotConfig } from "../libs/linebotConfig";
-import { replyText } from "../libs/replyText";
+import { middleware, runMiddleware, replyText, pickContextId } from "../libs";
 import { getLatestContexts } from "../libs/connectDB";
-import { pickContextId } from "../libs/pickContextId";
 
 // ref: https://nextjs.org/docs/api-routes/api-middlewares#custom-config
 export const config = {
@@ -21,9 +16,6 @@ const LineCallbackHandler = async (
 	req: NextApiRequest,
 	res: NextApiResponse
 ) => {
-	// Run the middleware
-	await runMiddleware(req, res, middleware(linebotConfig));
-
 	const { method, body } = req;
 	switch (method) {
 		case "GET":
@@ -32,19 +24,10 @@ const LineCallbackHandler = async (
 			break;
 
 		case "POST":
-			// check signature
-			if (
-				!validateSignature(
-					JSON.stringify(body),
-					linebotConfig.channelSecret,
-					req.headers["x-line-signature"] as string
-				)
-			) {
-				res.status(400).json({ message: "invalid signature" });
-				return;
-			}
+			// Run the middleware
+			await runMiddleware(req, res, middleware);
 
-			const events: WebhookEvent[] = req.body.events;
+			const events: WebhookEvent[] = body.events;
 			// handle webhook body
 			const results = await Promise.all(
 				events.map(async (event: WebhookEvent) => {

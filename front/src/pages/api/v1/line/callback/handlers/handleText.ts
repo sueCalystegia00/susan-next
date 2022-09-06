@@ -1,10 +1,9 @@
 import { Client, TextEventMessage } from "@line/bot-sdk";
 import type { TextMessage, EventSource } from "@line/bot-sdk";
-import { linebotConfig } from "@/pages/api/v1/line/libs/linebotConfig";
+import { linebotConfig, pickContextId } from "@/pages/api/v1/line/libs";
 import { postMessageLog } from "@/pages/api/v1/line/libs/connectDB";
 import { AxiosError } from "axios";
 import type { DialogflowContext } from "@/types/models";
-import { pickContextId } from "@/pages/api/v1/line/libs/pickContextId";
 import { detectIntent } from "@/pages/api/v1/dialogflow/sessions/detectIntent";
 
 // create LINE SDK client
