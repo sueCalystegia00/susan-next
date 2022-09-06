@@ -36,9 +36,10 @@ export default async function LineCallbackHandler(
 				return;
 			}
 			// handle webhook body
-			Promise.all(body.events.map(webhookEventHandler))
+			body.events
+				.map(webhookEventHandler)
 				.then(() => res.status(200).end())
-				.catch((error) => {
+				.catch((error: any) => {
 					console.error(error);
 					res.status(500).end();
 				});
