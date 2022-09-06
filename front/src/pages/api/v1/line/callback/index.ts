@@ -1,132 +1,147 @@
+import type { DialogflowContext } from "@/types/models";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { validateSignature } from "../libs/validateSignature";
-import { cors, runMiddleware } from "../libs/cors";
-import { config } from "../libs/config";
-import type { WebhookEvent } from "@line/bot-sdk";
+import { SignatureValidationFailed, WebhookEvent } from "@line/bot-sdk";
 import { handleFollow, handleText } from "./handlers";
-import { replyText } from "../libs/replyText";
+import { middleware, runMiddleware, replyText, pickContextId } from "../libs";
 import { getLatestContexts } from "../libs/connectDB";
-import { DialogflowContext } from "@/types/models";
-import { pickContextId } from "../libs/pickContextId";
 
-export default async function LineCallbackHandler(
+// ref: https://nextjs.org/docs/api-routes/api-middlewares#custom-config
+export const config = {
+	api: {
+		bodyParser: false,
+	},
+};
+
+const LineCallbackHandler = async (
 	req: NextApiRequest,
 	res: NextApiResponse
-) {
-	// Run the middleware
-	await runMiddleware(req, res, cors);
-
-	const { method, body } = req;
-	switch (method) {
+) => {
+	switch (req.method) {
 		case "GET":
 			// check this api is alive
 			res.status(200).json({ message: "active!" });
 			break;
 
 		case "POST":
-			// check signature
-			if (
-				!validateSignature(
-					JSON.stringify(body),
-					config.channelSecret,
-					req.headers["x-line-signature"] as string
-				)
-			) {
-				res.status(400).json({ message: "invalid signature" });
-				return;
+			// Run the middleware
+			try {
+				await runMiddleware(req, res, middleware);
+			} catch (error: unknown) {
+				console.error(error);
+				if (error instanceof SignatureValidationFailed) {
+					return res.status(401).end("invalid signature");
+				} else {
+					return res.status(500).end("something went wrong");
+				}
 			}
-			// handle webhook body
-			body.events.map(webhookEventHandler);
-			res.status(200).json({ message: "ok" });
 
-			break;
+			// handle webhook body
+			const events: WebhookEvent[] = req.body.events;
+			const results = await Promise.all(
+				events.map(async (event: WebhookEvent) => {
+					try {
+						await webhookEventHandler(event);
+					} catch (error: any) {
+						console.error(error);
+						res.status(500).end(error.message);
+					}
+				})
+			);
+			return res.status(200).json({
+				status: "success",
+				results,
+			});
 
 		default:
 			res.setHeader("Allow", ["GET", "POST"]);
-			res.status(405).end(`Method ${method} Not Allowed`);
+			res.status(405).end(`Method ${req.method} Not Allowed`);
 	}
-}
+};
 
 const webhookEventHandler = async (event: WebhookEvent) => {
-	try {
-		switch (event.type) {
-			case "message":
-				const message = event.message;
-				// ユーザーの最新のコンテキストを取得
-				const latestContexts = await getLatestContexts(
-					event.source.userId!
-				).then((contexts: DialogflowContext[]) => {
+	switch (event.type) {
+		case "message":
+			const message = event.message;
+			// ユーザーの最新のコンテキストを取得
+			const latestContexts = await getLatestContexts(event.source.userId!).then(
+				(contexts: DialogflowContext[]) => {
 					return contexts.map((context) => pickContextId(context));
-				});
-				switch (message.type) {
-					case "text":
-						if (message.text.length > 256)
-							throw new RangeError(`${message.text.length}`); // 文字数オーバー
-						return handleText(
+				}
+			);
+			switch (message.type) {
+				case "text":
+					if (message.text.length > 256) {
+						await replyText(
+							event.replyToken,
+							`ごめんなさい．メッセージが長すぎます😫．256文字以下にしてください．(${message.text.length}文字でした)`
+						);
+					} else {
+						await handleText(
 							message,
 							latestContexts,
 							event.replyToken,
 							event.source
 						);
+					}
+					break;
 
-					// case "image":
-					// 	return handleImage(message, event.replyToken);
-					// case "video":
-					// 	return handleVideo(message, event.replyToken);
-					// case "audio":
-					// 	return handleAudio(message, event.replyToken);
-					// case "location":
-					// 	return handleLocation(message, event.replyToken);
-					// case "sticker":
-					// 	return handleSticker(message, event.replyToken);
+				// case "image":
+				// 	return handleImage(message, event.replyToken);
+				// case "video":
+				// 	return handleVideo(message, event.replyToken);
+				// case "audio":
+				// 	return handleAudio(message, event.replyToken);
+				// case "location":
+				// 	return handleLocation(message, event.replyToken);
+				// case "sticker":
+				// 	return handleSticker(message, event.replyToken);
 
-					default:
-						throw new ReferenceError(`${event.type}`);
-				}
+				default:
+					await replyText(
+						event.replyToken,
+						`ごめんなさい．まだその種類のメッセージ(${message.type})には対応できません😫 `
+					);
+			}
+			break;
 
-			case "follow":
-				return handleFollow(event.replyToken, event.source);
+		case "follow":
+			await handleFollow(event.replyToken, event.source);
+			break;
 
-			// case "unfollow":
-			// 	return console.log(`Unfollowed this bot: ${JSON.stringify(event)}`);
+		// case "unfollow":
+		// 	console.log(`Unfollowed this bot: ${JSON.stringify(event)}`);
+		// 	break;
 
-			// case "join":
-			// 	return replyText(event.replyToken, `Joined ${event.source.type}`);
+		// case "join":
+		// 	await replyText(event.replyToken, `Joined ${event.source.type}`);
+		// 	break;
 
-			// case "leave":
-			// 	return console.log(`Left: ${JSON.stringify(event)}`);
+		// case "leave":
+		// 	console.log(`Left: ${JSON.stringify(event)}`);
+		// 	break;
 
-			// case "postback":
-			// 	let data = event.postback.data;
-			// 	if (data === "DATE" || data === "TIME" || data === "DATETIME") {
-			// 		data += `(${JSON.stringify(event.postback.params)})`;
-			// 	}
-			// 	return replyText(event.replyToken, `Got postback: ${data}`);
+		// case "postback":
+		// 	let data = event.postback.data;
+		// 	if (data === "DATE" || data === "TIME" || data === "DATETIME") {
+		// 		data += `(${JSON.stringify(event.postback.params)})`;
+		// 	}
+		// 	await replyText(event.replyToken, `Got postback: ${data}`);
+		// 	break;
 
-			// case "beacon":
-			// 	return replyText(event.replyToken, `Got beacon: ${event.beacon.hwid}`);
+		// case "beacon":
+		// 	await replyText(event.replyToken, `Got beacon: ${event.beacon.hwid}`);
+		// 	break;
 
-			default:
-				throw new Error(`Unknown event: ${JSON.stringify(event)}`);
-		}
-	} catch (error) {
-		if (!("replyToken" in event)) return;
-
-		if (error instanceof RangeError) {
-			replyText(
-				event.replyToken,
-				`ごめんなさい．メッセージが長すぎます😫．256文字以下にしてください．(${error.message}文字でした)`
-			);
-		} else if (error instanceof ReferenceError) {
-			replyText(
-				event.replyToken,
-				`ごめんなさい．まだその種類のメッセージには対応できません😫 (${error.message})`
-			);
-		} else {
-			replyText(
-				event.replyToken,
-				"ごめんなさい．エラーが発生しました😫 しばらくしてからもう一度お試しください．"
-			);
-		}
+		default:
+			if ("replyToken" in event) {
+				await replyText(
+					event.replyToken,
+					"予期せぬ入力によりエラーが発生しました😫"
+				);
+			} else {
+				throw new Error("unexpected event type");
+			}
 	}
 };
+
+export default LineCallbackHandler;

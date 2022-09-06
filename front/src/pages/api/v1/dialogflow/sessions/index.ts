@@ -1,3 +1,4 @@
+import createUniqueString from "@/utils/createUniqueString";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { detectIntent } from "./detectIntent";
 
@@ -14,12 +15,17 @@ const DialogflowSessionsHandler = async (
 				return;
 			}
 			try {
-				const response = await detectIntent(query.inputTexts as string, [
-					{
-						name: query.contextName as string | null,
-						lifespanCount: Number(query.lifespanCount) as number | null,
-					},
-				]);
+				const uniqueId = createUniqueString();
+				const response = await detectIntent(
+					uniqueId,
+					query.inputTexts as string,
+					[
+						{
+							name: query.contextName as string | null,
+							lifespanCount: Number(query.lifespanCount) as number | null,
+						},
+					]
+				);
 				res.status(200).json(response);
 			} catch (error) {
 				res.status(500).json({ error: error });
