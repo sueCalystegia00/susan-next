@@ -40,7 +40,7 @@ const handleText = async (
 			},
 			{
 				type: "text",
-				text: `${nlpResult.queryResult!.fulfillmentText || "no text"}`,
+				text: `${nlpResult.queryResult?.action || "no action"}`,
 			},
 		];
 		// use reply API
