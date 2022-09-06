@@ -1,4 +1,4 @@
-import { Client, TextEventMessage } from "@line/bot-sdk";
+import { Client, EventMessageBase, TextEventMessage } from "@line/bot-sdk";
 import type { TextMessage, EventSource } from "@line/bot-sdk";
 import { linebotConfig, pickContextId } from "@/pages/api/v1/line/libs";
 import { postMessageLog } from "@/pages/api/v1/line/libs/connectDB";
@@ -28,7 +28,7 @@ const handleText = async (
 			contexts[0]
 		);
 
-		const nlpResult = await detectIntent(event.text, contexts);
+		const nlpResult = await detectIntent(event.id, event.text, contexts);
 
 		// create a echoing text message
 		const echo: TextMessage[] = [
