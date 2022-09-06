@@ -71,17 +71,19 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 			switch (message.type) {
 				case "text":
 					if (message.text.length > 256) {
-						return await replyText(
+						await replyText(
 							event.replyToken,
 							`ごめんなさい．メッセージが長すぎます😫．256文字以下にしてください．(${message.text.length}文字でした)`
 						);
+					} else {
+						await handleText(
+							message,
+							latestContexts,
+							event.replyToken,
+							event.source
+						);
 					}
-					return await handleText(
-						message,
-						latestContexts,
-						event.replyToken,
-						event.source
-					);
+					break;
 
 				// case "image":
 				// 	return handleImage(message, event.replyToken);
@@ -95,37 +97,44 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 				// 	return handleSticker(message, event.replyToken);
 
 				default:
-					return await replyText(
+					await replyText(
 						event.replyToken,
 						`ごめんなさい．まだその種類のメッセージ(${message.type})には対応できません😫 `
 					);
 			}
+			break;
 
 		case "follow":
-			return handleFollow(event.replyToken, event.source);
+			await handleFollow(event.replyToken, event.source);
+			break;
 
 		// case "unfollow":
-		// 	return console.log(`Unfollowed this bot: ${JSON.stringify(event)}`);
+		// 	console.log(`Unfollowed this bot: ${JSON.stringify(event)}`);
+		// 	break;
 
 		// case "join":
-		// 	return replyText(event.replyToken, `Joined ${event.source.type}`);
+		// 	await replyText(event.replyToken, `Joined ${event.source.type}`);
+		// 	break;
 
 		// case "leave":
-		// 	return console.log(`Left: ${JSON.stringify(event)}`);
+		// 	console.log(`Left: ${JSON.stringify(event)}`);
+		// 	break;
 
 		// case "postback":
 		// 	let data = event.postback.data;
 		// 	if (data === "DATE" || data === "TIME" || data === "DATETIME") {
 		// 		data += `(${JSON.stringify(event.postback.params)})`;
 		// 	}
-		// 	return replyText(event.replyToken, `Got postback: ${data}`);
+		// 	await replyText(event.replyToken, `Got postback: ${data}`);
+		// 	break;
 
 		// case "beacon":
-		// 	return replyText(event.replyToken, `Got beacon: ${event.beacon.hwid}`);
+		// 	await replyText(event.replyToken, `Got beacon: ${event.beacon.hwid}`);
+		// 	break;
 
 		default:
 			if ("replyToken" in event) {
-				return await replyText(
+				await replyText(
 					event.replyToken,
 					"予期せぬ入力によりエラーが発生しました😫"
 				);

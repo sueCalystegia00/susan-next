@@ -20,7 +20,7 @@ const handleText = async (
 ) => {
 	try {
 		// 受信メッセージをログに保存
-		postMessageLog(
+		await postMessageLog(
 			source.userId!,
 			event.type,
 			event.text,
