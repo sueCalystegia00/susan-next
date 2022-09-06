@@ -3,7 +3,6 @@ import type { TextMessage, EventSource } from "@line/bot-sdk";
 import { linebotConfig } from "@/pages/api/v1/line/libs/linebotConfig";
 import { postMessageLog } from "@/pages/api/v1/line/libs/connectDB";
 import { AxiosError } from "axios";
-import { replyText } from "@/pages/api/v1/line/libs/replyText";
 import type { DialogflowContext } from "@/types/models";
 import { pickContextId } from "@/pages/api/v1/line/libs/pickContextId";
 import { detectIntent } from "@/pages/api/v1/dialogflow/sessions/detectIntent";
@@ -30,7 +29,7 @@ const handleText = async (
 			contexts[0]
 		);
 
-		//const nlpResult = await detectIntent(event.text, contexts);
+		const nlpResult = await detectIntent(event.text, contexts);
 
 		// create a echoing text message
 		const echo: TextMessage[] = [
@@ -38,20 +37,19 @@ const handleText = async (
 				type: "text",
 				text: `${JSON.stringify(event)}`,
 			},
-			/* {
+			{
 				type: "text",
 				text: `${nlpResult.queryResult?.action || "no action"}`,
-			}, */
+			},
 		];
 		// use reply API
-		client.replyMessage(replyToken, echo).then(() => {
-			console.log("success");
-		});
+		client.replyMessage(replyToken, echo);
 	} catch (error) {
+		console.error(error);
 		if (error instanceof AxiosError) {
-			replyText(replyToken, "データベースに接続できませんでした．");
+			throw new Error("データベースへの接続に失敗しました");
 		} else {
-			replyText(replyToken, "エラーが発生しました．");
+			throw new Error("入力文の解析に失敗しました");
 		}
 	}
 };

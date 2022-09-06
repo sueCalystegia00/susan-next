@@ -1,13 +1,13 @@
+import { DialogflowContext } from "@/types/models";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { validateSignature } from "../libs/validateSignature";
-import runMiddleware from "../libs/runMiddleware";
-import { linebotConfig } from "../libs/linebotConfig";
 import type { WebhookEvent } from "@line/bot-sdk";
 import { middleware } from "@line/bot-sdk";
 import { handleFollow, handleText } from "./handlers";
+import { validateSignature } from "../libs/validateSignature";
+import runMiddleware from "../libs/runMiddleware";
+import { linebotConfig } from "../libs/linebotConfig";
 import { replyText } from "../libs/replyText";
 import { getLatestContexts } from "../libs/connectDB";
-import { DialogflowContext } from "@/types/models";
 import { pickContextId } from "../libs/pickContextId";
 
 // ref: https://nextjs.org/docs/api-routes/api-middlewares#custom-config
@@ -50,11 +50,17 @@ const LineCallbackHandler = async (
 				events.map(async (event: WebhookEvent) => {
 					try {
 						await webhookEventHandler(event);
-					} catch (error) {
-						if (error instanceof Error) {
-							console.error(error);
+					} catch (error: any) {
+						if ("replyToken" in event) {
+							replyText(
+								event.replyToken,
+								error.message ||
+									"ごめんなさい．エラーが発生しました😫 しばらくしてからもう一度お試しください．"
+							);
+							return res.status(200).end();
+						} else {
+							return res.status(500).json({ message: "internal server error" });
 						}
-						return res.status(500).json({ message: "internal server error" });
 					}
 				})
 			);
@@ -71,86 +77,70 @@ const LineCallbackHandler = async (
 export default LineCallbackHandler;
 
 const webhookEventHandler = async (event: WebhookEvent) => {
-	try {
-		switch (event.type) {
-			case "message":
-				const message = event.message;
-				// ユーザーの最新のコンテキストを取得
-				const latestContexts = await getLatestContexts(
-					event.source.userId!
-				).then((contexts: DialogflowContext[]) => {
+	switch (event.type) {
+		case "message":
+			const message = event.message;
+			// ユーザーの最新のコンテキストを取得
+			const latestContexts = await getLatestContexts(event.source.userId!).then(
+				(contexts: DialogflowContext[]) => {
 					return contexts.map((context) => pickContextId(context));
-				});
-				switch (message.type) {
-					case "text":
-						if (message.text.length > 256)
-							throw new RangeError(`${message.text.length}`); // 文字数オーバー
-						await handleText(
-							message,
-							latestContexts,
-							event.replyToken,
-							event.source
-						);
-						break;
-
-					// case "image":
-					// 	return handleImage(message, event.replyToken);
-					// case "video":
-					// 	return handleVideo(message, event.replyToken);
-					// case "audio":
-					// 	return handleAudio(message, event.replyToken);
-					// case "location":
-					// 	return handleLocation(message, event.replyToken);
-					// case "sticker":
-					// 	return handleSticker(message, event.replyToken);
-
-					default:
-						throw new ReferenceError(`${event.type}`);
 				}
-
-			case "follow":
-				return handleFollow(event.replyToken, event.source);
-
-			// case "unfollow":
-			// 	return console.log(`Unfollowed this bot: ${JSON.stringify(event)}`);
-
-			// case "join":
-			// 	return replyText(event.replyToken, `Joined ${event.source.type}`);
-
-			// case "leave":
-			// 	return console.log(`Left: ${JSON.stringify(event)}`);
-
-			// case "postback":
-			// 	let data = event.postback.data;
-			// 	if (data === "DATE" || data === "TIME" || data === "DATETIME") {
-			// 		data += `(${JSON.stringify(event.postback.params)})`;
-			// 	}
-			// 	return replyText(event.replyToken, `Got postback: ${data}`);
-
-			// case "beacon":
-			// 	return replyText(event.replyToken, `Got beacon: ${event.beacon.hwid}`);
-
-			default:
-				throw new Error(`Unknown event: ${JSON.stringify(event)}`);
-		}
-	} catch (error) {
-		if (!("replyToken" in event)) return;
-
-		if (error instanceof RangeError) {
-			replyText(
-				event.replyToken,
-				`ごめんなさい．メッセージが長すぎます😫．256文字以下にしてください．(${error.message}文字でした)`
 			);
-		} else if (error instanceof ReferenceError) {
-			replyText(
-				event.replyToken,
-				`ごめんなさい．まだその種類のメッセージには対応できません😫 (${error.message})`
-			);
-		} else {
-			replyText(
-				event.replyToken,
-				"ごめんなさい．エラーが発生しました😫 しばらくしてからもう一度お試しください．"
-			);
-		}
+			switch (message.type) {
+				case "text":
+					if (message.text.length > 256)
+						throw new RangeError(
+							`ごめんなさい．メッセージが長すぎます😫．256文字以下にしてください．(${message.text.length}文字でした)`
+						);
+					await handleText(
+						message,
+						latestContexts,
+						event.replyToken,
+						event.source
+					);
+					break;
+
+				// case "image":
+				// 	return handleImage(message, event.replyToken);
+				// case "video":
+				// 	return handleVideo(message, event.replyToken);
+				// case "audio":
+				// 	return handleAudio(message, event.replyToken);
+				// case "location":
+				// 	return handleLocation(message, event.replyToken);
+				// case "sticker":
+				// 	return handleSticker(message, event.replyToken);
+
+				default:
+					throw new TypeError(
+						`ごめんなさい．まだその種類のメッセージ(${message.type})には対応できません😫 `
+					);
+			}
+			break;
+
+		case "follow":
+			return handleFollow(event.replyToken, event.source);
+
+		// case "unfollow":
+		// 	return console.log(`Unfollowed this bot: ${JSON.stringify(event)}`);
+
+		// case "join":
+		// 	return replyText(event.replyToken, `Joined ${event.source.type}`);
+
+		// case "leave":
+		// 	return console.log(`Left: ${JSON.stringify(event)}`);
+
+		// case "postback":
+		// 	let data = event.postback.data;
+		// 	if (data === "DATE" || data === "TIME" || data === "DATETIME") {
+		// 		data += `(${JSON.stringify(event.postback.params)})`;
+		// 	}
+		// 	return replyText(event.replyToken, `Got postback: ${data}`);
+
+		// case "beacon":
+		// 	return replyText(event.replyToken, `Got beacon: ${event.beacon.hwid}`);
+
+		default:
+			throw new Error("予期せぬ入力によりエラーが発生しました😫");
 	}
 };

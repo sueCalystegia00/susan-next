@@ -46,12 +46,6 @@ export const detectIntent = async (
 			contexts: inputContexts.length > 0 ? inputContexts : null,
 		},
 	};
-	console.log(request);
-	try {
-		const [response] = await sessionsClient.detectIntent(request);
-		return response;
-	} catch (error) {
-		console.log(error);
-		throw new Error("Dialogflowのエラー");
-	}
+	const [response] = await sessionsClient.detectIntent(request);
+	return response;
 };
