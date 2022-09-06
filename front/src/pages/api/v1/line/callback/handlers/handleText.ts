@@ -1,8 +1,4 @@
-import {
-	Client,
-	MessageAPIResponseBase,
-	TextEventMessage,
-} from "@line/bot-sdk";
+import { Client, TextEventMessage } from "@line/bot-sdk";
 import type { TextMessage, EventSource } from "@line/bot-sdk";
 import { config } from "@/pages/api/v1/line/libs/config";
 import { postMessageLog } from "@/pages/api/v1/line/libs/connectDB";
@@ -34,7 +30,7 @@ const handleText = async (
 			contexts[0]
 		);
 
-		//const nlpResult = await detectIntent(event.text, contexts);
+		const nlpResult = await detectIntent(event.text, contexts);
 
 		// create a echoing text message
 		const echo: TextMessage[] = [
@@ -42,10 +38,10 @@ const handleText = async (
 				type: "text",
 				text: `${JSON.stringify(event)}`,
 			},
-			/* {
+			{
 				type: "text",
-				text: `${JSON.stringify(nlpResult)}`,
-			}, */
+				text: `${nlpResult.queryResult!.fulfillmentText || "no text"}`,
+			},
 		];
 		// use reply API
 		client.replyMessage(replyToken, echo).then(() => {

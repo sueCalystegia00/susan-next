@@ -21,11 +21,7 @@ export const detectIntent = async (
 	inputText: string,
 	contexts: DialogflowContext[]
 ) => {
-	return {
-		inputText,
-		contexts,
-	};
-	/* const sessionId = createUniqueString();
+	const sessionId = createUniqueString();
 	const sessionPath = sessionsClient.projectAgentSessionPath(
 		process.env.DIALOGFLOW_PROJECT_ID!,
 		sessionId
@@ -50,6 +46,11 @@ export const detectIntent = async (
 			contexts: inputContexts.length > 0 ? inputContexts : null,
 		},
 	};
-	const [response] = await sessionsClient.detectIntent(request);
-	return response; */
+	try {
+		const [response] = await sessionsClient.detectIntent(request);
+		return response;
+	} catch (error) {
+		console.log(error);
+		throw new Error("Dialogflowのエラー");
+	}
 };

@@ -71,6 +71,7 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 							event.replyToken,
 							event.source
 						);
+
 					// case "image":
 					// 	return handleImage(message, event.replyToken);
 					// case "video":
@@ -81,6 +82,7 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 					// 	return handleLocation(message, event.replyToken);
 					// case "sticker":
 					// 	return handleSticker(message, event.replyToken);
+
 					default:
 						throw new ReferenceError(`${event.type}`);
 				}
