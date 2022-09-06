@@ -43,7 +43,7 @@ const LineCallbackHandler = async (
 						await webhookEventHandler(event);
 					} catch (error: any) {
 						console.error(error);
-						return res.status(500).end(error.message);
+						res.status(500).end(error.message);
 					}
 				})
 			);
