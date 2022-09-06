@@ -1,6 +1,7 @@
 import { DialogflowContext } from "@/types/models";
 import createUniqueString from "@/utils/createUniqueString";
 import { v2 } from "@google-cloud/dialogflow";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 const sessionsClient = new v2.SessionsClient({
 	credentials: {
@@ -12,6 +13,45 @@ const sessionsClient = new v2.SessionsClient({
 });
 const languageCode = "ja-JP";
 
+// 動作確認用API
+const DialogflowSessionsHandler = async (
+	req: NextApiRequest,
+	res: NextApiResponse
+) => {
+	const { method, query } = req;
+	switch (method) {
+		case "GET":
+			if (!query.inputTexts) {
+				res.status(400).json({ error: "inputTexts is required" });
+				return;
+			}
+			try {
+				const response = await detectIntent(
+					query.inputTexts as string,
+					query.contextName
+						? ([
+								{ name: query.contextName as string, lifespanCount: 1 },
+						  ] as DialogflowContext[])
+						: []
+				);
+				res.status(200).json(response);
+			} catch (error) {
+				res.status(500).json({ error: error });
+			}
+			break;
+
+		default:
+			res.setHeader("Allow", ["GET"]);
+			res.status(405).end(`Method ${method} Not Allowed`);
+	}
+};
+export default DialogflowSessionsHandler;
+
+/**
+ * @param inputText ユーザーの発話
+ * @param contexts ユーザーの最新のコンテキスト
+ * @returns Dialogflowからのレスポンス(NLP解析結果)
+ */
 export const detectIntent = async (
 	inputText: string,
 	contexts: DialogflowContext[]
@@ -20,6 +60,12 @@ export const detectIntent = async (
 		process.env.DIALOGFLOW_PROJECT_ID!,
 		createUniqueString()
 	);
+
+	const inputContexts = contexts.reduce((acc, cur) => {
+		!!cur.name && cur.name != "__system_counters__" && acc.push(cur);
+		return acc;
+	}, [] as DialogflowContext[]);
+
 	const request = {
 		session: sessionPath,
 		queryInput: {
@@ -29,13 +75,7 @@ export const detectIntent = async (
 			},
 		},
 		queryParams: {
-			contexts:
-				contexts.length > 0
-					? contexts.reduce((acc, cur) => {
-							cur.name != "__system_counters__" && acc.push(cur);
-							return acc;
-					  }, [] as DialogflowContext[])
-					: null,
+			contexts: inputContexts.length > 0 ? inputContexts : null,
 		},
 	};
 
