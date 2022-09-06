@@ -22,13 +22,13 @@ const handleText = async (
 ) => {
 	try {
 		// 受信メッセージをログに保存
-		/* postMessageLog(
+		postMessageLog(
 			source.userId!,
 			event.type,
 			event.text,
 			"student",
-			contexts[0]
-		); */
+			contexts.length ? contexts[0] : { name: undefined, lifespanCount: undefined }
+		);
 
 		//const nlpResult = await detectIntent(event.text, contexts);
 

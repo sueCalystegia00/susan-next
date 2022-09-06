@@ -162,9 +162,7 @@ class LineController
         if(!array_key_exists("userId",$post) ||
           !array_key_exists("messageType",$post) ||
           !array_key_exists("message",$post) ||
-          !array_key_exists("sender",$post) ||
-          !array_key_exists("contextName",$post) ||
-          !array_key_exists("lifespanCount",$post)
+          !array_key_exists("sender",$post)
         ){
           $this->code = 400;
           return ["error" => [

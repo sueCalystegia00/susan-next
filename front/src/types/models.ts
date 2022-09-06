@@ -41,5 +41,5 @@ export interface DialogflowIntent {
 
 export interface DialogflowContext {
 	name: string | undefined;
-	lifespanCount: number;
+	lifespanCount: number | undefined;
 }
