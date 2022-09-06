@@ -78,7 +78,7 @@ export const detectIntent = async (
 			contexts: inputContexts.length > 0 ? inputContexts : null,
 		},
 	};
-
-	const [response] = await sessionsClient.detectIntent(request);
-	return response;
+	return request;
+	/* const [response] = await sessionsClient.detectIntent(request);
+	return response; */
 };
