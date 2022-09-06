@@ -27,7 +27,7 @@ const handleText = async (
 			event.type,
 			event.text,
 			"student",
-			contexts.length ? contexts[0] : { name: undefined, lifespanCount: undefined }
+			contexts[0]
 		);
 
 		//const nlpResult = await detectIntent(event.text, contexts);

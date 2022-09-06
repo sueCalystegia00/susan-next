@@ -15,8 +15,8 @@ const postMessageLog = async (
 			messageType,
 			message,
 			sender: userPosition,
-			contextName: context.name || null,
-			lifespanCount: context.lifespanCount || null,
+			contextName: context.name,
+			lifespanCount: context.lifespanCount,
 		})
 		.then((response: AxiosResponse) => {
 			const { status } = response;
