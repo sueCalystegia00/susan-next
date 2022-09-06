@@ -8,6 +8,7 @@ import { replyText } from "../libs/replyText";
 import { getLatestContexts } from "../libs/connectDB";
 import { DialogflowContext } from "@/types/models";
 import { pickContextId } from "../libs/pickContextId";
+import detectIntent from "../libs/dialogflowNLP";
 
 export default async function LineCallbackHandler(
 	req: NextApiRequest,
@@ -65,12 +66,17 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 					case "text":
 						if (message.text.length > 256)
 							throw new RangeError(`${message.text.length}`); // 文字数オーバー
-						return await handleText(
+						const detect = await detectIntent(message.text, latestContexts);
+						await replyText(
+							event.replyToken,
+							detect.queryResult!.fulfillmentText || "エラーが発生しました"
+						);
+					/* return await handleText(
 							message,
 							latestContexts,
 							event.replyToken,
 							event.source
-						);
+						); */
 
 					// case "image":
 					// 	return handleImage(message, event.replyToken);
