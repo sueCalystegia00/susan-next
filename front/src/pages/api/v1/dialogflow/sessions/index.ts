@@ -59,12 +59,12 @@ export const detectIntent = async (
 		createUniqueString()
 	);
 
-	const inputContexts = contexts.reduce((acc, cur) => {
+	/* const inputContexts = contexts.reduce((acc, cur) => {
 		if (!cur.name || cur.name == "__system_counters__") return acc;
 		cur.name = sessionPath + "/contexts/" + cur.name;
 		acc.push(cur);
 		return acc;
-	}, [] as DialogflowContext[]);
+	}, [] as DialogflowContext[]); */
 
 	const request = {
 		session: sessionPath,
@@ -74,11 +74,10 @@ export const detectIntent = async (
 				languageCode: languageCode,
 			},
 		},
-		queryParams: {
+		/* queryParams: {
 			contexts: inputContexts.length > 0 ? inputContexts : null,
-		},
+		}, */
 	};
-	return request;
-	/* const [response] = await sessionsClient.detectIntent(request);
-	return response; */
+	const [response] = await sessionsClient.detectIntent(request);
+	return response;
 };
