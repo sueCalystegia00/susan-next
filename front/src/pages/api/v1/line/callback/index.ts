@@ -16,8 +16,7 @@ const LineCallbackHandler = async (
 	req: NextApiRequest,
 	res: NextApiResponse
 ) => {
-	const { method, body } = req;
-	switch (method) {
+	switch (req.method) {
 		case "GET":
 			// check this api is alive
 			res.status(200).json({ message: "active!" });
@@ -37,7 +36,7 @@ const LineCallbackHandler = async (
 			}
 
 			// handle webhook body
-			const events: WebhookEvent[] = body.events;
+			const events: WebhookEvent[] = req.body.events;
 			const results = await Promise.all(
 				events.map(async (event: WebhookEvent) => {
 					try {
@@ -64,7 +63,7 @@ const LineCallbackHandler = async (
 
 		default:
 			res.setHeader("Allow", ["GET", "POST"]);
-			res.status(405).end(`Method ${method} Not Allowed`);
+			res.status(405).end(`Method ${req.method} Not Allowed`);
 	}
 };
 
