@@ -25,15 +25,25 @@ const LineCallbackHandler = async (
 
 		case "POST":
 			// Run the middleware
-			await runMiddleware(req, res, middleware);
+			try {
+				await runMiddleware(req, res, middleware);
+			} catch (error: unknown) {
+				console.error(error);
+				if (error instanceof SignatureValidationFailed) {
+					return res.status(401).end("invalid signature");
+				} else {
+					return res.status(500).end("something went wrong");
+				}
+			}
 
-			const events: WebhookEvent[] = body.events;
 			// handle webhook body
+			const events: WebhookEvent[] = body.events;
 			const results = await Promise.all(
 				events.map(async (event: WebhookEvent) => {
 					try {
 						await webhookEventHandler(event);
 					} catch (error: any) {
+						console.error(error);
 						if ("replyToken" in event) {
 							replyText(
 								event.replyToken,
@@ -41,8 +51,6 @@ const LineCallbackHandler = async (
 									"ごめんなさい．エラーが発生しました😫 しばらくしてからもう一度お試しください．"
 							);
 							return res.status(200).end("handled expected error");
-						} else if (error instanceof SignatureValidationFailed) {
-							return res.status(401).end("invalid signature");
 						} else {
 							return res.status(500).end(error.message);
 						}
@@ -59,7 +67,6 @@ const LineCallbackHandler = async (
 			res.status(405).end(`Method ${method} Not Allowed`);
 	}
 };
-export default LineCallbackHandler;
 
 const webhookEventHandler = async (event: WebhookEvent) => {
 	switch (event.type) {
@@ -129,3 +136,5 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 			throw new Error("予期せぬ入力によりエラーが発生しました😫");
 	}
 };
+
+export default LineCallbackHandler;
