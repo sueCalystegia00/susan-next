@@ -62,7 +62,7 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 					case "text":
 						if (message.text.length > 256)
 							throw new RangeError(`${message.text.length}`); // 文字数オーバー
-						return await handleText(
+						return handleText(
 							message,
 							latestContexts,
 							event.replyToken,
