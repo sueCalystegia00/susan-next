@@ -75,7 +75,7 @@ class LineController
       if($res){ //成功
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if(is_array($data) && empty($data)){
-          return [["contextName" => null, "lifespanCount" => null]];
+          return [["name" => null, "lifespanCount" => null]];
         }else{
           $contexts = [];
           foreach($data as $context){
