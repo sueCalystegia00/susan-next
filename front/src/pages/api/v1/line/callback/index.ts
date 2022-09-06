@@ -14,7 +14,7 @@ export default async function LineCallbackHandler(
 	res: NextApiResponse
 ) {
 	// Run the middleware
-	await runMiddleware(req, res, cors);
+	//await runMiddleware(req, res, cors);
 
 	const { method, body } = req;
 	switch (method) {
@@ -36,15 +36,12 @@ export default async function LineCallbackHandler(
 				return;
 			}
 			// handle webhook body
-			body.events.map((event: WebhookEvent) => {
-				webhookEventHandler(event)
-					.then(() => {
-						res.status(200).json({ message: "success" });
-					})
-					.catch((error) => {
-						res.status(500).json({ message: "error", error: error });
-					});
-			});
+			Promise.all(body.events.map(webhookEventHandler))
+				.then(() => res.status(200).end())
+				.catch((error) => {
+					console.error(error);
+					res.status(500).end();
+				});
 			break;
 
 		default:
