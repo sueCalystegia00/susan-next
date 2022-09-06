@@ -42,7 +42,7 @@ const handleText = async (
 			},
 		];
 		// use reply API
-		return client.replyMessage(replyToken, echo);
+		client.replyMessage(replyToken, echo);
 	} catch (error) {
 		console.error(error);
 		if (error instanceof AxiosError) {
