@@ -22,13 +22,13 @@ const handleText = async (
 ) => {
 	try {
 		// 受信メッセージをログに保存
-		postMessageLog(
+		/* postMessageLog(
 			source.userId!,
 			event.type,
 			event.text,
 			"student",
 			contexts[0]
-		);
+		); */
 
 		//const nlpResult = await detectIntent(event.text, contexts);
 
@@ -36,7 +36,11 @@ const handleText = async (
 		const echo: TextMessage[] = [
 			{
 				type: "text",
-				text: /* nlpResult.queryResult!.fulfillmentText ||  */ "fulfillmentText is none",
+				text: `${JSON.stringify(event)}`,
+			},
+			{
+				type: "text",
+				text: `${JSON.stringify(contexts)}`,
 			},
 		];
 		// use reply API
