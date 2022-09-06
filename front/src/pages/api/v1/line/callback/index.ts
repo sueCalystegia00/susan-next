@@ -8,7 +8,6 @@ import { replyText } from "../libs/replyText";
 import { getLatestContexts } from "../libs/connectDB";
 import { DialogflowContext } from "@/types/models";
 import { pickContextId } from "../libs/pickContextId";
-import detectIntent from "../libs/dialogflowNLP";
 
 export default async function LineCallbackHandler(
 	req: NextApiRequest,
