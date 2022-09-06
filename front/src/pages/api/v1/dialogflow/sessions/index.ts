@@ -14,7 +14,7 @@ const sessionsClient = new v2.SessionsClient({
 const languageCode = "ja-JP";
 
 // 動作確認用API
-/* const DialogflowSessionsHandler = async (
+const DialogflowSessionsHandler = async (
 	req: NextApiRequest,
 	res: NextApiResponse
 ) => {
@@ -43,7 +43,7 @@ const languageCode = "ja-JP";
 			res.status(405).end(`Method ${method} Not Allowed`);
 	}
 };
-export default DialogflowSessionsHandler; */
+export default DialogflowSessionsHandler;
 
 /**
  * @param inputText ユーザーの発話
@@ -54,17 +54,21 @@ export const detectIntent = async (
 	inputText: string,
 	contexts: DialogflowContext[]
 ) => {
-	const sessionPath = sessionsClient.projectAgentSessionPath(
+	return {
+		inputText,
+		contexts,
+	};
+	/* const sessionPath = sessionsClient.projectAgentSessionPath(
 		process.env.DIALOGFLOW_PROJECT_ID!,
 		createUniqueString()
 	);
 
-	/* const inputContexts = contexts.reduce((acc, cur) => {
+	const inputContexts = contexts.reduce((acc, cur) => {
 		if (!cur.name || cur.name == "__system_counters__") return acc;
 		cur.name = sessionPath + "/contexts/" + cur.name;
 		acc.push(cur);
 		return acc;
-	}, [] as DialogflowContext[]); */
+	}, [] as DialogflowContext[]);
 
 	const request = {
 		session: sessionPath,
@@ -74,10 +78,10 @@ export const detectIntent = async (
 				languageCode: languageCode,
 			},
 		},
-		/* queryParams: {
+		queryParams: {
 			contexts: inputContexts.length > 0 ? inputContexts : null,
-		}, */
+		},
 	};
 	const [response] = await sessionsClient.detectIntent(request);
-	return response;
+	return response; */
 };
