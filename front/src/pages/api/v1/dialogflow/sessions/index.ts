@@ -26,14 +26,12 @@ const DialogflowSessionsHandler = async (
 				return;
 			}
 			try {
-				const response = await detectIntent(
-					query.inputTexts as string,
-					query.contextName
-						? ([
-								{ name: query.contextName as string, lifespanCount: 1 },
-						  ] as DialogflowContext[])
-						: []
-				);
+				const response = await detectIntent(query.inputTexts as string, [
+					{
+						name: null, //query.contextName as string | null,
+						lifespanCount: null, //Number(query.lifespanCount) as number | null,
+					},
+				]);
 				res.status(200).json(response);
 			} catch (error) {
 				res.status(500).json({ error: error });
@@ -62,7 +60,9 @@ export const detectIntent = async (
 	);
 
 	const inputContexts = contexts.reduce((acc, cur) => {
-		!!cur.name && cur.name != "__system_counters__" && acc.push(cur);
+		if (!cur.name) return acc;
+		if (cur.name == "__system_counters__") return acc;
+		acc.push(cur);
 		return acc;
 	}, [] as DialogflowContext[]);
 
