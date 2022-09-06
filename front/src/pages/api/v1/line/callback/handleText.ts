@@ -4,9 +4,9 @@ import { config } from "../libs/config";
 import { postMessageLog } from "../libs/connectDB";
 import { AxiosError } from "axios";
 import { replyText } from "../libs/replyText";
-import { DialogflowContext } from "@/types/models";
+import type { DialogflowContext } from "@/types/models";
 import { pickContextId } from "../libs/pickContextId";
-import { detectIntent } from "../../dialogflow/sessions";
+import { detectIntent } from "@/pages/api/v1/dialogflow/sessions";
 
 // create LINE SDK client
 const client = new Client(config);

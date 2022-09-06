@@ -14,7 +14,7 @@ const sessionsClient = new v2.SessionsClient({
 const languageCode = "ja-JP";
 
 // 動作確認用API
-const DialogflowSessionsHandler = async (
+/* const DialogflowSessionsHandler = async (
 	req: NextApiRequest,
 	res: NextApiResponse
 ) => {
@@ -43,7 +43,7 @@ const DialogflowSessionsHandler = async (
 			res.status(405).end(`Method ${method} Not Allowed`);
 	}
 };
-export default DialogflowSessionsHandler;
+export default DialogflowSessionsHandler; */
 
 /**
  * @param inputText ユーザーの発話
