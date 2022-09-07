@@ -151,12 +151,12 @@ class ThreadsController
             return $insertResponse;
           }
           $insertResponse["SenderType"] = $post["userType"];
-          include("users.php");
-          $usersController = new UsersController();
-          $questioner = $usersController->getQuestionerLineId($post["index"]);
+          // include("users.php");
+          // $usersController = new UsersController();
+          // $questioner = $usersController->getQuestionerLineId($post["index"]);
           return [
             "insertedData" => $insertResponse,
-            "questioner" => $questioner["lineId"],
+            //"questioner" => $questioner["lineId"],
           ];
         }
 
