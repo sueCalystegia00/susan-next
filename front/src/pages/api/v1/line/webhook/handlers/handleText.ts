@@ -1,13 +1,9 @@
-import { Client, EventMessageBase, TextEventMessage } from "@line/bot-sdk";
-import type { TextMessage, EventSource } from "@line/bot-sdk";
-import { linebotConfig, pickContextId } from "@/pages/api/v1/line/libs";
+import type { TextEventMessage, TextMessage, EventSource } from "@line/bot-sdk";
+import { lineClient, pickContextId } from "@/pages/api/v1/line/libs";
 import { postMessageLog } from "@/pages/api/v1/line/libs/connectDB";
 import { AxiosError } from "axios";
 import type { DialogflowContext } from "@/types/models";
 import { detectIntent } from "@/pages/api/v1/dialogflow/sessions/detectIntent";
-
-// create LINE SDK client
-const client = new Client(linebotConfig);
 
 /**
  * LINEbotのテキストメッセージを受け取ったときの処理
@@ -43,7 +39,7 @@ const handleText = async (
 			},
 		];
 		// use reply API
-		client.replyMessage(replyToken, echo);
+		lineClient.replyMessage(replyToken, echo);
 	} catch (error) {
 		console.error(error);
 		if (error instanceof AxiosError) {

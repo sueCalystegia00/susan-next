@@ -1,14 +1,12 @@
-import linebotConfig from "./linebotConfig";
+import { linebotConfig, lineClient, replyText } from "./lineClient";
 import { middleware, runMiddleware } from "./middleware";
-import validateSignature from "./validateSignature";
 import { pickContextId } from "./pickContextId";
-import { replyText } from "./replyText";
 
 export {
 	linebotConfig,
+	lineClient,
 	middleware,
 	runMiddleware,
-	validateSignature,
 	pickContextId,
 	replyText,
 };
