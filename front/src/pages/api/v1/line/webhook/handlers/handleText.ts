@@ -13,7 +13,7 @@ const client = new Client(linebotConfig);
  * LINEbotのテキストメッセージを受け取ったときの処理
  */
 const handleText = async (
-	event: TextEventMessage,
+	message: TextEventMessage,
 	contexts: DialogflowContext[],
 	replyToken: string,
 	source: EventSource
@@ -22,19 +22,20 @@ const handleText = async (
 		// 受信メッセージをログに保存
 		await postMessageLog(
 			source.userId!,
-			event.type,
-			event.text,
+			message.type,
+			message.text,
 			"student",
 			contexts[0]
 		);
 
-		const nlpResult = await detectIntent(event.id, event.text, contexts);
+		const nlpResult = await detectIntent(message.id, message.text, contexts);
+		//TODO: 解析結果を基にメッセージを返す
 
 		// create a echoing text message
 		const echo: TextMessage[] = [
 			{
 				type: "text",
-				text: `${JSON.stringify(event)}`,
+				text: `${JSON.stringify(message)}`,
 			},
 			{
 				type: "text",
