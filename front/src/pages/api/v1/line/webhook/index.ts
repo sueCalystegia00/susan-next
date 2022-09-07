@@ -12,7 +12,7 @@ export const config = {
 	},
 };
 
-const LineCallbackHandler = async (
+const LineWebhookHandler = async (
 	req: NextApiRequest,
 	res: NextApiResponse
 ) => {
@@ -144,4 +144,4 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 	}
 };
 
-export default LineCallbackHandler;
+export default LineWebhookHandler;
