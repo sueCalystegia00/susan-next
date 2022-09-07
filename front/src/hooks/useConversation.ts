@@ -72,13 +72,13 @@ const useConversationData = (questionId: number) => {
 	// 画像
 	const [image, setImage] = useState<File>();
 
-	const postConversationImage = () => {
+	const postConversationImage = async () => {
 		const formData = new FormData();
 		formData.append("index", questionId.toString());
 		formData.append("userId", user!.userUid);
 		formData.append("file", image!);
-		axios
-			.post(
+		try {
+			const { status, data } = await axios.post<postConversationResponse>(
 				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/image`,
 				formData,
 				{
@@ -86,16 +86,19 @@ const useConversationData = (questionId: number) => {
 						"Content-Type": "multipart/form-data",
 					},
 				}
-			)
-			.then((response: AxiosResponse<ConversationMessage>) => {
-				const { status, data } = response;
-				if (status === 201)
-					setConversationMessages([...conversationMessages, data]);
-			})
-			.catch((error: AxiosError) => {
+			);
+			if (status === 201)
+				setConversationMessages([...conversationMessages, data.insertedData]);
+			return data;
+		} catch (error: any) {
+			if (error instanceof AxiosError) {
 				alert("サーバーでエラーが発生しました．");
-				console.error(error);
-			});
+				throw new AxiosError(error.message);
+			} else {
+				alert("サーバーでエラーが発生しました．");
+				throw new Error("サーバー通信時にエラーが発生しました．");
+			}
+		}
 	};
 
 	return {

@@ -8,9 +8,7 @@ import type { postConversationResponse } from "@/types/response";
 class ConversationContextProps {
 	questionIndex!: number;
 	conversationMessages!: ConversationMessage[];
-	getConversationMessages: (questionId: number) => void = () => {
-		//
-	};
+	getConversationMessages!: (questionId: number) => void;
 	inputtedText: ConversationMessage["MessageText"] = "";
 	setInputtedText!: Dispatch<
 		SetStateAction<ConversationMessage["MessageText"]>
@@ -18,14 +16,9 @@ class ConversationContextProps {
 	postImage: File | undefined = undefined;
 	setPostImage!: Dispatch<SetStateAction<File | undefined>>;
 	messageType: ConversationMessage["MessageType"] = "chat";
-	setMessageType: (messageType: ConversationMessage["MessageType"]) => void =
-		() => {
-			//
-		};
+	setMessageType!: (messageType: ConversationMessage["MessageType"]) => void;
 	postConversationMessage!: () => Promise<postConversationResponse> | undefined;
-	postConversationImage = () => {
-		//
-	};
+	postConversationImage!: () => Promise<postConversationResponse> | undefined;
 }
 
 export const ConversationContext = createContext<ConversationContextProps>(

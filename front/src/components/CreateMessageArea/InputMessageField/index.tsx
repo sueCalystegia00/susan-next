@@ -4,7 +4,6 @@ import { ConversationContext } from "@/contexts/ConversationContext";
 import useLineMessages from "@/hooks/useLineMessages";
 import { PushLineMessagePayload } from "@/types/payloads";
 import { AxiosError } from "axios";
-import Router from "next/router";
 
 /**
  * @returns 質問対応のメッセージを入力するフォームおよび送信ボタン
