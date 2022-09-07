@@ -32,3 +32,19 @@ export interface UpdateAnswerPayload {
 	isShared: Question["Shared"];
 	intentName: DialogflowIntent["intentName"];
 }
+
+export interface PushLineMessagePayload {
+	userIds: User["userUid"][];
+	broadcast?: boolean;
+	event: {
+		type: "response" | "answer" | "announce";
+		message: {
+			text: string;
+			question?: {
+				// only when event.type == "response"
+				questionIndex: number;
+				questionText: Question["QuestionText"];
+			};
+		};
+	};
+}
