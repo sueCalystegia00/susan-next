@@ -46,7 +46,7 @@ const MessageTypeSelector = () => {
 	}, []);
 
 	return (
-		<div className={`w-full flex gap-x-2 px-4`}>
+		<div className={`w-full flex gap-x-2 pt-4 px-4`}>
 			{buttons.map((button, index) => (
 				<TileRadioButton
 					key={index}

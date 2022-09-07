@@ -1,21 +1,52 @@
 import MessageTextArea from "@/components/MessageTextArea";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { ConversationContext } from "@/contexts/ConversationContext";
+import useLineMessages from "@/hooks/useLineMessages";
+import { PushLineMessagePayload } from "@/types/payloads";
+import { AxiosError } from "axios";
+import Router from "next/router";
 
 /**
- * @param questionIndex: 質問のインデックス
  * @returns 質問対応のメッセージを入力するフォームおよび送信ボタン
  */
 const InputMessageField = () => {
-	const { inputtedText, setInputtedText, postConversationMessage } =
-		useContext(ConversationContext);
+	const {
+		questionIndex,
+		inputtedText,
+		setInputtedText,
+		postConversationMessage,
+	} = useContext(ConversationContext);
+	const { pushLineMessage } = useLineMessages();
 
 	const submitHandler = async () => {
 		try {
-			await postConversationMessage();
+			// DBにメッセージを記録
+			const res = await postConversationMessage();
+			// LINEにメッセージを送信
+			if (res && res.questioner) {
+				pushLineMessage({
+					userIds: [res.questioner],
+					event: {
+						type: "response",
+						message: {
+							text: inputtedText,
+						},
+						question: {
+							questionIndex: questionIndex,
+						},
+					},
+				} as PushLineMessagePayload).then(() => {
+					alert("メッセージを送信しました");
+				});
+			}
+			// メッセージ入力欄を空にする
 			setInputtedText("");
 		} catch (error) {
-			console.error(error);
+			if (error instanceof AxiosError) {
+				alert(error.response?.data.message);
+			} else {
+				alert(`error: ${JSON.stringify(error)}`);
+			}
 		}
 	};
 

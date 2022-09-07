@@ -15,14 +15,15 @@ const pushResponseMessage = async ({
 	event,
 }: PushLineMessagePayload) => {
 	// 質問に対する回答を送信
-	const { questionIndex, questionText } = event.message.question!;
+	const { questionIndex, questionText } = event.question!;
+	
 	const message = () => {
 		if (event.type == "response") {
 			return questionResponseMessage(questionIndex, event.message.text);
 		} else if (event.type == "answer") {
 			return questionAnswerMessage(
 				questionIndex,
-				questionText,
+				questionText!,
 				event.message.text
 			);
 		} else {
@@ -31,11 +32,11 @@ const pushResponseMessage = async ({
 	};
 
 	if (userIds.length == 1) {
-		await lineClient.pushMessage(userIds[0], message());
+		return await lineClient.pushMessage(userIds[0], message());
 	} else if (userIds.length > 1) {
-		await lineClient.multicast(userIds, message());
+		return await lineClient.multicast(userIds, message());
 	} else if (!userIds.length && broadcast) {
-		await lineClient.broadcast(message());
+		return await lineClient.broadcast(message());
 	} else {
 		throw new Error("destination is required");
 	}

@@ -1,6 +1,7 @@
 import { PushLineMessagePayload } from "@/types/payloads";
+import { LINE_REQUEST_ID_HTTP_HEADER_NAME } from "@line/bot-sdk";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { pushResponseMessage } from "./handlers";
+import { pushAnnounceMessage, pushResponseMessage } from "./handlers";
 
 const LinePushMessageHandler = async (
 	req: NextApiRequest,
@@ -25,11 +26,12 @@ const LinePushMessageHandler = async (
 			if (body.event.type == "response" || body.event.type == "answer") {
 				pushResponseMessage(body);
 			} else if (body.event.type == "announce") {
-				//
+				pushAnnounceMessage(body);
 			} else {
 				res.status(400).json({ error: "event type is invalid" });
 				return;
 			}
+			res.status(200).json({ message: "success" });
 			break;
 
 		default:

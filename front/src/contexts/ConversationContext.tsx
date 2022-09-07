@@ -3,6 +3,7 @@ import { createContext } from "react";
 import type { ConversationMessage } from "@/types/models";
 import useConversationData from "@/hooks/useConversation";
 import { Dispatch, SetStateAction } from "react";
+import type { postConversationResponse } from "@/types/response";
 
 class ConversationContextProps {
 	questionIndex!: number;
@@ -21,9 +22,7 @@ class ConversationContextProps {
 		() => {
 			//
 		};
-	postConversationMessage = () => {
-		//
-	};
+	postConversationMessage!: () => Promise<postConversationResponse> | undefined;
 	postConversationImage = () => {
 		//
 	};

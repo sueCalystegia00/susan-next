@@ -40,11 +40,11 @@ export interface PushLineMessagePayload {
 		type: "response" | "answer" | "announce";
 		message: {
 			text: string;
-			question?: {
-				// only when event.type == "response"
-				questionIndex: number;
-				questionText: Question["QuestionText"];
-			};
+		};
+		question?: {
+			// only when event.type == "response"
+			questionIndex: number;
+			questionText?: Question["QuestionText"];
 		};
 	};
 }
