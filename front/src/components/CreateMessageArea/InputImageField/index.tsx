@@ -10,8 +10,8 @@ const InputImageField = () => {
 		useContext(ConversationContext);
 
 	const validateImageSize = (image: File) => {
-		if (image.size > 50000000) {
-			alert("ファイルの上限サイズ50MBを超えています");
+		if (image.size > 52428800) {
+			alert(`ファイルの上限サイズ50MBを超えています(${image.size}Bytes)`);
 			return false;
 		} else {
 			return true;

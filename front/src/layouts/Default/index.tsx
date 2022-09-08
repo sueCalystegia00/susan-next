@@ -15,7 +15,7 @@ const DefaultLayout: FC<LayoutProps> = ({ children }) => {
 				style={{
 					margin: "auto",
 					maxWidth: "600",
-					height: "100vh",
+					//height: "100vh",
 					minHeight: "100vh",
 					paddingBottom: 2,
 				}}
