@@ -6,6 +6,7 @@ import { QuestionContext } from "@/contexts/QuestionContext";
 import useDialogflowIntent from "@/hooks/useDialogflowIntent";
 import { DialogflowIntent, Question } from "@/types/models";
 import useLineMessages from "@/hooks/useLineMessages";
+import sendEmail from "@/utils/sendEmail";
 
 /**
  * @param questionIndex: 質問のインデックス

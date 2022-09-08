@@ -16,10 +16,12 @@
 		"@line/liff-mock": "^1.0.1",
 		"@types/cors": "^2.8.12",
 		"@types/dialogflow": "^4.0.4",
+		"@types/nodemailer": "^6.4.5",
 		"@types/react-infinite-scroll-component": "^5.0.0",
 		"axios": "0.27.2",
 		"cors": "^2.8.5",
 		"next": "^12.1.6",
+		"nodemailer": "^6.7.8",
 		"react": "^18.1.0",
 		"react-dom": "^18.1.0",
 		"react-infinite-scroll-component": "^6.1.0"

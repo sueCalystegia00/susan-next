@@ -106,7 +106,7 @@ const questionResponseMessage = (
 						action: {
 							type: "uri",
 							label: "詳細へ",
-							uri: `https://liff.line.me/1657189212-Lwpmnpld/question/${questionIndex}`,
+							uri: `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/question/${questionIndex}`,
 						},
 					},
 				],

@@ -3,6 +3,7 @@ import { useContext } from "react";
 import { ConversationContext } from "@/contexts/ConversationContext";
 import useLineMessages from "@/hooks/useLineMessages";
 import { AxiosError } from "axios";
+import sendEmail from "@/utils/sendEmail";
 
 /**
  * @returns 質問対応のメッセージを入力するフォームおよび送信ボタン

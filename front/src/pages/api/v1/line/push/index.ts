@@ -1,4 +1,5 @@
 import { PushLineMessagePayload } from "@/types/payloads";
+import sendEmail from "@/utils/sendEmail";
 import { LINE_REQUEST_ID_HTTP_HEADER_NAME } from "@line/bot-sdk";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { pushAnnounceMessage, pushResponseMessage } from "./handlers";
@@ -24,7 +25,16 @@ const LinePushMessageHandler = async (
 			}
 			// event handling
 			if (body.event.type == "response" || body.event.type == "answer") {
-				pushResponseMessage(body);
+				await pushResponseMessage(body).then(async (result) => {
+					await sendEmail(
+						`新しい${
+							body.event.type == "response" ? "メッセージ" : "回答"
+						}が投稿されました`,
+						body.event.message.text,
+						body.event.question!.questionIndex
+					);
+					res.status(200).json(result);
+				});
 			} else if (body.event.type == "announce") {
 				pushAnnounceMessage(body);
 			} else {
