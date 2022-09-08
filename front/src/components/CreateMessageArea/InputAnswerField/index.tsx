@@ -4,7 +4,7 @@ import CheckedToggle from "../../CheckedToggle";
 import { ConversationContext } from "@/contexts/ConversationContext";
 import { QuestionContext } from "@/contexts/QuestionContext";
 import useDialogflowIntent from "@/hooks/useDialogflowIntent";
-import { DialogflowIntent, Question } from "@/types/models";
+import { DialogflowIntent } from "@/types/models";
 import useLineMessages from "@/hooks/useLineMessages";
 
 /**
@@ -13,30 +13,21 @@ import useLineMessages from "@/hooks/useLineMessages";
  * @returns 質問対応の回答メッセージを入力するフォームおよび送信ボタン
  */
 const InputAnswerField = () => {
-	const {
-		questionIndex,
-		question,
-		setQuestion,
-		updateAnswerPayload,
-		setUpdateAnswerPayload,
-		updateQandA,
-	} = useContext(QuestionContext);
+	const { question, updateAnswerPayload, updateQandA } =
+		useContext(QuestionContext);
 	const { inputtedText, setInputtedText, postConversationMessage } =
 		useContext(ConversationContext);
 	const { intent, setIntent, postIntent } = useDialogflowIntent(
-		question.questionText,
-		question.intentName
+		question!.questionText,
+		question!.intentName
 	);
 	const { linePayload, pushLineMessage } = useLineMessages(
-		questionIndex,
+		question!.index,
 		"answer"
 	);
 
 	useEffect(() => {
-		setUpdateAnswerPayload({
-			...updateAnswerPayload,
-			answerText: inputtedText,
-		});
+		updateAnswerPayload.answerText = inputtedText;
 		setIntent({
 			...intent,
 			responseText: inputtedText,
@@ -46,18 +37,13 @@ const InputAnswerField = () => {
 	const submitHandler = async () => {
 		await setIntent({
 			...intent,
-			trainingPhrases: [question.questionText],
+			trainingPhrases: [question!.questionText],
 		});
 		try {
-			await postIntent(questionIndex).then((intent?: DialogflowIntent) => {
-				setUpdateAnswerPayload({
-					...updateAnswerPayload,
-					intentName: intent!.intentName,
-				});
+			await postIntent(question!.index).then((intent?: DialogflowIntent) => {
+				updateAnswerPayload.intentName = intent!.intentName;
 			});
-			await updateQandA(questionIndex, updateAnswerPayload).then((response) => {
-				setQuestion(response![questionIndex] as Question);
-			});
+			await updateQandA(updateAnswerPayload);
 			// DBにメッセージを記録
 			const res = await postConversationMessage();
 			// LINEにメッセージを送信
@@ -69,7 +55,7 @@ const InputAnswerField = () => {
 					linePayload.userIds = [res.questionerId];
 				}
 				linePayload.event.message.text = updateAnswerPayload.answerText!;
-				linePayload.event.question!.questionText = question.questionText;
+				linePayload.event.question!.questionText = question!.questionText;
 				await pushLineMessage(linePayload).then(() => {
 					alert("メッセージを送信しました");
 				});
@@ -85,12 +71,9 @@ const InputAnswerField = () => {
 			<MessageTextArea text={inputtedText} setText={setInputtedText} />
 			<CheckedToggle
 				checked={updateAnswerPayload.broadcast}
-				onChange={() =>
-					setUpdateAnswerPayload({
-						...updateAnswerPayload,
-						broadcast: !updateAnswerPayload.broadcast,
-					})
-				}
+				onChange={() => {
+					updateAnswerPayload.broadcast = !updateAnswerPayload.broadcast;
+				}}
 				children={
 					<span className='text-sm text-gray-500'>
 						質問者以外の学生にも回答を通知する

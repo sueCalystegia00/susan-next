@@ -3,7 +3,6 @@ import { useContext } from "react";
 import { ConversationContext } from "@/contexts/ConversationContext";
 import useLineMessages from "@/hooks/useLineMessages";
 import { AxiosError } from "axios";
-import sendEmail from "@/utils/sendEmail";
 
 /**
  * @returns 質問対応のメッセージを入力するフォームおよび送信ボタン
@@ -25,8 +24,8 @@ const InputMessageField = () => {
 			// DBにメッセージを記録
 			const res = await postConversationMessage();
 			// LINEにメッセージを送信
-			if (res && res.questioner) {
-				linePayload.userIds = [res.questioner];
+			if (res && res.questionerId) {
+				linePayload.userIds = [res.questionerId];
 				linePayload.event.message.text = inputtedText;
 				await pushLineMessage(linePayload).then(() => {
 					alert("メッセージを送信しました");

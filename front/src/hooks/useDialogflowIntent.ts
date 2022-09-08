@@ -4,7 +4,7 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { useEffect, useState } from "react";
 
 const useDialogflowIntent = (
-	questionText: Question["QuestionText"],
+	questionText: Question["questionText"],
 	existedIntentName: DialogflowIntent["intentName"] | undefined
 ) => {
 	const [intent, setIntent] = useState<DialogflowIntent>({
