@@ -1,7 +1,22 @@
 import type { PushLineMessagePayload } from "@/types/payloads";
 import axios, { AxiosError, AxiosResponse } from "axios";
 
-const useLineMessages = () => {
+const useLineMessages = (questionIndex: number, eventType: PushLineMessagePayload["event"]["type"]) => {
+	const linePayload: PushLineMessagePayload = {
+		userIds: [],
+		broadcast: undefined,
+		event: {
+			type: eventType,
+			message: {
+				text: "",
+			},
+			question: {
+				questionIndex: questionIndex,
+				questionText: undefined,
+			},
+		},
+	};
+
 	const pushLineMessage = async (payload: PushLineMessagePayload) => {
 		try {
 			const { status, data } = await axios.post<AxiosResponse>(
@@ -22,6 +37,6 @@ const useLineMessages = () => {
 		}
 	};
 
-	return { pushLineMessage };
+	return { linePayload, pushLineMessage };
 };
 export default useLineMessages;

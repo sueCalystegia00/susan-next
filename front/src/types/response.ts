@@ -3,5 +3,5 @@ import { ConversationMessage } from "./models";
 
 export interface postConversationResponse {
 	insertedData: ConversationMessage;
-	questioner: User["userId"];
+	questioner?: User["userId"];
 }

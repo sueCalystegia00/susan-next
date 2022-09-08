@@ -2,7 +2,6 @@ import MessageTextArea from "@/components/MessageTextArea";
 import { useContext } from "react";
 import { ConversationContext } from "@/contexts/ConversationContext";
 import useLineMessages from "@/hooks/useLineMessages";
-import { PushLineMessagePayload } from "@/types/payloads";
 import { AxiosError } from "axios";
 
 /**
@@ -15,7 +14,10 @@ const InputMessageField = () => {
 		setInputtedText,
 		postConversationMessage,
 	} = useContext(ConversationContext);
-	const { pushLineMessage } = useLineMessages();
+	const { linePayload, pushLineMessage } = useLineMessages(
+		questionIndex,
+		"response"
+	);
 
 	const submitHandler = async () => {
 		try {
@@ -23,18 +25,9 @@ const InputMessageField = () => {
 			const res = await postConversationMessage();
 			// LINEにメッセージを送信
 			if (res && res.questioner) {
-				pushLineMessage({
-					userIds: [res.questioner],
-					event: {
-						type: "response",
-						message: {
-							text: inputtedText,
-						},
-						question: {
-							questionIndex: questionIndex,
-						},
-					},
-				} as PushLineMessagePayload).then(() => {
+				linePayload.userIds = [res.questioner];
+				linePayload.event.message.text = inputtedText;
+				await pushLineMessage(linePayload).then(() => {
 					alert("メッセージを送信しました");
 				});
 			}
