@@ -96,7 +96,19 @@ class ThreadsController
             "type" => "invalid_param"
           ]];
         }else{
-          return $this->setChatMessageToThreadConversation($post["index"], $post["userId"], $post["messageType"], $post["message"]);
+          $insertResponse = $this->setChatMessageToThreadConversation($post["index"], $post["userId"], $post["messageType"], $post["message"]);
+          if(array_key_exists("error",$insertResponse)){
+            return $insertResponse;
+          }
+          $insertResponse["SenderType"] = $post["userType"];
+          include("users.php");
+          $usersController = new UsersController();
+          $questioner = $usersController->getQuestionerLineId($post["index"]);
+          return [
+            "insertedData" => $insertResponse,
+            "questioner" => $questioner["lineId"],
+          ];
+          
           /*if(!array_key_exists("error",$res)){
             // 教員側のメッセージの場合は学生へLINEのプッシュ通知を送る
             include dirname( __FILE__).'/../../../susan_bot/functions/PushMessages.php';
@@ -131,11 +143,21 @@ class ThreadsController
           ]];
         }else{
           $response = $this->saveImageFile($_FILES);
-          if(array_key_exists('fileName',$response)){
-            return $this->setChatMessageToThreadConversation($_POST['index'], $_POST['userId'], 'image', $response['fileName']);
-          }else{
+          if(!array_key_exists('fileName',$response)){
             return $response;
           }
+          $insertResponse = $this->setChatMessageToThreadConversation($_POST['index'], $_POST['userId'], 'image', $response['fileName']);
+          if(array_key_exists("error",$insertResponse)){
+            return $insertResponse;
+          }
+          $insertResponse["SenderType"] = $post["userType"];
+          // include("users.php");
+          // $usersController = new UsersController();
+          // $questioner = $usersController->getQuestionerLineId($post["index"]);
+          return [
+            "insertedData" => $insertResponse,
+            //"questioner" => $questioner["lineId"],
+          ];
         }
 
       // 無効なアクセス
@@ -191,7 +213,7 @@ class ThreadsController
         return [
           "index" => $lastIndex,
           "timestamp" => $timestamp,
-          "SenderType" => $messageType,
+          //"SenderType" => "student", // TODO: DBから取得する(仮でpostの値を返した後に付け加えている)
           "MessageType" => $messageType,
           "MessageText" => $message
         ];

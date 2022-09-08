@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import type { Middleware } from "@line/bot-sdk/dist/middleware";
 import { middleware as _middleware } from "@line/bot-sdk";
-import linebotConfig from "./linebotConfig";
+import { linebotConfig } from "./lineClient";
 
 /**
  * Helper method to wait for a middleware to execute before continuing

@@ -5,6 +5,8 @@ import { ConversationContext } from "@/contexts/ConversationContext";
 import { QuestionContext } from "@/contexts/QuestionContext";
 import useDialogflowIntent from "@/hooks/useDialogflowIntent";
 import { DialogflowIntent, Question } from "@/types/models";
+import useLineMessages from "@/hooks/useLineMessages";
+import sendEmail from "@/utils/sendEmail";
 
 /**
  * @param questionIndex: 質問のインデックス
@@ -23,7 +25,12 @@ const InputAnswerField = () => {
 	const { inputtedText, setInputtedText, postConversationMessage } =
 		useContext(ConversationContext);
 	const { intent, setIntent, postIntent } = useDialogflowIntent(
-		question.QuestionText, question.IntentName
+		question.QuestionText,
+		question.IntentName
+	);
+	const { linePayload, pushLineMessage } = useLineMessages(
+		questionIndex,
+		"answer"
 	);
 
 	useEffect(() => {
@@ -52,7 +59,22 @@ const InputAnswerField = () => {
 			await updateQandA(questionIndex, updateAnswerPayload).then((response) => {
 				setQuestion(response![questionIndex] as Question);
 			});
-			await postConversationMessage();
+			// DBにメッセージを記録
+			const res = await postConversationMessage();
+			// LINEにメッセージを送信
+			if (res && res.questioner) {
+				if (updateAnswerPayload.isShared) {
+					linePayload.userIds = [];
+					linePayload.broadcast = true;
+				} else {
+					linePayload.userIds = [res.questioner];
+				}
+				linePayload.event.message.text = updateAnswerPayload.answerText;
+				linePayload.event.question!.questionText = question.QuestionText;
+				await pushLineMessage(linePayload).then(() => {
+					alert("メッセージを送信しました");
+				});
+			}
 			setInputtedText("");
 		} catch (error) {
 			console.error(error);

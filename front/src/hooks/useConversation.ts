@@ -2,6 +2,7 @@ import axios, { AxiosResponse, AxiosError } from "axios";
 import { useContext, useEffect, useState } from "react";
 import type { ConversationMessage } from "@/types/models";
 import { AuthContext } from "@/contexts/AuthContext";
+import { postConversationResponse } from "@/types/response";
 
 /**
  * 質問対応のメッセージ群の管理
@@ -42,39 +43,42 @@ const useConversationData = (questionId: number) => {
 	// テキスト
 	const [text, setText] = useState<ConversationMessage["MessageText"]>("");
 
-	const postConversationMessage = () => {
+	const postConversationMessage = async () => {
 		try {
-			axios
-				.post(
-					`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/message`,
-					{
-						index: questionId,
-						userId: user?.userUid,
-						messageType: messageType,
-						message: text,
-						userType: user?.position,
-					}
-				)
-				.then((response: AxiosResponse<ConversationMessage>) => {
-					const { status, data } = response;
-					if (status === 201)
-						setConversationMessages([...conversationMessages, data]);
-				});
+			const { status, data } = await axios.post<postConversationResponse>(
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/message`,
+				{
+					index: questionId,
+					userId: user?.userUid,
+					messageType: messageType,
+					message: text,
+					userType: user?.position,
+				}
+			);
+			if (status === 201)
+				setConversationMessages([...conversationMessages, data.insertedData]);
+			return data;
 		} catch (error: any) {
-			console.error(error);
+			if (error instanceof AxiosError) {
+				console.error(error.message);
+				throw new AxiosError(error.message);
+			} else {
+				console.error(error);
+				throw new Error("サーバー通信時にエラーが発生しました．");
+			}
 		}
 	};
 
 	// 画像
 	const [image, setImage] = useState<File>();
 
-	const postConversationImage = () => {
+	const postConversationImage = async () => {
 		const formData = new FormData();
 		formData.append("index", questionId.toString());
 		formData.append("userId", user!.userUid);
 		formData.append("file", image!);
-		axios
-			.post(
+		try {
+			const { status, data } = await axios.post<postConversationResponse>(
 				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/image`,
 				formData,
 				{
@@ -82,16 +86,19 @@ const useConversationData = (questionId: number) => {
 						"Content-Type": "multipart/form-data",
 					},
 				}
-			)
-			.then((response: AxiosResponse<ConversationMessage>) => {
-				const { status, data } = response;
-				if (status === 201)
-					setConversationMessages([...conversationMessages, data]);
-			})
-			.catch((error: AxiosError) => {
+			);
+			if (status === 201)
+				setConversationMessages([...conversationMessages, data.insertedData]);
+			return data;
+		} catch (error: any) {
+			if (error instanceof AxiosError) {
 				alert("サーバーでエラーが発生しました．");
-				console.error(error);
-			});
+				throw new AxiosError(error.message);
+			} else {
+				alert("サーバーでエラーが発生しました．");
+				throw new Error("サーバー通信時にエラーが発生しました．");
+			}
+		}
 	};
 
 	return {

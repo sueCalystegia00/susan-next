@@ -106,6 +106,46 @@ class UsersController
     }
   }
 
+  /**
+   * 質問者のLINE IDを取得する
+   * @param int $questionId 質問ID
+   * @return string 質問者のLINE ID
+   */
+  public function getQuestionerLineId($questionId){
+    $db = new DB();
+    $pdo = $db -> pdo();
+    
+    try{
+      // mysqlの実行文
+      $stmt = $pdo -> prepare(
+        "SELECT QuestionerLineId
+        FROM `bot_qanda` 
+        WHERE `bot_qanda`.`index` = :QuestionId"
+      );
+      //データの紐付け
+      $stmt->bindValue(':QuestionId', $questionId, PDO::PARAM_INT);
+      // 実行
+      $res = $stmt->execute();
+
+      if(!$res){
+        throw new Exception('pdo not response');
+      }else{
+        $questioner = $stmt->fetchAll(PDO::FETCH_COLUMN)[0];
+        return [ "lineId" => $questioner ];
+      }
+    } catch(PDOException $error){
+      $this -> code = 500;
+      return [
+        "error" => [
+          "type" => "pdo_exception",
+          "message" => $error->getMessage()
+        ],
+      ];
+    } finally{
+      //echo "finally!!";
+    } 
+  }
+
 
   /**************************************************************************** */
   /**
@@ -249,5 +289,4 @@ class UsersController
     }
     return $result;
   }
-
 }
