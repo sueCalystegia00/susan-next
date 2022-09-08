@@ -6,7 +6,6 @@ import { QuestionContext } from "@/contexts/QuestionContext";
 import useDialogflowIntent from "@/hooks/useDialogflowIntent";
 import { DialogflowIntent, Question } from "@/types/models";
 import useLineMessages from "@/hooks/useLineMessages";
-import sendEmail from "@/utils/sendEmail";
 
 /**
  * @param questionIndex: 質問のインデックス
@@ -25,8 +24,8 @@ const InputAnswerField = () => {
 	const { inputtedText, setInputtedText, postConversationMessage } =
 		useContext(ConversationContext);
 	const { intent, setIntent, postIntent } = useDialogflowIntent(
-		question.QuestionText,
-		question.IntentName
+		question.questionText,
+		question.intentName
 	);
 	const { linePayload, pushLineMessage } = useLineMessages(
 		questionIndex,
@@ -47,7 +46,7 @@ const InputAnswerField = () => {
 	const submitHandler = async () => {
 		await setIntent({
 			...intent,
-			trainingPhrases: [question.QuestionText],
+			trainingPhrases: [question.questionText],
 		});
 		try {
 			await postIntent(questionIndex).then((intent?: DialogflowIntent) => {
@@ -62,15 +61,15 @@ const InputAnswerField = () => {
 			// DBにメッセージを記録
 			const res = await postConversationMessage();
 			// LINEにメッセージを送信
-			if (res && res.questioner) {
-				if (updateAnswerPayload.isShared) {
+			if (res && res.questionerId) {
+				if (updateAnswerPayload.broadcast) {
 					linePayload.userIds = [];
 					linePayload.broadcast = true;
 				} else {
-					linePayload.userIds = [res.questioner];
+					linePayload.userIds = [res.questionerId];
 				}
-				linePayload.event.message.text = updateAnswerPayload.answerText;
-				linePayload.event.question!.questionText = question.QuestionText;
+				linePayload.event.message.text = updateAnswerPayload.answerText!;
+				linePayload.event.question!.questionText = question.questionText;
 				await pushLineMessage(linePayload).then(() => {
 					alert("メッセージを送信しました");
 				});
@@ -85,11 +84,11 @@ const InputAnswerField = () => {
 		<div className='w-full flex flex-col items-center gap-2 p-4 '>
 			<MessageTextArea text={inputtedText} setText={setInputtedText} />
 			<CheckedToggle
-				checked={updateAnswerPayload.isShared}
+				checked={updateAnswerPayload.broadcast}
 				onChange={() =>
 					setUpdateAnswerPayload({
 						...updateAnswerPayload,
-						isShared: !updateAnswerPayload.isShared,
+						broadcast: !updateAnswerPayload.broadcast,
 					})
 				}
 				children={

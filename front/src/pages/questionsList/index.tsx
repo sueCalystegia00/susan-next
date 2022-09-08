@@ -6,33 +6,31 @@ import useQuestions from "@/hooks/useQuestions";
  * @returns 質問一覧ページ
  */
 const QuestionsListPage = () => {
-	const { questions, isHasMore, getQuestionsDataHandler } = useQuestions();
+	const { questions, getQuestionsDataHandler } = useQuestions();
 
 	return (
-		<>
+		<div className='relative w-full'>
 			<InfiniteScroll
-				dataLength={Object.keys(questions).length} //現在のデータの長さ
+				dataLength={questions.length} //現在のデータの長さ
 				next={getQuestionsDataHandler} // スクロール位置を監視してコールバック（次のデータを読み込ませる）
-				hasMore={isHasMore} // さらにスクロールするかどうか（ある一定数のデータ数に達したらfalseを返すことで無限スクロールを回避）
+				hasMore={questions.slice(-1)[0]?.index != 1 || false} // さらにスクロールするかどうか（index:1の質問があればfalseを返すことで無限スクロールを回避）
 				loader={null} // ローディング中のコンポーネント
 				//height={420} // 高さ（なくても良い）
 			>
 				<ul className='flex flex-col gap-3 p-2'>
-					{Object.keys(questions)
-						.reverse()
-						.map((StringOfKey) => (
-							<QuestionCard
-								key={StringOfKey}
-								id={Number(StringOfKey)} // questionId
-								timestamp={questions[Number(StringOfKey)].timestamp} // timestamp
-								answerStatus={questions[Number(StringOfKey)].AnswerText != null} // answerStatus
-								lectureNumber={1} // lectureNumber
-								questionText={questions[Number(StringOfKey)].QuestionText} // questionText
-							/>
-						))}
+					{questions.map((question, key) => (
+						<QuestionCard
+							key={key}
+							id={question.index} // questionId
+							timestamp={question.timestamp} // timestamp
+							answerStatus={question.answerText != null} // answerStatus
+							lectureNumber={question.lectureNumber} // lectureNumber
+							questionText={question.questionText} // questionText
+						/>
+					))}
 				</ul>
 			</InfiniteScroll>
-		</>
+		</div>
 	);
 };
 

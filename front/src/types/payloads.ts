@@ -26,11 +26,8 @@ export interface PostDialogflowIntentPayload {
 	intentName?: DialogflowIntent["intentName"];
 }
 
-export interface UpdateAnswerPayload {
-	questionText: Question["QuestionText"];
-	answerText: Question["AnswerText"];
-	isShared: Question["Shared"];
-	intentName: DialogflowIntent["intentName"];
+export interface UpdateAnswerPayload extends Question {
+	answerIdToken: string;
 }
 
 export interface PushLineMessagePayload {
@@ -44,7 +41,7 @@ export interface PushLineMessagePayload {
 		question?: {
 			// only when event.type == "response"
 			questionIndex: number;
-			questionText?: Question["QuestionText"];
+			questionText?: Question["questionText"];
 		};
 	};
 }

@@ -106,7 +106,7 @@ class ThreadsController
           $questioner = $usersController->getQuestionerLineId($post["index"]);
           return [
             "insertedData" => $insertResponse,
-            "questioner" => $questioner["lineId"],
+            "questionerId" => $questioner["lineId"],
           ];
           
           /*if(!array_key_exists("error",$res)){
