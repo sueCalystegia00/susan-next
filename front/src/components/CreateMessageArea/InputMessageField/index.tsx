@@ -1,22 +1,20 @@
 import MessageTextArea from "@/components/MessageTextArea";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { ConversationContext } from "@/contexts/ConversationContext";
 import useLineMessages from "@/hooks/useLineMessages";
 import { AxiosError } from "axios";
+import { QuestionContext } from "@/contexts/QuestionContext";
 
 /**
  * @returns 質問対応のメッセージを入力するフォームおよび送信ボタン
  */
 const InputMessageField = () => {
-	const {
-		questionIndex,
-		inputtedText,
-		setInputtedText,
-		postConversationMessage,
-	} = useContext(ConversationContext);
+	const { question } = useContext(QuestionContext);
+	const { inputtedText, setInputtedText, postConversationMessage } =
+		useContext(ConversationContext);
 	const { linePayload, pushLineMessage } = useLineMessages(
-		questionIndex,
-		"response"
+		"response",
+		question
 	);
 
 	const submitHandler = async () => {

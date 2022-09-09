@@ -22,8 +22,8 @@ const InputAnswerField = () => {
 		question!.intentName
 	);
 	const { linePayload, pushLineMessage } = useLineMessages(
-		question!.index,
-		"answer"
+		"answer",
+		question
 	);
 
 	useEffect(() => {

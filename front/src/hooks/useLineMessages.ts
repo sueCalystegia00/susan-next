@@ -1,7 +1,12 @@
+import { Question } from "@/types/models";
 import type { PushLineMessagePayload } from "@/types/payloads";
 import axios, { AxiosError, AxiosResponse } from "axios";
+import { useEffect } from "react";
 
-const useLineMessages = (questionIndex: number, eventType: PushLineMessagePayload["event"]["type"]) => {
+const useLineMessages = (
+	eventType: PushLineMessagePayload["event"]["type"],
+	question?: Question
+) => {
 	const linePayload: PushLineMessagePayload = {
 		userIds: [],
 		broadcast: undefined,
@@ -11,11 +16,17 @@ const useLineMessages = (questionIndex: number, eventType: PushLineMessagePayloa
 				text: "",
 			},
 			question: {
-				questionIndex: questionIndex,
-				questionText: undefined,
+				questionIndex: question?.index || 0,
+				questionText: question?.questionText,
 			},
 		},
 	};
+	useEffect(() => {
+		linePayload.event.question = {
+			questionIndex: question?.index || 0,
+			questionText: question?.questionText,
+		};
+	}, [question]);
 
 	const pushLineMessage = async (payload: PushLineMessagePayload) => {
 		try {
