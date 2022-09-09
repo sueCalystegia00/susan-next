@@ -1,6 +1,10 @@
+import { ConversationMessage } from "@/types/models";
 import type { FlexMessage } from "@line/bot-sdk";
 
-const questionResponseMessage = (questionIndex: number, responseText: string) =>
+const questionResponseMessage = (
+	questionIndex: number,
+	responseText: ConversationMessage["MessageText"]
+) =>
 	({
 		type: "flex",
 		altText: `${responseText}`,
