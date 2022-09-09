@@ -21,6 +21,7 @@ const InputImageField = () => {
 	const submitHandler = async () => {
 		try {
 			await postDiscussionImage();
+			setPostImage(undefined);
 		} catch (error: any) {
 			console.error(error);
 			alert(`エラーが発生しました. 
