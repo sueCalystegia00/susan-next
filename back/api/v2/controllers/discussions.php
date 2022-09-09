@@ -127,13 +127,6 @@ class DiscussionsController
       
       // スレッドに画像を追加
       case "image":
-        if(!array_key_exists("image",$post)){
-          $this->code = 400;
-          return ["error" => [
-            "type" => "invalid_param",
-            "message" => "image is required"
-          ]];
-        }
         if (!isset($_FILES['file']['error']) || !is_int($_FILES['file']['error'])) {
           // 未定義である・複数ファイルである・$_FILES Corruption 攻撃を受けた
           // どれかに該当していれば不正なパラメータとして処理する
