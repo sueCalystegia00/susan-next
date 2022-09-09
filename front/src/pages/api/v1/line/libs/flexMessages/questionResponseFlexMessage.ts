@@ -3,7 +3,7 @@ import type { FlexMessage } from "@line/bot-sdk";
 
 const questionResponseMessage = (
 	questionIndex: number,
-	responseText: DiscussionMessage["MessageText"]
+	responseText: DiscussionMessage["message"]
 ) =>
 	({
 		type: "flex",

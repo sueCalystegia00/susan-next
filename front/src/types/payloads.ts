@@ -1,18 +1,4 @@
-import { User, DiscussionMessage, DialogflowIntent, Question } from "./models";
-
-export interface PostDiscussionMessagePayload {
-	index: number;
-	userId: User["userUid"];
-	messageType: DiscussionMessage["MessageType"];
-	message: DiscussionMessage["MessageText"];
-	userType: User["position"];
-}
-
-export interface PostDiscussionImagePayload {
-	index: number;
-	userId: User["userUid"];
-	file: File | undefined;
-}
+import { User, DialogflowIntent, Question } from "./models";
 
 export interface PostDialogflowIntentPayload {
 	questionIndex: number;
