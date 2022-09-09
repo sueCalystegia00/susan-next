@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 const useDialogflowIntent = (
 	questionText: Question["questionText"],
-	existedIntentName: DialogflowIntent["intentName"] | undefined
+	existedIntentName?: DialogflowIntent["intentName"]
 ) => {
 	const [intent, setIntent] = useState<DialogflowIntent>({
 		trainingPhrases: [questionText],
@@ -20,48 +20,50 @@ const useDialogflowIntent = (
 	 * @param intentName
 	 * @return intent
 	 */
-	const getIntentData = (intentName: string) => {
+	const getIntentData = async (intentName: string) => {
 		try {
-			axios
-				.get(`/api/v1/dialogflow/intents?intentName=${intentName}`)
-				.then((response: AxiosResponse) => {
-					setIntent(response.data);
-				});
-		} catch (error: any) {
-			if (error instanceof AxiosError) {
-				alert("サーバーでエラーが発生しました．");
-				throw new Error(error.message);
+			const { status, data } = await axios.get<DialogflowIntent>(
+				`/api/v1/dialogflow/intents?intentName=${intentName}`
+			);
+			if (status === 200) {
+				setIntent(data);
+			} else {
+				throw new Error("Intentの取得に失敗しました");
 			}
+		} catch (error: any) {
+			alert("サーバーでエラーが発生しました．");
+			throw new Error(error.message);
 		}
 	};
 
 	/**
 	 * DialogflowのIntentを更新する
 	 */
-	const postIntent = async (questionIndex: number) => {
+	const postIntent = async (question: Question) => {
 		try {
-			return await axios
-				.post(
-					`/api/v1/dialogflow/intents${
-						intent?.intentName ? "?intentName=" + intent.intentName : ""
-					}`,
-					{
-						questionIndex: questionIndex,
-						intentName: intent?.intentName,
-						trainingPhrases: intent?.trainingPhrases,
-						responseText: intent!.responseText,
-					} as PostDialogflowIntentPayload
-				)
-				.then((response: AxiosResponse<DialogflowIntent>) => {
-					setIntent(response.data);
-					return intent;
-				});
-		} catch (error) {
+			const { status, data } = await axios.post<DialogflowIntent>(
+				`/api/v1/dialogflow/intents${
+					intent?.intentName ? "?intentName=" + intent.intentName : ""
+				}`,
+				{
+					questionIndex: question.index,
+					lectureNumber: question.lectureNumber,
+					intentName: intent?.intentName,
+					trainingPhrases: intent?.trainingPhrases,
+					responseText: intent!.responseText,
+				} as PostDialogflowIntentPayload
+			);
+			if (status !== 201) throw new Error("Intentの更新に失敗しました");
+			setIntent(data);
+			return data;
+		} catch (error: any) {
+			console.error(error);
 			if (error instanceof AxiosError) {
-				alert("サーバーでエラーが発生しました．(Dialogflow intent更新)");
-				throw new Error(error.message);
+				throw new AxiosError(`update intent: ${error.message}`);
 			} else {
-				console.error(error);
+				throw new Error(
+					`update intent: ${error.message || "不明なエラーが発生しました"} `
+				);
 			}
 		}
 	};

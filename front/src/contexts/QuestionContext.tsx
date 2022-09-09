@@ -24,11 +24,7 @@ const QuestionProvider = ({ userIdToken, questionIndex, children }: Props) => {
 	const { openingQuestion, updateQandA } = useQuestionsData(questionIndex);
 
 	const updateAnswerPayload: UpdateAnswerPayload = {
-		index: questionIndex,
-		questionText: openingQuestion?.questionText || "",
-		answerText: openingQuestion?.answerText || "",
-		broadcast: openingQuestion?.broadcast || false,
-		intentName: openingQuestion?.intentName || "",
+		...openingQuestion!,
 		answerIdToken: userIdToken,
 	};
 

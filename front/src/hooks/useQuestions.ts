@@ -123,9 +123,17 @@ const useQuestionsData = (questionIndex?: number) => {
 					STORAGE_KEY_QUESTIONS,
 					JSON.stringify(updatedQuestions)
 				);
+			} else {
+				throw new Error("質問・回答の更新に失敗しました");
 			}
-		} catch (e) {
-			console.error(e);
+		} catch (error: any) {
+			if (error instanceof AxiosError) {
+				throw new AxiosError(`update answer: ${error.response}`);
+			} else {
+				throw new Error(
+					`update answer: ${error.response || "不明なエラーが発生しました"}`
+				);
+			}
 		}
 	};
 

@@ -21,6 +21,7 @@ export interface PostConversationImagePayload {
 
 export interface PostDialogflowIntentPayload {
 	questionIndex: number;
+	lectureNumber: Question["lectureNumber"];
 	trainingPhrases: DialogflowIntent["trainingPhrases"];
 	responseText: DialogflowIntent["responseText"];
 	intentName?: DialogflowIntent["intentName"];

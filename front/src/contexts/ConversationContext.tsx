@@ -16,8 +16,8 @@ class ConversationContextProps {
 	setPostImage!: Dispatch<SetStateAction<File | undefined>>;
 	messageType: ConversationMessage["MessageType"] = "chat";
 	setMessageType!: (messageType: ConversationMessage["MessageType"]) => void;
-	postConversationMessage!: () => Promise<postConversationResponse> | undefined;
-	postConversationImage!: () => Promise<postConversationResponse> | undefined;
+	postConversationMessage!: () => Promise<postConversationResponse>;
+	postConversationImage!: () => Promise<postConversationResponse>;
 }
 
 export const ConversationContext = createContext<ConversationContextProps>(

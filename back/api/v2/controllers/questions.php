@@ -378,7 +378,7 @@ class QuestionsController
             "type" => "invalid_param"
           ]];
         }else{
-          return $this->updateAnswer((int)$args[0], $payload["broadcast"], $payload["questionText"], $payload["answerText"], $payload["intentName"]);
+          return $this->updateAnswer((int)$args[0], (int)$payload["broadcast"], $payload["questionText"], $payload["answerText"], $payload["intentName"]);
         }
         break;
 
@@ -394,7 +394,7 @@ class QuestionsController
   /**
    * 質問に対する回答情報を更新する
    * @param int $questionIndex 更新する質疑応答情報のインデックス
-   * @param bool $broadcast true:全体通知/false:個別通知
+   * @param int $broadcast 1:全体通知/0:個別通知
    * @param string $questionText 修正後の質問文
    * @param string $answerText 質問に対する応答文
    * @param string $intentName Dialogflowに登録されているインテント名(Format: projects/<Project ID>/agent/intents/<Intent ID>)
@@ -406,18 +406,18 @@ class QuestionsController
       // mysqlの実行文
       $stmt = $db->pdo() -> prepare(
         "UPDATE `Questions`
-        SET `broadcast` = :shared,
+        SET `broadcast` = :broadcast,
             `questionText` = :questionText,
             `answerText` = :answerText,
             `intentName` = :intentName
         WHERE `Questions`.`index` = :questionIndex"
       );
       //データの紐付け
-      $stmt->bindValue(':QuestionIndex', $questionIndex, PDO::PARAM_INT);
-      $stmt->bindValue(':Shared', $broadcast ? 1 : 0, PDO::PARAM_INT);
-      $stmt->bindValue(':QuestionText', $questionText, PDO::PARAM_STR);
-      $stmt->bindValue(':AnswerText', $answerText, PDO::PARAM_STR);
-      $stmt->bindValue(':IntentName', $intentName, PDO::PARAM_STR);
+      $stmt->bindValue(':questionIndex', $questionIndex, PDO::PARAM_INT);
+      $stmt->bindValue(':broadcast', $broadcast, PDO::PARAM_INT);
+      $stmt->bindValue(':questionText', $questionText, PDO::PARAM_STR);
+      $stmt->bindValue(':answerText', $answerText, PDO::PARAM_STR);
+      $stmt->bindValue(':intentName', $intentName, PDO::PARAM_STR);
       
       // 実行
       $res = $stmt->execute();

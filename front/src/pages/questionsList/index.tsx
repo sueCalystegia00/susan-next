@@ -23,7 +23,7 @@ const QuestionsListPage = () => {
 							key={key}
 							id={question.index} // questionId
 							timestamp={question.timestamp} // timestamp
-							answerStatus={question.answerText != null} // answerStatus
+							answerStatus={!!question.answerText} // answerStatus
 							lectureNumber={question.lectureNumber} // lectureNumber
 							questionText={question.questionText} // questionText
 						/>

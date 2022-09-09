@@ -30,20 +30,18 @@ const useLineMessages = (
 
 	const pushLineMessage = async (payload: PushLineMessagePayload) => {
 		try {
-			const { status, data } = await axios.post<AxiosResponse>(
-				"/api/v1/line/push",
-				payload
-			);
+			const { status, data } = await axios.post("/api/v1/line/push", payload);
 			if (status !== 200) {
 				throw new Error("pushLineMessage failed");
 			}
-		} catch (error) {
+		} catch (error: any) {
+			console.error(error);
 			if (error instanceof AxiosError) {
-				console.error(error.message);
-				throw new AxiosError(error.message);
+				throw new AxiosError(`push line message: ${error.message}`);
 			} else {
-				console.error(error);
-				throw new Error("サーバー通信時にエラーが発生しました．");
+				throw new Error(
+					`push line message: ${error.message || "unknown error"}`
+				);
 			}
 		}
 	};

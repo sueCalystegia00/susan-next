@@ -4,7 +4,6 @@ import CheckedToggle from "../../CheckedToggle";
 import { ConversationContext } from "@/contexts/ConversationContext";
 import { QuestionContext } from "@/contexts/QuestionContext";
 import useDialogflowIntent from "@/hooks/useDialogflowIntent";
-import { DialogflowIntent } from "@/types/models";
 import useLineMessages from "@/hooks/useLineMessages";
 
 /**
@@ -21,10 +20,7 @@ const InputAnswerField = () => {
 		question!.questionText,
 		question!.intentName
 	);
-	const { linePayload, pushLineMessage } = useLineMessages(
-		"answer",
-		question
-	);
+	const { linePayload, pushLineMessage } = useLineMessages("answer", question);
 
 	useEffect(() => {
 		updateAnswerPayload.answerText = inputtedText;
@@ -35,19 +31,19 @@ const InputAnswerField = () => {
 	}, [inputtedText]);
 
 	const submitHandler = async () => {
-		await setIntent({
-			...intent,
-			trainingPhrases: [question!.questionText],
-		});
 		try {
-			await postIntent(question!.index).then((intent?: DialogflowIntent) => {
-				updateAnswerPayload.intentName = intent!.intentName;
-			});
+			// Dialogflowのインテントを更新，更新後のintentNameを取得
+			updateAnswerPayload.intentName = (await postIntent(
+				question!
+			))!.intentName;
+
+			// DBの質問と回答を更新
 			await updateQandA(updateAnswerPayload);
+
 			// DBにメッセージを記録
 			const res = await postConversationMessage();
 			// LINEにメッセージを送信
-			if (res && res.questionerId) {
+			if (res.questionerId) {
 				if (updateAnswerPayload.broadcast) {
 					linePayload.userIds = [];
 					linePayload.broadcast = true;
@@ -56,13 +52,15 @@ const InputAnswerField = () => {
 				}
 				linePayload.event.message.text = updateAnswerPayload.answerText!;
 				linePayload.event.question!.questionText = question!.questionText;
-				await pushLineMessage(linePayload).then(() => {
-					alert("メッセージを送信しました");
-				});
+				await pushLineMessage(linePayload);
+				alert("メッセージを送信しました");
 			}
 			setInputtedText("");
-		} catch (error) {
+		} catch (error: any) {
 			console.error(error);
+			console.error(error);
+			alert(`エラーが発生しました. 
+			Error:${JSON.stringify(error)}`);
 		}
 	};
 
