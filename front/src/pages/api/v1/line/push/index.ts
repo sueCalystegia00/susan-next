@@ -33,7 +33,7 @@ const LinePushMessageHandler = async (
 						body.event.message.text,
 						body.event.question!.questionIndex
 					);
-					res.status(200).json(result);
+					res.status(200).json(`result: ${result}`);
 				});
 			} else if (body.event.type == "announce") {
 				pushAnnounceMessage(body);
