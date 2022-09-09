@@ -1,6 +1,6 @@
 import MessageTextArea from "@/components/MessageTextArea";
 import { useContext } from "react";
-import { ConversationContext } from "@/contexts/ConversationContext";
+import { DiscussionContext } from "@/contexts/DiscussionContext";
 import useLineMessages from "@/hooks/useLineMessages";
 import { QuestionContext } from "@/contexts/QuestionContext";
 
@@ -9,8 +9,8 @@ import { QuestionContext } from "@/contexts/QuestionContext";
  */
 const InputMessageField = () => {
 	const { question } = useContext(QuestionContext);
-	const { inputtedText, setInputtedText, postConversationMessage } =
-		useContext(ConversationContext);
+	const { inputtedText, setInputtedText, postDiscussionMessage } =
+		useContext(DiscussionContext);
 	const { linePayload, pushLineMessage } = useLineMessages(
 		"response",
 		question
@@ -19,7 +19,7 @@ const InputMessageField = () => {
 	const submitHandler = async () => {
 		try {
 			// DBにメッセージを記録
-			const res = await postConversationMessage();
+			const res = await postDiscussionMessage();
 			// LINEにメッセージを送信
 			if (res.questionerId) {
 				linePayload.userIds = [res.questionerId];
@@ -42,7 +42,7 @@ const InputMessageField = () => {
 			<button
 				className='bg-susan-blue-100 text-white disabled:text-slate-500 disabled:bg-slate-700 active:bg-susan-blue-50 font-bold px-8 py-2 rounded-2xl shadow-inner shadow-susan-blue-1000 outline-none focus:outline-none ease-linear transition-all duration-150'
 				onClick={submitHandler}
-				disabled={!setInputtedText}
+				disabled={!inputtedText}
 			>
 				送信
 			</button>

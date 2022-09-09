@@ -1,7 +1,7 @@
 import MessageTextArea from "@/components/MessageTextArea";
 import { useContext, useEffect } from "react";
 import CheckedToggle from "../../CheckedToggle";
-import { ConversationContext } from "@/contexts/ConversationContext";
+import { DiscussionContext } from "@/contexts/DiscussionContext";
 import { QuestionContext } from "@/contexts/QuestionContext";
 import useDialogflowIntent from "@/hooks/useDialogflowIntent";
 import useLineMessages from "@/hooks/useLineMessages";
@@ -14,8 +14,8 @@ import useLineMessages from "@/hooks/useLineMessages";
 const InputAnswerField = () => {
 	const { question, updateAnswerPayload, updateQandA } =
 		useContext(QuestionContext);
-	const { inputtedText, setInputtedText, postConversationMessage } =
-		useContext(ConversationContext);
+	const { inputtedText, setInputtedText, postDiscussionMessage } =
+		useContext(DiscussionContext);
 	const { intent, setIntent, postIntent } = useDialogflowIntent(
 		question!.questionText,
 		question!.intentName
@@ -41,7 +41,7 @@ const InputAnswerField = () => {
 			await updateQandA(updateAnswerPayload);
 
 			// DBにメッセージを記録
-			const res = await postConversationMessage();
+			const res = await postDiscussionMessage();
 			// LINEにメッセージを送信
 			if (res.questionerId) {
 				if (updateAnswerPayload.broadcast) {

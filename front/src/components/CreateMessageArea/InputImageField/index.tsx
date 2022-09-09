@@ -1,4 +1,4 @@
-import { ConversationContext } from "@/contexts/ConversationContext";
+import { DiscussionContext } from "@/contexts/DiscussionContext";
 import { useContext } from "react";
 
 /**
@@ -6,8 +6,8 @@ import { useContext } from "react";
  * @returns 質問対応の画像を入力するフォームおよび送信ボタン
  */
 const InputImageField = () => {
-	const { postImage, setPostImage, postConversationImage } =
-		useContext(ConversationContext);
+	const { postImage, setPostImage, postDiscussionImage } =
+		useContext(DiscussionContext);
 
 	const validateImageSize = (image: File) => {
 		if (image.size > 52428800) {
@@ -15,6 +15,16 @@ const InputImageField = () => {
 			return false;
 		} else {
 			return true;
+		}
+	};
+
+	const submitHandler = async () => {
+		try {
+			await postDiscussionImage();
+		} catch (error: any) {
+			console.error(error);
+			alert(`エラーが発生しました. 
+			Error:${JSON.stringify(error)}`);
 		}
 	};
 
@@ -40,7 +50,7 @@ const InputImageField = () => {
 			</div>
 			<button
 				className='bg-susan-blue-100 text-white disabled:text-slate-500 disabled:bg-slate-700 active:bg-susan-blue-50 font-bold px-8 py-2 rounded-2xl shadow-inner shadow-susan-blue-1000 outline-none focus:outline-none ease-linear transition-all duration-150'
-				onClick={postConversationImage}
+				onClick={submitHandler}
 				disabled={!postImage}
 			>
 				送信

@@ -255,7 +255,7 @@ class UsersController
     return !(is_null($value) || $value === "");
   }
 
-  private function verifyLine($id_token){
+  public function verifyLine($id_token){
     //  Initiate curl session
     $ch = curl_init();
 
