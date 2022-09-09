@@ -1,15 +1,12 @@
 import axios, { AxiosResponse, AxiosError } from "axios";
-import { useContext, useEffect, useState } from "react";
-import type { DiscussionMessage } from "@/types/models";
-import { AuthContext } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import type { DiscussionMessage, User } from "@/types/models";
 import { postDiscussionResponse } from "@/types/response";
 
 /**
  * 質問対応のメッセージ群の管理
  */
-const useDiscussionData = (questionId: number) => {
-	const { user } = useContext(AuthContext);
-
+const useDiscussionData = (userIdToken: User["token"], questionId: number) => {
 	// メッセージ群を取得・保持する
 	const [discussionMessages, setDiscussionMessages] = useState<
 		DiscussionMessage[]
@@ -21,27 +18,31 @@ const useDiscussionData = (questionId: number) => {
 	/**
 	 * データベースからメッセージ群を取得する
 	 */
-	const getDiscussionMessages = (questionId: number) => {
-		axios
-			.get(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/discussion?index=${questionId}`
-			)
-			.then((response: AxiosResponse<DiscussionMessage[]>) => {
-				const { data } = response;
-				setDiscussionMessages(data); // stateを更新
-			})
-			.catch((error: AxiosError) => {
-				alert("サーバーでエラーが発生しました．");
-				console.error(error);
-			});
+	const getDiscussionMessages = async (questionId: number) => {
+		try {
+			const { status, data } = await axios.get<DiscussionMessage[]>(
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/discussions/${questionId}`
+			);
+			if (status === 200) {
+				setDiscussionMessages(data);
+			} else {
+				throw new Error("データベースからの取得に失敗しました");
+			}
+		} catch (error: any) {
+			if (error instanceof AxiosError) {
+				throw new AxiosError(`get discussion: ${error.message}`);
+			} else {
+				throw new Error(`get discussion: ${error.message || "unknown error"}`);
+			}
+		}
 	};
 
 	// メッセージを送信する
 	const [messageType, setMessageType] =
-		useState<DiscussionMessage["MessageType"]>("chat");
+		useState<DiscussionMessage["messageType"]>("chat");
 
 	// テキスト
-	const [text, setText] = useState<DiscussionMessage["MessageText"]>("");
+	const [text, setText] = useState<DiscussionMessage["message"]>("");
 
 	const postDiscussionMessage = async () => {
 		try {
@@ -49,10 +50,9 @@ const useDiscussionData = (questionId: number) => {
 				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/message`,
 				{
 					index: questionId,
-					userId: user?.userUid,
+					userIdToken: userIdToken,
 					messageType: messageType,
 					message: text,
-					userType: user?.position,
 				}
 			);
 			if (status == 201) {
@@ -79,7 +79,7 @@ const useDiscussionData = (questionId: number) => {
 	const postDiscussionImage = async () => {
 		const formData = new FormData();
 		formData.append("index", questionId.toString());
-		formData.append("userId", user!.userUid);
+		formData.append("userIdToken", userIdToken);
 		formData.append("file", image!);
 		try {
 			const { status, data } = await axios.post<postDiscussionResponse>(

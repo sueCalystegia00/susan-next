@@ -1,19 +1,19 @@
 import type { ReactNode } from "react";
 import { createContext } from "react";
-import type { DiscussionMessage } from "@/types/models";
+import type { DiscussionMessage, User } from "@/types/models";
 import useDiscussionData from "@/hooks/useDiscussion";
 import { Dispatch, SetStateAction } from "react";
 import type { postDiscussionResponse } from "@/types/response";
 
 class DiscussionContextProps {
-	discussionMessages!: DiscussionMessage[];
+	discussionMessages: DiscussionMessage[] = [];
 	getDiscussionMessages!: (questionId: number) => void;
-	inputtedText: DiscussionMessage["MessageText"] = "";
-	setInputtedText!: Dispatch<SetStateAction<DiscussionMessage["MessageText"]>>;
+	inputtedText: DiscussionMessage["message"] = "";
+	setInputtedText!: Dispatch<SetStateAction<DiscussionMessage["message"]>>;
 	postImage: File | undefined = undefined;
 	setPostImage!: Dispatch<SetStateAction<File | undefined>>;
-	messageType: DiscussionMessage["MessageType"] = "chat";
-	setMessageType!: (messageType: DiscussionMessage["MessageType"]) => void;
+	messageType: DiscussionMessage["messageType"] = "chat";
+	setMessageType!: (messageType: DiscussionMessage["messageType"]) => void;
 	postDiscussionMessage!: () => Promise<postDiscussionResponse>;
 	postDiscussionImage!: () => Promise<postDiscussionResponse>;
 }
@@ -23,11 +23,16 @@ export const DiscussionContext = createContext<DiscussionContextProps>(
 );
 
 type Props = {
+	userIdToken: User["token"];
 	questionIndex: number;
 	children: ReactNode;
 };
 
-const DiscussionProvider = ({ questionIndex, children }: Props) => {
+const DiscussionProvider = ({
+	userIdToken,
+	questionIndex,
+	children,
+}: Props) => {
 	const {
 		discussionMessages,
 		getDiscussionMessages,
@@ -39,7 +44,7 @@ const DiscussionProvider = ({ questionIndex, children }: Props) => {
 		image,
 		setImage,
 		postDiscussionImage,
-	} = useDiscussionData(questionIndex);
+	} = useDiscussionData(userIdToken, questionIndex);
 
 	return (
 		<DiscussionContext.Provider

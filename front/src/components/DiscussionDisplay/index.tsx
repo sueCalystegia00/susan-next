@@ -9,17 +9,11 @@ import Message from "./Message";
 const DiscussionDisplay = () => {
 	const { discussionMessages } = useContext(DiscussionContext);
 
-	return !!discussionMessages && discussionMessages.length > 0 ? (
+	return discussionMessages.length > 0 ? (
 		<div className='w-screen flex flex-col items-center gap-y-3 px-4 py-10'>
 			{!discussionMessages.length && <></>}
 			{discussionMessages.map((message, index) => (
-				<Message
-					key={index}
-					timestamp={message.timestamp}
-					SenderType={message.SenderType}
-					MessageType={message.MessageType}
-					MessageText={message.MessageText}
-				/>
+				<Message key={index} discussionMessage={message} />
 			))}
 		</div>
 	) : (

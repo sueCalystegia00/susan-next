@@ -28,9 +28,9 @@ export interface Questions {
 export interface DiscussionMessage {
 	index: number;
 	timestamp: string;
-	SenderType: User["position"];
-	MessageType: "chat" | "image" | "answer";
-	MessageText: string;
+	userType: User["position"];
+	messageType: "chat" | "image" | "answer";
+	message: string;
 }
 
 export interface DialogflowIntent {

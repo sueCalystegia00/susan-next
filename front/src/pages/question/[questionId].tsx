@@ -26,7 +26,10 @@ const QuestionDetailsPage = () => {
 			>
 				<QuestionTextDisplay />
 				<AnswerTextDisplay />
-				<DiscussionProvider questionIndex={Number(questionId)}>
+				<DiscussionProvider
+					userIdToken={user!.token}
+					questionIndex={Number(questionId)}
+				>
 					<DiscussionDisplay />
 					<MessageTypeSelector />
 					<CreateMessageArea />

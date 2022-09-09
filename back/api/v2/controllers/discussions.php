@@ -1,7 +1,7 @@
 <?php
 ini_set('display_errors',1);
 
-class ThreadsController
+class DiscussionsController
 {
   public $code = 200;
   public $url;
@@ -20,19 +20,12 @@ class ThreadsController
    * @return array レスポンス
    */
   public function get($args) {
-    switch($args[0]){
-      // 質問に紐づくスレッドのやり取りを取得
-      case "conversation":
-        return $this->getThreadConversation($_GET['index']);
-        break;
-
-      // 無効なアクセス
-      default:
-        $this -> code = 400;
-        return ["error" => [
-          "type" => "invalid_access"
-        ]];
+    $questionIndex = $args[0];
+    if($questionIndex == null) {
+      $this->code = 400;
+      return array("error" => "questionIndex is required");
     }
+    return $this->getDiscussion($questionIndex);
   }
 
   /**
@@ -40,24 +33,23 @@ class ThreadsController
    * @param int $questionIndex 質疑応答のインデックス
    * @return array スレッドの会話情報
    */
-  private function getThreadConversation($questionIndex) {
+  private function getDiscussion($questionIndex) {
     $db = new DB();
 
     try{
       // mysqlの実行文(各LINEid毎の最新メッセージを取得)
       $stmt = $db -> pdo() -> prepare(
-        "SELECT `index`, `timestamp`, `SenderType`, `MessageType`, `MessageText`
-        FROM `thread_conversation` 
-        WHERE QuestionId = :QuestionId
-        ORDER BY `thread_conversation`.`index`  ASC"
+        "SELECT `index`,`timestamp`,`userType`,`messageType`,`message`
+        FROM `Discussions` 
+        WHERE questionIndex = :questionIndex
+        ORDER BY `Discussions`.`index`  ASC"
       );
-      $stmt->bindValue(':QuestionId', $questionIndex, PDO::PARAM_INT);
+      $stmt->bindValue(':questionIndex', $questionIndex, PDO::PARAM_INT);
       // 実行
       $res = $stmt->execute();
   
       if($res){
-        $threadConversation = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $threadConversation;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
       }else{
         $this -> code = 500;
         return ["error" => [
