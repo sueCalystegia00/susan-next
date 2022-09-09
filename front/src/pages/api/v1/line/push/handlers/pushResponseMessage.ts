@@ -16,7 +16,7 @@ const pushResponseMessage = async ({
 }: PushLineMessagePayload) => {
 	// 質問に対する回答を送信
 	const { questionIndex, questionText } = event.question!;
-	
+
 	const message = () => {
 		if (event.type == "response") {
 			return questionResponseMessage(questionIndex, event.message.text);
