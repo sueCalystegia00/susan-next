@@ -1,9 +1,9 @@
-import { ConversationMessage } from "@/types/models";
+import { DiscussionMessage } from "@/types/models";
 import type { FlexMessage } from "@line/bot-sdk";
 
 const questionResponseMessage = (
 	questionIndex: number,
-	responseText: ConversationMessage["MessageText"]
+	responseText: DiscussionMessage["MessageText"]
 ) =>
 	({
 		type: "flex",

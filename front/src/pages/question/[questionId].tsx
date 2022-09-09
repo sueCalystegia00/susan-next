@@ -1,10 +1,10 @@
 import AnswerTextDisplay from "@/components/AnswerTextDisplay";
-import ConversationDisplay from "@/components/ConversationDisplay";
+import DiscussionDisplay from "@/components/DiscussionDisplay";
 import CreateMessageArea from "@/components/CreateMessageArea";
 import MessageTypeSelector from "@/components/MessageTypeSelector";
 import QuestionTextDisplay from "@/components/QuestionTextDisplay";
 import { AuthContext } from "@/contexts/AuthContext";
-import ConversationProvider from "@/contexts/ConversationContext";
+import DiscussionProvider from "@/contexts/DiscussionContext";
 import QuestionProvider from "@/contexts/QuestionContext";
 import { useRouter } from "next/router";
 import { useContext } from "react";
@@ -26,11 +26,11 @@ const QuestionDetailsPage = () => {
 			>
 				<QuestionTextDisplay />
 				<AnswerTextDisplay />
-				<ConversationProvider questionIndex={Number(questionId)}>
-					<ConversationDisplay />
+				<DiscussionProvider questionIndex={Number(questionId)}>
+					<DiscussionDisplay />
 					<MessageTypeSelector />
 					<CreateMessageArea />
-				</ConversationProvider>
+				</DiscussionProvider>
 			</QuestionProvider>
 		</>
 	);

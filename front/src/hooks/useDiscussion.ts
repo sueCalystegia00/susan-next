@@ -1,34 +1,34 @@
 import axios, { AxiosResponse, AxiosError } from "axios";
 import { useContext, useEffect, useState } from "react";
-import type { ConversationMessage } from "@/types/models";
+import type { DiscussionMessage } from "@/types/models";
 import { AuthContext } from "@/contexts/AuthContext";
-import { postConversationResponse } from "@/types/response";
+import { postDiscussionResponse } from "@/types/response";
 
 /**
  * 質問対応のメッセージ群の管理
  */
-const useConversationData = (questionId: number) => {
+const useDiscussionData = (questionId: number) => {
 	const { user } = useContext(AuthContext);
 
 	// メッセージ群を取得・保持する
-	const [conversationMessages, setConversationMessages] = useState<
-		ConversationMessage[]
+	const [discussionMessages, setDiscussionMessages] = useState<
+		DiscussionMessage[]
 	>([]);
 	useEffect(() => {
-		getConversationMessages(questionId);
+		getDiscussionMessages(questionId);
 	}, []);
 
 	/**
 	 * データベースからメッセージ群を取得する
 	 */
-	const getConversationMessages = (questionId: number) => {
+	const getDiscussionMessages = (questionId: number) => {
 		axios
 			.get(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/conversation?index=${questionId}`
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/discussion?index=${questionId}`
 			)
-			.then((response: AxiosResponse<ConversationMessage[]>) => {
+			.then((response: AxiosResponse<DiscussionMessage[]>) => {
 				const { data } = response;
-				setConversationMessages(data); // stateを更新
+				setDiscussionMessages(data); // stateを更新
 			})
 			.catch((error: AxiosError) => {
 				alert("サーバーでエラーが発生しました．");
@@ -38,14 +38,14 @@ const useConversationData = (questionId: number) => {
 
 	// メッセージを送信する
 	const [messageType, setMessageType] =
-		useState<ConversationMessage["MessageType"]>("chat");
+		useState<DiscussionMessage["MessageType"]>("chat");
 
 	// テキスト
-	const [text, setText] = useState<ConversationMessage["MessageText"]>("");
+	const [text, setText] = useState<DiscussionMessage["MessageText"]>("");
 
-	const postConversationMessage = async () => {
+	const postDiscussionMessage = async () => {
 		try {
-			const { status, data } = await axios.post<postConversationResponse>(
+			const { status, data } = await axios.post<postDiscussionResponse>(
 				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/message`,
 				{
 					index: questionId,
@@ -56,7 +56,7 @@ const useConversationData = (questionId: number) => {
 				}
 			);
 			if (status == 201) {
-				setConversationMessages([...conversationMessages, data.insertedData]);
+				setDiscussionMessages([...discussionMessages, data.insertedData]);
 				return data;
 			} else {
 				throw new Error("メッセージの送信に失敗しました");
@@ -76,13 +76,13 @@ const useConversationData = (questionId: number) => {
 	// 画像
 	const [image, setImage] = useState<File>();
 
-	const postConversationImage = async () => {
+	const postDiscussionImage = async () => {
 		const formData = new FormData();
 		formData.append("index", questionId.toString());
 		formData.append("userId", user!.userUid);
 		formData.append("file", image!);
 		try {
-			const { status, data } = await axios.post<postConversationResponse>(
+			const { status, data } = await axios.post<postDiscussionResponse>(
 				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/image`,
 				formData,
 				{
@@ -92,7 +92,7 @@ const useConversationData = (questionId: number) => {
 				}
 			);
 			if (status !== 201) throw new Error("画像の送信に失敗しました");
-			setConversationMessages([...conversationMessages, data.insertedData]);
+			setDiscussionMessages([...discussionMessages, data.insertedData]);
 			return data;
 		} catch (error: any) {
 			if (error instanceof AxiosError) {
@@ -104,17 +104,17 @@ const useConversationData = (questionId: number) => {
 	};
 
 	return {
-		conversationMessages,
-		getConversationMessages,
+		discussionMessages,
+		getDiscussionMessages,
 		text,
 		setText,
 		messageType,
 		setMessageType,
-		postConversationMessage,
+		postDiscussionMessage,
 		image,
 		setImage,
-		postConversationImage,
+		postDiscussionImage,
 	};
 };
 
-export default useConversationData;
+export default useDiscussionData;

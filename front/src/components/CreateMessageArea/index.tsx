@@ -1,4 +1,4 @@
-import { ConversationContext } from "@/contexts/ConversationContext";
+import { DiscussionContext } from "@/contexts/DiscussionContext";
 import { useContext } from "react";
 import InputAnswerField from "./InputAnswerField";
 import InputImageField from "./InputImageField";
@@ -9,7 +9,7 @@ import InputMessageField from "./InputMessageField";
  * @description 質問に対するメッセージの種類に応じたフォームを表示する
  */
 const CreateMessageArea = () => {
-	const { messageType } = useContext(ConversationContext);
+	const { messageType } = useContext(DiscussionContext);
 	return (
 		<>
 			{messageType === "chat" && <InputMessageField />}

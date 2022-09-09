@@ -25,7 +25,7 @@ export interface Questions {
 	[key: number]: Question;
 }
 
-export interface ConversationMessage {
+export interface DiscussionMessage {
 	index: number;
 	timestamp: string;
 	SenderType: User["position"];
