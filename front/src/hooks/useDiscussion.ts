@@ -47,6 +47,7 @@ const useDiscussionData = (
 	// テキスト
 	const [text, setText] = useState<DiscussionMessage["message"]>("");
 
+	// TODO: postDiscussionImageと統合する
 	const postDiscussionMessage = async () => {
 		try {
 			const { status, data } = await axios.post<postDiscussionResponse>(
