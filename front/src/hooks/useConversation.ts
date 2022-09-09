@@ -55,16 +55,20 @@ const useConversationData = (questionId: number) => {
 					userType: user?.position,
 				}
 			);
-			if (status === 201)
+			if (status == 201) {
 				setConversationMessages([...conversationMessages, data.insertedData]);
-			return data;
+				return data;
+			} else {
+				throw new Error("メッセージの送信に失敗しました");
+			}
 		} catch (error: any) {
+			console.error(error);
 			if (error instanceof AxiosError) {
-				console.error(error.message);
 				throw new AxiosError(error.message);
 			} else {
-				console.error(error);
-				throw new Error("サーバー通信時にエラーが発生しました．");
+				throw new Error(
+					error.message || "サーバー通信時にエラーが発生しました．"
+				);
 			}
 		}
 	};
@@ -87,16 +91,14 @@ const useConversationData = (questionId: number) => {
 					},
 				}
 			);
-			if (status === 201)
-				setConversationMessages([...conversationMessages, data.insertedData]);
+			if (status !== 201) throw new Error("画像の送信に失敗しました");
+			setConversationMessages([...conversationMessages, data.insertedData]);
 			return data;
 		} catch (error: any) {
 			if (error instanceof AxiosError) {
-				alert("サーバーでエラーが発生しました．");
-				throw new AxiosError(error.message);
+				throw new AxiosError(`upload image: ${error.message}`);
 			} else {
-				alert("サーバーでエラーが発生しました．");
-				throw new Error("サーバー通信時にエラーが発生しました．");
+				throw new Error(`upload image: ${error.message || "unkown error"}`);
 			}
 		}
 	};

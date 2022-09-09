@@ -1,6 +1,6 @@
-import axios, { AxiosResponse, AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
-import type { Question, Questions } from "@/types/models";
+import type { Question } from "@/types/models";
 import router from "next/router";
 import { UpdateAnswerPayload } from "@/types/payloads";
 
@@ -16,50 +16,61 @@ const STORAGE_KEY_QUESTIONS = "yoslab/susan-next/questionsList";
  * @returns getQuestionsDataHandler: 質疑応答情報を30件取得する関数
  * @returns getOneQuestionDataHandler: 指定の質疑応答情報を1件取得する関数
  */
-const useQuestionsData = () => {
-	const sessionQuestionsData = sessionStorage.getItem(STORAGE_KEY_QUESTIONS); // セッションストレージから質疑応答情報を取得
-	const [questions, setQuestions] = useState<Questions>(
-		sessionQuestionsData ? JSON.parse(sessionQuestionsData) : {} // セッションストレージに質疑応答情報があればそれを利用，なければ空オブジェクトを利用
+const useQuestionsData = (questionIndex?: number) => {
+	/**
+	 * @var セッションストレージから取得した質問情報
+	 */
+	const sessionQuestionsData = sessionStorage.getItem(STORAGE_KEY_QUESTIONS);
+
+	// セッションストレージに質問情報があればそれを利用，なければ空配列を初期値とする
+	const [questions, setQuestions] = useState<Question[]>(
+		sessionQuestionsData ? JSON.parse(sessionQuestionsData) : []
 	);
-	const [startIndex, setStartIndex] = useState(0); // 質疑応答情報の取得開始インデックス
-	const [isHasMore, setIsHasMore] = useState(true);
 
-	// 質疑応答情報が変わったら取得開始インデックスを更新する
-	useEffect(() => {
-		let dataKeys = questions ? Object.keys(questions) : [];
-		setStartIndex(
-			dataKeys.length < 30
-				? 0
-				: Number(dataKeys.reverse()[((dataKeys.length / 30) | 0) * 30 - 1]) //(dataKeys.length/30 | 0)は少数以下切り捨ての除算(ビット演算子利用，Math.floorより気持ち速いらしい)
-		);
-		setIsHasMore("1" in dataKeys); // index:1 が含まれているかどうかで追加取得可能かどうかを判断
-	}, [questions]);
+	const [openingQuestion, setOpeningQuestion] = useState<
+		Question | undefined
+	>();
 
+	// 初回のみ，質問情報がなければ取得を試みる
 	useEffect(() => {
-		Object.keys(questions).length === 0 && getQuestionsDataHandler();
+		!questions.length && getQuestionsDataHandler();
 	}, []);
 
+	useEffect(() => {
+		if (!questionIndex) return;
+		const q = questions.find((question) => question.index === questionIndex);
+		q ? setOpeningQuestion(q) : getOneQuestionDataHandler(questionIndex);
+	}, [questionIndex, questions]);
+
 	/**
-	 * データベースから質疑応答情報を取得する
+	 * データベースから質疑応答情報を取得，stateのquestionsに追加する
 	 */
-	const getQuestionsDataHandler = () => {
-		axios
-			.get(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/list?startIndex=${startIndex}`
-			)
-			.then((response: AxiosResponse<Questions>) => {
-				const { data } = response;
+	const getQuestionsDataHandler = async () => {
+		try {
+			const { status, data } = await axios.get<Question[]>(
+				`${
+					process.env.NEXT_PUBLIC_API_BASE_URL
+				}/api/v2/questions/list?startIndex=${questions.slice(-1)[0]?.index}`
+			);
+			if (status === 200) {
+				// indexで降順ソート
+				const sortedQuestions = [...questions, ...data].sort((pre, cur) =>
+					pre.index > cur.index ? -1 : 1
+				);
 				// セッションストレージに保存
 				sessionStorage.setItem(
 					STORAGE_KEY_QUESTIONS,
-					JSON.stringify({ ...questions, ...data })
+					JSON.stringify(sortedQuestions)
 				);
-				setQuestions({ ...questions, ...data }); // stateを更新
-			})
-			.catch((error: AxiosError) => {
-				alert("サーバーでエラーが発生しました．");
+				setQuestions(sortedQuestions); // stateを更新
+			}
+		} catch (error) {
+			if (error instanceof AxiosError) {
+				console.error(error.response);
+			} else {
 				console.error(error);
-			});
+			}
+		}
 	};
 
 	/**
@@ -67,25 +78,18 @@ const useQuestionsData = () => {
 	 * @param questionId 質疑応答情報のID
 	 * @returns question: 質疑応答情報
 	 */
-	const getOneQuestionDataHandler = (questionId: number) => {
-		return axios
-			.get(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/specified?index=${questionId}`
-			)
-			.then((response: AxiosResponse<Question>) => {
-				const { data } = response;
-				return data;
-			})
-			.catch((error: AxiosError) => {
-				const { response } = error;
-				if (response!.status === 404) {
-					alert("指定の質問が見つかりませんでした．");
-					router.push(`/questionsList`);
-				} else {
-					alert("サーバーでエラーが発生しました．");
-					console.error(error);
-				}
-			});
+	const getOneQuestionDataHandler = async (questionId: number) => {
+		try {
+			const { status, data } = await axios.get<Question>(
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/${questionId}`
+			);
+			if (status === 200) {
+				setOpeningQuestion(data);
+			}
+		} catch (error) {
+			console.error(error);
+			router.push("/404");
+		}
 	};
 
 	/**
@@ -93,45 +97,49 @@ const useQuestionsData = () => {
 	 * @param questionIndex 質疑応答情報のID
 	 * @param updatedQandA 更新する質疑応答情報
 	 */
-	const updateQandA = async (
-		questionIndex: number,
-		payload: UpdateAnswerPayload
-	) => {
+	const updateQandA = async (updateAnswerPayload: UpdateAnswerPayload) => {
 		try {
-			return await axios
-				.put(
-					`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/${questionIndex}/answer`,
-					{
-						questionText: payload.questionText,
-						answerText: payload.answerText,
-						isShared: payload.isShared,
-						intentName: payload.intentName,
+			const { status, data } = await axios.put<Question>(
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/${updateAnswerPayload.index}/answer`,
+				{
+					questionText: updateAnswerPayload.questionText,
+					answerText: updateAnswerPayload.answerText,
+					broadcast: updateAnswerPayload.broadcast,
+					intentName: updateAnswerPayload.intentName,
+				}
+			);
+			if (status === 201) {
+				const updatedQuestions = questions.reduce((acc, question) => {
+					if (data.index === question.index) {
+						acc.push(data);
+					} else {
+						acc.push(question);
 					}
-				)
-				.then((response: AxiosResponse<Questions>) => {
-					const { data } = response;
-					Object.entries(data).map(([questionIndex, question]) => {
-						if (!questions[Number(questionIndex)]) return;
-						setQuestions({ ...questions, [questionIndex]: question });
-						sessionStorage.setItem(
-							STORAGE_KEY_QUESTIONS,
-							JSON.stringify({ ...questions, [questionIndex]: question })
-						);
-					});
-					return data;
-				})
-				.catch((error: AxiosError) => {
-					alert("サーバーでエラーが発生しました．(DB 回答追加)");
-					throw new Error(error.message);
-				});
-		} catch (e) {
-			console.error(e);
+					return acc;
+				}, [] as Question[]);
+
+				setQuestions(updatedQuestions);
+				sessionStorage.setItem(
+					STORAGE_KEY_QUESTIONS,
+					JSON.stringify(updatedQuestions)
+				);
+			} else {
+				throw new Error("質問・回答の更新に失敗しました");
+			}
+		} catch (error: any) {
+			if (error instanceof AxiosError) {
+				throw new AxiosError(`update answer: ${error.response}`);
+			} else {
+				throw new Error(
+					`update answer: ${error.response || "不明なエラーが発生しました"}`
+				);
+			}
 		}
 	};
 
 	return {
+		openingQuestion,
 		questions,
-		isHasMore,
 		getQuestionsDataHandler,
 		getOneQuestionDataHandler,
 		updateQandA,

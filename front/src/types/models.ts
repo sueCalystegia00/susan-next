@@ -12,11 +12,13 @@ export interface IErrorResponse {
 }
 
 export interface Question {
-	AnswerText: string;
-	IntentName: string;
-	QuestionText: string;
-	Shared: boolean;
-	timestamp: string;
+	index: number;
+	timestamp?: string;
+	lectureNumber?: number;
+	questionText: string;
+	answerText?: string;
+	intentName?: string;
+	broadcast: boolean;
 }
 
 export interface Questions {

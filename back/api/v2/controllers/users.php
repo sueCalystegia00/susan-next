@@ -111,27 +111,27 @@ class UsersController
    * @param int $questionId 質問ID
    * @return string 質問者のLINE ID
    */
-  public function getQuestionerLineId($questionId){
+  public function getQuestionerLineId($questionIndex){
     $db = new DB();
     $pdo = $db -> pdo();
     
     try{
       // mysqlの実行文
       $stmt = $pdo -> prepare(
-        "SELECT QuestionerLineId
-        FROM `bot_qanda` 
-        WHERE `bot_qanda`.`index` = :QuestionId"
+        "SELECT questionerId
+        FROM `Questions` 
+        WHERE `Questions`.`index` = :questionId"
       );
       //データの紐付け
-      $stmt->bindValue(':QuestionId', $questionId, PDO::PARAM_INT);
+      $stmt->bindValue(':questionId', $questionIndex, PDO::PARAM_INT);
       // 実行
       $res = $stmt->execute();
 
       if(!$res){
         throw new Exception('pdo not response');
       }else{
-        $questioner = $stmt->fetchAll(PDO::FETCH_COLUMN)[0];
-        return [ "lineId" => $questioner ];
+        $questionerId = $stmt->fetchAll(PDO::FETCH_COLUMN)[0];
+        return [ "lineId" => $questionerId ];
       }
     } catch(PDOException $error){
       $this -> code = 500;

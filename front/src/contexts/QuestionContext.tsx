@@ -1,19 +1,13 @@
-import { Dispatch, ReactNode, SetStateAction, useState } from "react";
+import { ReactNode } from "react";
 import { createContext } from "react";
-import type { Question, Questions } from "@/types/models";
+import type { Question } from "@/types/models";
 import useQuestionsData from "@/hooks/useQuestions";
 import { UpdateAnswerPayload } from "@/types/payloads";
 
 class QuestionContextProps {
-	questionIndex!: number;
-	question!: Question;
-	setQuestion!: Dispatch<SetStateAction<Question>>;
+	question?: Question;
 	updateAnswerPayload!: UpdateAnswerPayload;
-	setUpdateAnswerPayload!: Dispatch<SetStateAction<UpdateAnswerPayload>>;
-	updateQandA!: (
-		questionIndex: number,
-		updatedQandA: UpdateAnswerPayload
-	) => Promise<Questions | undefined>;
+	updateQandA!: (updatedQandA: UpdateAnswerPayload) => Promise<void>;
 }
 
 export const QuestionContext = createContext<QuestionContextProps>(
@@ -21,35 +15,24 @@ export const QuestionContext = createContext<QuestionContextProps>(
 );
 
 type Props = {
+	userIdToken: string;
 	questionIndex: number;
 	children: ReactNode;
 };
 
-const QuestionProvider = ({ questionIndex, children }: Props) => {
-	const { questions, updateQandA, getOneQuestionDataHandler } =
-		useQuestionsData();
+const QuestionProvider = ({ userIdToken, questionIndex, children }: Props) => {
+	const { openingQuestion, updateQandA } = useQuestionsData(questionIndex);
 
-	const [question, setQuestion] = useState<Question>(
-		questions[Number(questionIndex)] ||
-			getOneQuestionDataHandler(Number(questionIndex))
-	);
-
-	const [updateAnswerPayload, setUpdateAnswerPayload] =
-		useState<UpdateAnswerPayload>({
-			questionText: question.QuestionText,
-			answerText: question.AnswerText,
-			isShared: question.Shared,
-			intentName: question.IntentName,
-		});
+	const updateAnswerPayload: UpdateAnswerPayload = {
+		...openingQuestion!,
+		answerIdToken: userIdToken,
+	};
 
 	return (
 		<QuestionContext.Provider
 			value={{
-				questionIndex,
-				question,
-				setQuestion,
+				question: openingQuestion,
 				updateAnswerPayload,
-				setUpdateAnswerPayload,
 				updateQandA,
 			}}
 		>

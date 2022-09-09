@@ -6,7 +6,6 @@ import { Dispatch, SetStateAction } from "react";
 import type { postConversationResponse } from "@/types/response";
 
 class ConversationContextProps {
-	questionIndex!: number;
 	conversationMessages!: ConversationMessage[];
 	getConversationMessages!: (questionId: number) => void;
 	inputtedText: ConversationMessage["MessageText"] = "";
@@ -17,8 +16,8 @@ class ConversationContextProps {
 	setPostImage!: Dispatch<SetStateAction<File | undefined>>;
 	messageType: ConversationMessage["MessageType"] = "chat";
 	setMessageType!: (messageType: ConversationMessage["MessageType"]) => void;
-	postConversationMessage!: () => Promise<postConversationResponse> | undefined;
-	postConversationImage!: () => Promise<postConversationResponse> | undefined;
+	postConversationMessage!: () => Promise<postConversationResponse>;
+	postConversationImage!: () => Promise<postConversationResponse>;
 }
 
 export const ConversationContext = createContext<ConversationContextProps>(
@@ -47,7 +46,6 @@ const ConversationProvider = ({ questionIndex, children }: Props) => {
 	return (
 		<ConversationContext.Provider
 			value={{
-				questionIndex,
 				conversationMessages,
 				getConversationMessages,
 				inputtedText: text,

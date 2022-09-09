@@ -4,6 +4,6 @@ export interface QuestionCardProps {
 	id: number;
 	timestamp: Question["timestamp"];
 	answerStatus: boolean;
-	lectureNumber: number;
-	questionText: Question["QuestionText"];
+	lectureNumber?: number;
+	questionText: Question["questionText"];
 }

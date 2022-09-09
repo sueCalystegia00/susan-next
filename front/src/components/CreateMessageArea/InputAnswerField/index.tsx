@@ -4,9 +4,7 @@ import CheckedToggle from "../../CheckedToggle";
 import { ConversationContext } from "@/contexts/ConversationContext";
 import { QuestionContext } from "@/contexts/QuestionContext";
 import useDialogflowIntent from "@/hooks/useDialogflowIntent";
-import { DialogflowIntent, Question } from "@/types/models";
 import useLineMessages from "@/hooks/useLineMessages";
-import sendEmail from "@/utils/sendEmail";
 
 /**
  * @param questionIndex: 質問のインデックス
@@ -14,30 +12,18 @@ import sendEmail from "@/utils/sendEmail";
  * @returns 質問対応の回答メッセージを入力するフォームおよび送信ボタン
  */
 const InputAnswerField = () => {
-	const {
-		questionIndex,
-		question,
-		setQuestion,
-		updateAnswerPayload,
-		setUpdateAnswerPayload,
-		updateQandA,
-	} = useContext(QuestionContext);
+	const { question, updateAnswerPayload, updateQandA } =
+		useContext(QuestionContext);
 	const { inputtedText, setInputtedText, postConversationMessage } =
 		useContext(ConversationContext);
 	const { intent, setIntent, postIntent } = useDialogflowIntent(
-		question.QuestionText,
-		question.IntentName
+		question!.questionText,
+		question!.intentName
 	);
-	const { linePayload, pushLineMessage } = useLineMessages(
-		questionIndex,
-		"answer"
-	);
+	const { linePayload, pushLineMessage } = useLineMessages("answer", question);
 
 	useEffect(() => {
-		setUpdateAnswerPayload({
-			...updateAnswerPayload,
-			answerText: inputtedText,
-		});
+		updateAnswerPayload.answerText = inputtedText;
 		setIntent({
 			...intent,
 			responseText: inputtedText,
@@ -45,39 +31,36 @@ const InputAnswerField = () => {
 	}, [inputtedText]);
 
 	const submitHandler = async () => {
-		await setIntent({
-			...intent,
-			trainingPhrases: [question.QuestionText],
-		});
 		try {
-			await postIntent(questionIndex).then((intent?: DialogflowIntent) => {
-				setUpdateAnswerPayload({
-					...updateAnswerPayload,
-					intentName: intent!.intentName,
-				});
-			});
-			await updateQandA(questionIndex, updateAnswerPayload).then((response) => {
-				setQuestion(response![questionIndex] as Question);
-			});
+			// Dialogflowのインテントを更新，更新後のintentNameを取得
+			updateAnswerPayload.intentName = (await postIntent(
+				question!
+			))!.intentName;
+
+			// DBの質問と回答を更新
+			await updateQandA(updateAnswerPayload);
+
 			// DBにメッセージを記録
 			const res = await postConversationMessage();
 			// LINEにメッセージを送信
-			if (res && res.questioner) {
-				if (updateAnswerPayload.isShared) {
+			if (res.questionerId) {
+				if (updateAnswerPayload.broadcast) {
 					linePayload.userIds = [];
 					linePayload.broadcast = true;
 				} else {
-					linePayload.userIds = [res.questioner];
+					linePayload.userIds = [res.questionerId];
 				}
-				linePayload.event.message.text = updateAnswerPayload.answerText;
-				linePayload.event.question!.questionText = question.QuestionText;
-				await pushLineMessage(linePayload).then(() => {
-					alert("メッセージを送信しました");
-				});
+				linePayload.event.message.text = updateAnswerPayload.answerText!;
+				linePayload.event.question!.questionText = question!.questionText;
+				await pushLineMessage(linePayload);
+				alert("メッセージを送信しました");
 			}
 			setInputtedText("");
-		} catch (error) {
+		} catch (error: any) {
 			console.error(error);
+			console.error(error);
+			alert(`エラーが発生しました. 
+			Error:${JSON.stringify(error)}`);
 		}
 	};
 
@@ -85,13 +68,10 @@ const InputAnswerField = () => {
 		<div className='w-full flex flex-col items-center gap-2 p-4 '>
 			<MessageTextArea text={inputtedText} setText={setInputtedText} />
 			<CheckedToggle
-				checked={updateAnswerPayload.isShared}
-				onChange={() =>
-					setUpdateAnswerPayload({
-						...updateAnswerPayload,
-						isShared: !updateAnswerPayload.isShared,
-					})
-				}
+				checked={updateAnswerPayload.broadcast}
+				onChange={() => {
+					updateAnswerPayload.broadcast = !updateAnswerPayload.broadcast;
+				}}
 				children={
 					<span className='text-sm text-gray-500'>
 						質問者以外の学生にも回答を通知する
