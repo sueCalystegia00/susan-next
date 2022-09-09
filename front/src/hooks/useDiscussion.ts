@@ -6,22 +6,25 @@ import { postDiscussionResponse } from "@/types/response";
 /**
  * 質問対応のメッセージ群の管理
  */
-const useDiscussionData = (userIdToken: User["token"], questionId: number) => {
+const useDiscussionData = (
+	userIdToken: User["token"],
+	questionIndex: number
+) => {
 	// メッセージ群を取得・保持する
 	const [discussionMessages, setDiscussionMessages] = useState<
 		DiscussionMessage[]
 	>([]);
 	useEffect(() => {
-		getDiscussionMessages(questionId);
+		getDiscussionMessages(questionIndex);
 	}, []);
 
 	/**
 	 * データベースからメッセージ群を取得する
 	 */
-	const getDiscussionMessages = async (questionId: number) => {
+	const getDiscussionMessages = async (questionIndex: number) => {
 		try {
 			const { status, data } = await axios.get<DiscussionMessage[]>(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/discussions/${questionId}`
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/discussions/${questionIndex}`
 			);
 			if (status === 200) {
 				setDiscussionMessages(data);
@@ -47,16 +50,15 @@ const useDiscussionData = (userIdToken: User["token"], questionId: number) => {
 	const postDiscussionMessage = async () => {
 		try {
 			const { status, data } = await axios.post<postDiscussionResponse>(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/message`,
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/discussions/${messageType}`,
 				{
-					index: questionId,
+					index: questionIndex,
 					userIdToken: userIdToken,
-					messageType: messageType,
 					message: text,
 				}
 			);
 			if (status == 201) {
-				setDiscussionMessages([...discussionMessages, data.insertedData]);
+				setDiscussionMessages([...discussionMessages, data.insertedMessage]);
 				return data;
 			} else {
 				throw new Error("メッセージの送信に失敗しました");
@@ -78,12 +80,12 @@ const useDiscussionData = (userIdToken: User["token"], questionId: number) => {
 
 	const postDiscussionImage = async () => {
 		const formData = new FormData();
-		formData.append("index", questionId.toString());
+		formData.append("index", questionIndex.toString());
 		formData.append("userIdToken", userIdToken);
 		formData.append("file", image!);
 		try {
 			const { status, data } = await axios.post<postDiscussionResponse>(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/threads/image`,
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/discussions/image`,
 				formData,
 				{
 					headers: {
@@ -92,7 +94,7 @@ const useDiscussionData = (userIdToken: User["token"], questionId: number) => {
 				}
 			);
 			if (status !== 201) throw new Error("画像の送信に失敗しました");
-			setDiscussionMessages([...discussionMessages, data.insertedData]);
+			setDiscussionMessages([...discussionMessages, data.insertedMessage]);
 			return data;
 		} catch (error: any) {
 			if (error instanceof AxiosError) {

@@ -2,7 +2,7 @@ import TileRadioButton from "@/components/TileRadioButton";
 import AnswerIcon from "@/assets/reviews_FILL1_wght400_GRAD0_opsz24.svg";
 import ChatIcon from "@/assets/chat_black_24dp.svg";
 import ImageIcon from "@/assets/image_black_24dp.svg";
-import { DiscussionMessage } from "@/types/models";
+import type { DiscussionMessage } from "@/types/models";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/contexts/AuthContext";
 import { DiscussionContext } from "@/contexts/DiscussionContext";
@@ -16,12 +16,12 @@ const MessageTypeSelector = () => {
 	const { messageType, setMessageType } = useContext(DiscussionContext);
 	const [buttons, setButtons] = useState([
 		{
-			value: "chat" as DiscussionMessage["MessageType"],
+			value: "chat" as DiscussionMessage["messageType"],
 			imageComponent: <ChatIcon width='24' height='24' viewBox='0 0 24 24' />,
 			displayText: "チャット",
 		},
 		{
-			value: "image" as DiscussionMessage["MessageType"],
+			value: "image" as DiscussionMessage["messageType"],
 			imageComponent: <ImageIcon width='24' height='24' viewBox='0 0 24 24' />,
 			displayText: "画像",
 		},
@@ -35,7 +35,7 @@ const MessageTypeSelector = () => {
 			setButtons([
 				...buttons,
 				{
-					value: "answer" as DiscussionMessage["MessageType"],
+					value: "answer" as DiscussionMessage["messageType"],
 					imageComponent: (
 						<AnswerIcon width='24' height='24' viewBox='0 0 24 24' />
 					),

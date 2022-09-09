@@ -74,126 +74,132 @@ class DiscussionsController
    * @return array レスポンス
    */
   public function post($args) {
-    $post = $this->request_body;
-    switch($args[0]){
+    $messageType = $args[0];
+    if($messageType == null) {
+      $this -> code = 400;
+      return ["error" => [
+        "type" => "invalid_access"
+      ]];
+    }
+
+    if($messageType == "chat" || $messageType == "answer"){
+      $post = $this->request_body;
+    }else if($messageType == "image"){
+      $post = $_POST;
+    }
+    // 必須パラメータの確認
+    if(!array_key_exists("index",$post) || 
+      !array_key_exists("userIdToken",$post)
+    ){
+      $this->code = 400;
+      return ["error" => [
+        "type" => "invalid_param",
+        "message" => "index and token are required"
+      ]];
+    }
+
+    // ユーザーの存在確認
+    include("users.php");
+    $usersController = new UsersController();
+    try{
+      $userId = $usersController->verifyLine($post["userIdToken"])["sub"];
+      // TODO: userTypeの取得
+      $userType = "student";
+    }catch(Exception $e){
+      $this->code = 401;
+      return ["error" => [
+        "type" => "invalid_token"
+      ]];
+    }
+
+    switch($messageType) {
       // スレッドに新規テキストメッセージを追加
-      case "message":
-        if(!array_key_exists("index",$post) || 
-          !array_key_exists("userId",$post) ||
-          !array_key_exists("messageType",$post)||
-          !array_key_exists("message",$post)
-        ){
+      case "chat":
+      case "answer":
+        if(!array_key_exists("message",$post)){
           $this->code = 400;
           return ["error" => [
             "type" => "invalid_param"
           ]];
-        }else{
-          $insertResponse = $this->setChatMessageToThreadConversation($post["index"], $post["userId"], $post["messageType"], $post["message"]);
-          if(array_key_exists("error",$insertResponse)){
-            return $insertResponse;
-          }
-          $insertResponse["SenderType"] = $post["userType"];
-          include("users.php");
-          $usersController = new UsersController();
-          $questioner = $usersController->getQuestionerLineId($post["index"]);
-          return [
-            "insertedData" => $insertResponse,
-            "questionerId" => $questioner["lineId"],
-          ];
-          
-          /*if(!array_key_exists("error",$res)){
-            // 教員側のメッセージの場合は学生へLINEのプッシュ通知を送る
-            include dirname( __FILE__).'/../../../susan_bot/functions/PushMessages.php';
-            if($post["userType"] == 'instructor') $res["line_bot"] = pushNewThreadMessageToStudent($post["index"], $post["messageType"], $post["isShared"], $post["message"]);
-            // 教員へメール通知
-            include dirname( __FILE__).'/../../../susan_bot/functions/CallbackToSusanPro.php';
-            $payload = array('message' => $post["message"], 'index' => $post["index"]);
-            $res["mail"] = sendEmailToInstructors("message", $payload);
-            echo $res; 
-            return $res;
-          }else{
-            return $res;
-          }*/
         }
+        $insertResponse = $this->setDiscussionMessage($post["index"], $userId, $userType, $messageType, $post["message"]);
         break;
       
       // スレッドに画像を追加
       case "image":
-        if(!isset($_POST['index']) || 
-          !isset($_POST['userId'])
-        ){
+        if(!array_key_exists("image",$post)){
           $this->code = 400;
           return ["error" => [
-            "type" => "invalid_param"
+            "type" => "invalid_param",
+            "message" => "image is required"
           ]];
-        }else if (!isset($_FILES['file']['error']) || !is_int($_FILES['file']['error'])) {
+        }
+        if (!isset($_FILES['file']['error']) || !is_int($_FILES['file']['error'])) {
           // 未定義である・複数ファイルである・$_FILES Corruption 攻撃を受けた
           // どれかに該当していれば不正なパラメータとして処理する
           $this->code = 412;
           return ["error" => [
             "type" => "invalid_file"
           ]];
-        }else{
-          $response = $this->saveImageFile($_FILES);
-          if(!array_key_exists('fileName',$response)){
-            return $response;
-          }
-          $insertResponse = $this->setChatMessageToThreadConversation($_POST['index'], $_POST['userId'], 'image', $response['fileName']);
-          if(array_key_exists("error",$insertResponse)){
-            return $insertResponse;
-          }
-          $insertResponse["SenderType"] = $post["userType"];
-          // include("users.php");
-          // $usersController = new UsersController();
-          // $questioner = $usersController->getQuestionerLineId($post["index"]);
-          return [
-            "insertedData" => $insertResponse,
-            //"questioner" => $questioner["lineId"],
-          ];
         }
+        $response = $this->saveImageFile($_FILES);
+        if(!array_key_exists('fileName',$response)){
+          return $response;
+        }
+
+        $insertResponse = $this->setDiscussionMessage($post["index"], $userId, $userType, $messageType, $response['fileName']);
+        break;
 
       // 無効なアクセス
       default:
+        // 多分ここには来ない
         $this -> code = 400;
         return ["error" => [
           "type" => "invalid_access"
         ]];
+        break;
     }
+    if(array_key_exists("error",$insertResponse)){
+      $this->code = 500;
+      return $insertResponse;
+    }
+    $questioner = $usersController->getQuestionerLineId($post["index"]);
+    return [
+      "insertedMessage" => $insertResponse,
+      "questionerId" => $questioner["lineId"],
+    ];
   }
 
   /**
    * 質疑応答のスレッドにメッセージを追加する
    * @param int $questionIndex 質問ID
-   * @param string $lineId 投稿者のLINE ID
+   * @param string $userId 投稿者のLINE ID
+   * @param string $userType 投稿者の種類
    * @param string $messageType chat/answer
    * @param string $message
    */
-  private function setChatMessageToThreadConversation($questionIndex, $lineId, $messageType, $message) {
+  private function setDiscussionMessage($questionIndex, $userId, $userType, $messageType, $message) {
     $db = new DB();
     $pdo = $db -> pdo();
 
     try{
       // mysqlの実行文の記述
       $stmt = $pdo -> prepare(
-        "INSERT INTO thread_conversation (QuestionId, SenderType, Sender, MessageType, MessageText)
+        "INSERT INTO Discussions (questionIndex, userId, userType, messageType, message)
         VALUES (
-          :QuestionId, 
-          (SELECT IF( EXISTS(
-            SELECT `LineId`
-            FROM `instructor_list`
-            WHERE `LineId` = :LineId), 
-            'instructor', 'student') as 'SenderType'),
-          :Sender, 
-          :MessageType, 
-          :MessageText
+          :questionIndex,
+          :userId,  
+          :userType,
+          :messageType, 
+          :message
         )"
       );
       //データの紐付け
-      $stmt->bindValue(':QuestionId', $questionIndex, PDO::PARAM_INT);
-      $stmt->bindValue(':LineId', $lineId, PDO::PARAM_STR);
-      $stmt->bindValue(':Sender', $lineId, PDO::PARAM_STR);
-      $stmt->bindValue(':MessageType', $messageType, PDO::PARAM_STR);
-      $stmt->bindValue(':MessageText', $message, PDO::PARAM_STR);
+      $stmt->bindValue(':questionIndex', $questionIndex, PDO::PARAM_INT);
+      $stmt->bindValue(':userId', $userId, PDO::PARAM_STR);
+      $stmt->bindValue(':userType', $userType, PDO::PARAM_STR);
+      $stmt->bindValue(':messageType', $messageType, PDO::PARAM_STR);
+      $stmt->bindValue(':message', $message, PDO::PARAM_STR);
       
       // 実行
       $res = $stmt->execute();
@@ -205,9 +211,9 @@ class DiscussionsController
         return [
           "index" => $lastIndex,
           "timestamp" => $timestamp,
-          //"SenderType" => "student", // TODO: DBから取得する(仮でpostの値を返した後に付け加えている)
-          "MessageType" => $messageType,
-          "MessageText" => $message
+          "userType" => $userType,
+          "messageType" => $messageType,
+          "message" => $message
         ];
       }else{
         $this->code = 500;
@@ -289,7 +295,7 @@ class DiscussionsController
   /**************************************************************************** */
   public function options()
   {
-    header("Access-Control-Allow-Methods: OPTIONS,GET,HEAD,POST,PUT,DELETE");
+    header("Access-Control-Allow-Methods: OPTIONS,GET,POST");
     header("Access-Control-Allow-Headers: Content-Type");
     return [];
   }
