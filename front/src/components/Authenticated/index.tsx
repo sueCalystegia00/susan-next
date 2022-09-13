@@ -85,13 +85,12 @@ const Authenticated = () => {
 				}
 			);
 			if (status == 200) {
-				return { position: data.position, canAnswer: data.canAnswer };
+				return { position: data.position, canAnswer: !!data.canAnswer };
 			} else {
 				throw new Error("failed to get user info");
 			}
 		} catch (error: any) {
 			if (error instanceof AxiosError) {
-				// 被験者登録がされていない場合は登録画面へ
 				if (error.response?.data.error.type == "not_in_sample") {
 					return {
 						position: "Non-experimenter" as User["position"],
