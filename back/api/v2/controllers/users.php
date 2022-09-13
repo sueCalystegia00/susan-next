@@ -33,66 +33,47 @@ class UsersController
       $this -> code = 400;
       return ["error" => [
         "type" => "failed_to_verify_line", 
-        "message" => $error->getMessage()
+        "message" => json_decode($error->getMessage(),true)
       ]];
     }
 
-    switch($args[0]){
-      // 学生か教員・TAか確認する
-      case "position":
-        return $this->checkUserPosition($userId);
-        break;
-
-      // 無効なアクセス
-      default:
-        $this -> code = 400;
-        return ["error" => [
-          "type" => "invalid_access"
-        ]];
-    }
+    return $this->getUserInfo($userId);
   }
 
   /**
-   * DBからユーザが学生か，教員・TAであるか確認する
-   * @param string $lineId LINEのユーザID
+   * DBからユーザ情報を取得する
+   * @param string $userUid LINEのユーザID
    * @return array 
    */
-  private function checkUserPosition($lineId) {
+  private function getUserInfo($userUid) {
     $db = new DB();
     $pdo = $db -> pdo();
     try{
       // 教員・TAか確認する
-      $stmt1 = $pdo -> prepare(
-        "SELECT COUNT(*)
-        FROM `instructor_list` 
-        WHERE LineId = :lineId"
+      $stmt = $pdo -> prepare(
+        "SELECT *
+        FROM `Users` 
+        WHERE userUid = :userUid"
       );
-      $stmt1->bindValue(':lineId', $lineId, PDO::PARAM_STR);
-      $res1 = $stmt1->execute();
+      $stmt->bindValue(':userUid', $userUid, PDO::PARAM_STR);
+      $res = $stmt->execute();
   
-      if(!$res1){
-        throw new Exception('pdo not response (check instructor)');
+      if($res){
+        $user = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+        if($user){
+          return $user;
+        }else{ //存在しない場合
+          $this->code = 404;
+          return ["error" => [
+            "type" => "not_in_sample"
+          ]];
+        }
       }else{
-        if($stmt1->fetchColumn() > 0) return ["verifiedId" => $lineId, "position" => "instructor"];
+        $this -> code = 500;
+        return ["error" => [
+          "type" => "pdo_not_response"
+        ]];
       }
-
-      // 教員・TAでなければ，学生(実験協力者)かどうか確認する
-      $stmt2 = $pdo -> prepare(
-        "SELECT COUNT(*)
-        FROM `tester_list` 
-        WHERE LineId = :lineId"
-      );
-      $stmt2->bindValue(':lineId', $lineId, PDO::PARAM_STR);
-      // 実行
-      $res2 = $stmt2->execute();
-  
-      if(!$res2){
-        throw new Exception('pdo not response (check student)');
-      }else{
-        if($stmt2->fetchColumn() > 0) return ["verifiedId" => $lineId, "position" => "student"];
-      }
-
-      return ["verifiedId" => $lineId, "position" => "Non-experimenter"];
   
     } catch(PDOException $error){
       $this -> code = 500;
@@ -101,7 +82,7 @@ class UsersController
           "type" => "pdo_exception",
           "message" => $error->getMessage()
         ],
-        "verifiedId" => $lineId,
+        "verifiedId" => $userUid,
       ];
     }
   }
@@ -282,10 +263,10 @@ class UsersController
     $result = json_decode($response, true);
 
     if(!array_key_exists("sub", $result)){
-      throw new Exception($result["message"]);
+      throw new Exception(json_encode($result));
 
     }else if(array_key_exists("error", $result)){
-      throw new Exception($result["error_description"]);
+      throw new Exception(json_encode($result));
     }
     return $result;
   }
