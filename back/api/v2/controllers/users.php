@@ -162,9 +162,8 @@ class UsersController
           return ["error" => [
             "type" => "invalid_param"
           ]];
-        }else{
-          return $this->insertAcceptedUserData($userId, $post["answerList"]);
         }
+        return $this->insertAcceptedUserData($userId, $post["name"], $post["position"], $post["canAnswer"], $post["age"], $post["gender"]);
         break;
 
       // 無効なアクセス
@@ -182,29 +181,35 @@ class UsersController
    * @param array $questionnaire アンケートへの回答
    * @return array $result DB追加の成功/失敗
    */
-  private function insertAcceptedUserData($lineId, $questionnaire) {
+  private function insertAcceptedUserData($lineId, $name, $position, $canAnswer, $age, $gender) {
     $db = new DB();
     $pdo = $db -> pdo();
 
     try{
       // mysqlの実行文の記述
       $stmt = $pdo -> prepare(
-        "INSERT INTO tester_list (LineId, Age, Gender)
-        VALUES (:LineId, :Age, :Gender)"
+        "INSERT INTO Users (userUid, name, position, canAnswer, age, gender)
+        VALUES (:userUid, :name, :position, :canAnswer, :age, :gender)"
       );
       //データの紐付け
-      $stmt->bindValue(':LineId', $lineId, PDO::PARAM_STR);
-      $stmt->bindValue(':Age', $questionnaire['Age'], PDO::PARAM_INT);
-      $stmt->bindValue(':Gender', $questionnaire['Gender'], PDO::PARAM_STR);
-      //$stmt->bindValue(':moodleFrequency', $questionnaire['moodleFrequency'], PDO::PARAM_INT);
-      //$stmt->bindValue(':moodleReason', $questionnaire['moodleReason'], PDO::PARAM_STR);
+      // TODO: php7
+      $stmt->bindValue(':userUid', $lineId, PDO::PARAM_STR);
+      $stmt->bindValue(':name', $name, PDO::PARAM_STR);
+      $stmt->bindValue(':position', $position, PDO::PARAM_STR);
+      $stmt->bindValue(':canAnswer', $canAnswer, PDO::PARAM_INT);
+      $stmt->bindValue(':age', $age, PDO::PARAM_INT);
+      $stmt->bindValue(':gender', $gender , PDO::PARAM_STR);
       // 実行
       $res = $stmt->execute();
       $lastIndex = $pdo->lastInsertId();
       if($res){
         $this->code = 201;
-        header("Location: ".$this->url.$lastIndex);
-        return [];
+        //header("Location: ".$this->url.$lastIndex);
+        return [
+          "userUid" => $lineId,
+          "position" => $position,
+          "canAnswer" => $canAnswer,
+        ];
       }else{
         $this->code = 500;
         return ["error" => [
