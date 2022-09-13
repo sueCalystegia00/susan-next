@@ -1,7 +1,8 @@
 export interface User {
 	userUid: string;
 	token: string;
-	position: "student" | "instructor" | "Non-experimenter";
+	type: "student" | "instructor" | "Non-experimenter";
+	canAnswer: boolean;
 	//displayName: string;
 	//pictureUrl: string;
 }
@@ -28,7 +29,7 @@ export interface Questions {
 export interface DiscussionMessage {
 	index: number;
 	timestamp: string;
-	userType: User["position"];
+	userType: User["type"];
 	messageType: "chat" | "image" | "answer";
 	message: string;
 }

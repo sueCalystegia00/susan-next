@@ -103,13 +103,10 @@ class DiscussionsController
     $usersController = new UsersController();
     try{
       $userId = $usersController->verifyLine($post["userIdToken"])["sub"];
-      // TODO: userTypeの取得
-      $userType = "student";
-    }catch(Exception $e){
-      $this->code = 401;
-      return ["error" => [
-        "type" => "invalid_token"
-      ]];
+      $userType = $usersController->getUserInfo($userId)["type"];
+    }catch(Exception $error){
+      $this->code = $error["code"];
+      return ["error" => json_decode($error["message"],true)];
     }
 
     switch($messageType) {

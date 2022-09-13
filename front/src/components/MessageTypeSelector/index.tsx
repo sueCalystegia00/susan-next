@@ -29,7 +29,7 @@ const MessageTypeSelector = () => {
 
 	useEffect(() => {
 		if (
-			user!.position === "instructor" &&
+			user!.type === "instructor" &&
 			!buttons.find((b) => b.value === "answer")
 		) {
 			setButtons([
