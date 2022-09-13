@@ -27,17 +27,13 @@ class UsersController
       ]];
     }
     try{
-      $verifyResult = $this->verifyLine($_GET["userIdToken"]);
-      $userId = $verifyResult["sub"];
+      $userId = $this->verifyLine($_GET["userIdToken"])["sub"];
+      $res = $this->getUserInfo($userId);
+      return $res;
     }catch(Exception $error){
-      $this -> code = 400;
-      return ["error" => [
-        "type" => "failed_to_verify_line", 
-        "message" => json_decode($error->getMessage(),true)
-      ]];
+      $this -> code = $error["code"] || 500;
+      return [json_decode($error["message"],true)];
     }
-
-    return $this->getUserInfo($userId);
   }
 
   /**
@@ -45,7 +41,7 @@ class UsersController
    * @param string $userUid LINEのユーザID
    * @return array 
    */
-  private function getUserInfo($userUid) {
+  public function getUserInfo($userUid) {
     $db = new DB();
     $pdo = $db -> pdo();
     try{
@@ -63,27 +59,23 @@ class UsersController
         if($user){
           return $user;
         }else{ //存在しない場合
-          $this->code = 404;
-          return ["error" => [
-            "type" => "not_in_sample"
-          ]];
+          throw new Exception(json_encode(["message" => "user not found"]), 404);
         }
       }else{
-        $this -> code = 500;
-        return ["error" => [
-          "type" => "pdo_not_response"
-        ]];
+        throw new Exception(json_encode(["message" => "pdo not response"]), 500);
       }
-  
     } catch(PDOException $error){
-      $this -> code = 500;
-      return [
-        "error" => [
-          "type" => "pdo_exception",
-          "message" => $error->getMessage()
-        ],
-        "verifiedId" => $userUid,
-      ];
+      if($error->getMessage()["message"] == "user not found"){
+        throw new Exception(json_encode( ["error" => [
+          "type" => "not_in_sample"
+        ]]), 404);
+      }else{
+        throw new Exception(json_encode( ["error" => [
+            "type" => "pdo_exception",
+            "message" => json_decode($error->getMessage()),
+          ],
+          "verifiedId" => $userUid,]), 500);
+      }
     }
   }
 
@@ -163,7 +155,7 @@ class UsersController
             "type" => "invalid_param"
           ]];
         }
-        return $this->insertAcceptedUserData($userId, $post["name"], $post["position"], $post["canAnswer"], $post["age"], $post["gender"]);
+        return $this->insertAcceptedUserData($userId, $post["name"], $post["type"], $post["canAnswer"], $post["age"], $post["gender"]);
         break;
 
       // 無効なアクセス
@@ -181,21 +173,21 @@ class UsersController
    * @param array $questionnaire アンケートへの回答
    * @return array $result DB追加の成功/失敗
    */
-  private function insertAcceptedUserData($lineId, $name, $position, $canAnswer, $age, $gender) {
+  private function insertAcceptedUserData($lineId, $name, $userType, $canAnswer, $age, $gender) {
     $db = new DB();
     $pdo = $db -> pdo();
 
     try{
       // mysqlの実行文の記述
       $stmt = $pdo -> prepare(
-        "INSERT INTO Users (userUid, name, position, canAnswer, age, gender)
-        VALUES (:userUid, :name, :position, :canAnswer, :age, :gender)"
+        "INSERT INTO Users (userUid, name, type, canAnswer, age, gender)
+        VALUES (:userUid, :name, :type, :canAnswer, :age, :gender)"
       );
       //データの紐付け
       // TODO: php7
       $stmt->bindValue(':userUid', $lineId, PDO::PARAM_STR);
       $stmt->bindValue(':name', $name, PDO::PARAM_STR);
-      $stmt->bindValue(':position', $position, PDO::PARAM_STR);
+      $stmt->bindValue(':type', $userType, PDO::PARAM_STR);
       $stmt->bindValue(':canAnswer', $canAnswer, PDO::PARAM_INT);
       $stmt->bindValue(':age', $age, PDO::PARAM_INT);
       $stmt->bindValue(':gender', $gender , PDO::PARAM_STR);
@@ -207,7 +199,7 @@ class UsersController
         //header("Location: ".$this->url.$lastIndex);
         return [
           "userUid" => $lineId,
-          "position" => $position,
+          "type" => $userType,
           "canAnswer" => $canAnswer,
         ];
       }else{
@@ -267,11 +259,8 @@ class UsersController
 
     $result = json_decode($response, true);
 
-    if(!array_key_exists("sub", $result)){
-      throw new Exception(json_encode($result));
-
-    }else if(array_key_exists("error", $result)){
-      throw new Exception(json_encode($result));
+    if(array_key_exists("error", $result)){
+      throw new Exception(json_encode($result), 500);
     }
     return $result;
   }

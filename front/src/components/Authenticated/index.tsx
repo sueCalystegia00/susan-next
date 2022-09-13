@@ -17,11 +17,11 @@ const Authenticated = () => {
 		token: User["token"]
 	): Promise<void> => {
 		try {
-			const { position, canAnswer } = await getUserInfo(token);
+			const { type, canAnswer } = await getUserInfo(token);
 			setUserContext({
 				userUid,
 				token,
-				position,
+				type,
 				canAnswer,
 			});
 		} catch (error: any) {
@@ -85,7 +85,7 @@ const Authenticated = () => {
 				}
 			);
 			if (status == 200) {
-				return { position: data.position, canAnswer: !!data.canAnswer };
+				return { type: data.type, canAnswer: !!data.canAnswer };
 			} else {
 				throw new Error("failed to get user info");
 			}
@@ -93,7 +93,7 @@ const Authenticated = () => {
 			if (error instanceof AxiosError) {
 				if (error.response?.data.error.type == "not_in_sample") {
 					return {
-						position: "Non-experimenter" as User["position"],
+						type: "Non-experimenter" as User["type"],
 						canAnswer: false as User["canAnswer"],
 					};
 				} else {

@@ -38,7 +38,7 @@ const AuthProvider = ({ children }: Props) => {
 		const _user: User = {
 			userUid: user.userUid,
 			token: user.token,
-			position: user.position,
+			type: user.type,
 			canAnswer: user.canAnswer,
 			//displayName: user.displayName,
 			//pictureUrl: user.pictureUrl;
