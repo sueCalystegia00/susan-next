@@ -105,8 +105,8 @@ class DiscussionsController
       $userId = $usersController->verifyLine($post["userIdToken"])["sub"];
       $userType = $usersController->getUserInfo($userId)["type"];
     }catch(Exception $error){
-      $this->code = $error["code"];
-      return ["error" => json_decode($error["message"],true)];
+      $this->code = $error->getCode();
+      return ["error" => json_decode($error->getMessage(),true)];
     }
 
     switch($messageType) {

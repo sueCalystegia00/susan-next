@@ -136,17 +136,32 @@ class QuestionsController
    */
   public function post($args) {
     $post = $this->request_body;
+    if(!array_key_exists("userIdToken",$post)){
+      $this->code = 400;
+      return ["error" => [
+        "type" => "user token is required"
+      ]];
+    }
+    // ユーザーの存在確認
+    include("users.php");
+    $usersController = new UsersController();
+    try{
+      $userId = $usersController->verifyLine($post["userIdToken"])["sub"];
+    }catch(Exception $error){
+      $this->code = $error->getCode();
+      return ["error" => json_decode($error->getMessage(),true)];
+    }
+
     switch($args[0]){
       // 閲覧ログを記録する
       case "view_log":
-        if(!array_key_exists("userId",$post) || !array_key_exists("index",$post)){
+        if(!is_numeric($args[1])){
           $this->code = 400;
           return ["error" => [
             "type" => "invalid_param"
           ]];
-        }else{
-          return $this->insertQuestionViewLog($post["userId"], $post["index"]);
         }
+        return $this->insertViewingLog($userId, (int) $args[1]);
         break;
       
       // 質問者とユーザが一致するか
@@ -187,7 +202,7 @@ class QuestionsController
    * @param int $questionIndex 閲覧した質疑応答情報のインデックス
    * @return array DB追加の成功/失敗
    */
-  private function insertQuestionViewLog($lineId, $questionIndex) {
+  private function insertViewingLog($lineId, $questionIndex) {
     $db = new DB();
     $pdo = $db -> pdo();
 
@@ -195,16 +210,18 @@ class QuestionsController
       // mysqlの実行文の記述
       // 指定されたインデックスの質問が存在しない場合はMySQL#1048エラー
       $stmt = $pdo -> prepare(
-        "INSERT INTO question_views (lineId, questionIndex, isQuestioner)
+        "INSERT INTO PageViewHistories (userUid, questionIndex, isQuestionerViewing)
         VALUES (
-          :LineId, 
+          :userUid,
           (SELECT `index` FROM `Questions` WHERE `index` = :questionIndex), 
-          (SELECT COUNT(*) FROM `Questions` WHERE `index`=:questionIndex AND `questionerId` = :lineId)
+          (SELECT COUNT(*) FROM `Questions` WHERE `index`=:qIndex AND `questionerId` = :questionerId LIMIT 1)
         )"
       );
       //データの紐付け
-      $stmt->bindValue(':lineId', $lineId, PDO::PARAM_STR);
+      $stmt->bindValue(':userUid', $lineId, PDO::PARAM_STR);
       $stmt->bindValue(':questionIndex', $questionIndex, PDO::PARAM_INT);
+      $stmt->bindValue(':qIndex', $questionIndex, PDO::PARAM_INT);
+      $stmt->bindValue(':questionerId', $lineId, PDO::PARAM_STR);
       
       // 実行
       $res = $stmt->execute();

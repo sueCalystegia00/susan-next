@@ -1,8 +1,9 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { createContext } from "react";
 import type { Question } from "@/types/models";
 import useQuestionsData from "@/hooks/useQuestions";
 import { UpdateAnswerPayload } from "@/types/payloads";
+import axios from "axios";
 
 class QuestionContextProps {
 	question?: Question;
@@ -21,6 +22,15 @@ type Props = {
 };
 
 const QuestionProvider = ({ userIdToken, questionIndex, children }: Props) => {
+	useEffect(() => {
+		axios.post(
+			`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/view_log/${questionIndex}`,
+			{
+				userIdToken: userIdToken,
+			}
+		);
+	}, []);
+
 	const { openingQuestion, updateQandA } = useQuestionsData(questionIndex);
 
 	const updateAnswerPayload: UpdateAnswerPayload = {
