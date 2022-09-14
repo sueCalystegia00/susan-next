@@ -1,7 +1,7 @@
 import AnswerTextDisplay from "@/components/AnswerTextDisplay";
 import DiscussionDisplay from "@/components/DiscussionDisplay";
 import CreateMessageArea from "@/components/CreateMessageArea";
-import MessageTypeSelector from "@/components/MessageTypeSelector";
+import MessageTypeSelector from "@/components/CreateMessageArea/MessageTypeSelector";
 import QuestionTextDisplay from "@/components/QuestionTextDisplay";
 import { AuthContext } from "@/contexts/AuthContext";
 import DiscussionProvider from "@/contexts/DiscussionContext";
@@ -31,7 +31,6 @@ const QuestionDetailsPage = () => {
 					questionIndex={Number(questionId)}
 				>
 					<DiscussionDisplay />
-					<MessageTypeSelector />
 					<CreateMessageArea />
 				</DiscussionProvider>
 			</QuestionProvider>

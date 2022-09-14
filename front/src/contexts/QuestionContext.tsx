@@ -1,11 +1,13 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { createContext } from "react";
 import type { Question } from "@/types/models";
 import useQuestionsData from "@/hooks/useQuestions";
 import { UpdateAnswerPayload } from "@/types/payloads";
+import axios from "axios";
 
 class QuestionContextProps {
 	question?: Question;
+	isUsersQuestion: boolean = false;
 	updateAnswerPayload!: UpdateAnswerPayload;
 	updateQandA!: (updatedQandA: UpdateAnswerPayload) => Promise<void>;
 }
@@ -21,6 +23,8 @@ type Props = {
 };
 
 const QuestionProvider = ({ userIdToken, questionIndex, children }: Props) => {
+	const [isUsersQuestion, setIsUsersQuestion] = useState(false);
+
 	const { openingQuestion, updateQandA } = useQuestionsData(questionIndex);
 
 	const updateAnswerPayload: UpdateAnswerPayload = {
@@ -28,10 +32,33 @@ const QuestionProvider = ({ userIdToken, questionIndex, children }: Props) => {
 		answerIdToken: userIdToken,
 	};
 
+	const checkIsUsersQuestion = async () => {
+		try {
+			const { status, data } = await axios.post(
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/view_log/${questionIndex}`,
+				{
+					userIdToken: userIdToken,
+				}
+			);
+			if (status === 201) {
+				setIsUsersQuestion(data.isYourQuestion);
+			} else {
+				throw new Error("check users question: Error");
+			}
+		} catch (error: any) {
+			console.log(error);
+		}
+	};
+
+	useEffect(() => {
+		checkIsUsersQuestion();
+	}, []);
+
 	return (
 		<QuestionContext.Provider
 			value={{
 				question: openingQuestion,
+				isUsersQuestion,
 				updateAnswerPayload,
 				updateQandA,
 			}}

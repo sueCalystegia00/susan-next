@@ -136,28 +136,51 @@ class QuestionsController
    */
   public function post($args) {
     $post = $this->request_body;
+    if(!array_key_exists("userIdToken",$post)){
+      $this->code = 400;
+      return ["error" => [
+        "type" => "user token is required"
+      ]];
+    }
+    // ユーザーの存在確認
+    include("users.php");
+    $usersController = new UsersController();
+    try{
+      $userId = $usersController->verifyLine($post["userIdToken"])["sub"];
+    }catch(Exception $error){
+      $this->code = $error->getCode();
+      return ["error" => json_decode($error->getMessage(),true)];
+    }
+
     switch($args[0]){
       // 閲覧ログを記録する
       case "view_log":
-        if(!array_key_exists("userId",$post) || !array_key_exists("index",$post)){
+        if(!is_numeric($args[1])){
           $this->code = 400;
           return ["error" => [
             "type" => "invalid_param"
           ]];
-        }else{
-          return $this->insertQuestionViewLog($post["userId"], $post["index"]);
+        }
+        try{
+          $res["status"] = $this->insertViewingLog($userId, (int) $args[1])["status"];
+          $res["isYourQuestion"] = $this->checkIsYourQuestion((int) $args[1], $userId)["isQuestioner"];
+          $this->code = $res["status"];
+          return $res;
+        }catch(Exception $error){
+          $this->code = json_decode($error->getMessage())->status;
+          return ["error" => json_decode($error->getMessage(),true)];
         }
         break;
       
       // 質問者とユーザが一致するか
-      case "questioner":
-        if(!array_key_exists("userId",$post) || !array_key_exists("index",$post)){
+      case "isYourQuestion":
+        if(!is_numeric($args[1])){
           $this->code = 400;
           return ["error" => [
             "type" => "invalid_param"
           ]];
         }else{
-          return $this->checkIsYourQuestion($post["index"], $post["userId"]);
+          return $this->checkIsYourQuestion((int) $args[1], $userId);
         }
         break;
 
@@ -187,7 +210,7 @@ class QuestionsController
    * @param int $questionIndex 閲覧した質疑応答情報のインデックス
    * @return array DB追加の成功/失敗
    */
-  private function insertQuestionViewLog($lineId, $questionIndex) {
+  private function insertViewingLog($lineId, $questionIndex) {
     $db = new DB();
     $pdo = $db -> pdo();
 
@@ -195,16 +218,18 @@ class QuestionsController
       // mysqlの実行文の記述
       // 指定されたインデックスの質問が存在しない場合はMySQL#1048エラー
       $stmt = $pdo -> prepare(
-        "INSERT INTO question_views (lineId, questionIndex, isQuestioner)
+        "INSERT INTO PageViewHistories (userUid, questionIndex, isQuestionerViewing)
         VALUES (
-          :LineId, 
+          :userUid,
           (SELECT `index` FROM `Questions` WHERE `index` = :questionIndex), 
-          (SELECT COUNT(*) FROM `Questions` WHERE `index`=:questionIndex AND `questionerId` = :lineId)
+          (SELECT COUNT(*) FROM `Questions` WHERE `index`=:qIndex AND `questionerId` = :questionerId LIMIT 1)
         )"
       );
       //データの紐付け
-      $stmt->bindValue(':lineId', $lineId, PDO::PARAM_STR);
+      $stmt->bindValue(':userUid', $lineId, PDO::PARAM_STR);
       $stmt->bindValue(':questionIndex', $questionIndex, PDO::PARAM_INT);
+      $stmt->bindValue(':qIndex', $questionIndex, PDO::PARAM_INT);
+      $stmt->bindValue(':questionerId', $lineId, PDO::PARAM_STR);
       
       // 実行
       $res = $stmt->execute();
@@ -212,20 +237,39 @@ class QuestionsController
       if($res){
         $this->code = 201;
         //header("Location: ".$this->url.$lastIndex);
-        return [];
+        return [
+          "result" => "success",
+          "status" => 201
+        ];
       }else{
-        $this->code = 500;
-        return ["error" => [
-          "type" => "pdo_not_response"
-        ]];
+        throw new ErrorException(json_encode([
+          "error" => [
+            "type" => "pdo_not_response"
+          ],
+          "status" => 500
+        ]));
       }
 
     } catch(PDOException $error){
-      $this -> code = 500;
-      return ["error" => [
-        "type" => "pdo_exception",
-        "message" => $error
-      ]];
+      throw new PDOException(json_encode([
+          "error" => [
+            "type" => "pdo_exception",
+            "message" => $error->getMessage()
+          ],
+          "status" => 500
+        ]));
+    } catch(Exception $error){
+      if(json_decode($error->getMessage())->error->type == "pdo_not_response"){
+        throw $error;
+      }else{
+        throw new ErrorException(json_encode([
+            "error" => [
+              "type" => "unknown_exception",
+              "message" => $error->getMessage()
+            ],
+            "status" => 500
+          ]));
+      }
     }
   }
 
@@ -241,12 +285,12 @@ class QuestionsController
     try{
       // mysqlの実行文(テーブルに指定のLINE IDが存在するかのみチェック)
       $stmt = $db -> pdo() -> prepare(
-        "SELECT COUNT(*)
+        "SELECT COUNT(*) 
         FROM `Questions` 
-        WHERE `index`=:questionIndex AND `QuestionerLineId` = :lineId"
+        WHERE `index`=:questionIndex AND `questionerId` = :questionerId LIMIT 1"
       );
       $stmt->bindValue(':questionIndex', $index, PDO::PARAM_STR);
-      $stmt->bindValue(':lineId', $lineId, PDO::PARAM_STR);
+      $stmt->bindValue(':questionerId', $lineId, PDO::PARAM_STR);
       // 実行
       $res = $stmt->execute();
   

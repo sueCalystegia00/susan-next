@@ -31,8 +31,8 @@ class UsersController
       $res = $this->getUserInfo($userId);
       return $res;
     }catch(Exception $error){
-      $this -> code = $error["code"] || 500;
-      return [json_decode($error["message"],true)];
+      $this -> code = $error->getCode() || 500;
+      return [json_decode($error->getMessage(),true)];
     }
   }
 
@@ -138,11 +138,8 @@ class UsersController
       $verifyResult = $this->verifyLine($post["userIdToken"]);
       $userId = $verifyResult["sub"];
     }catch(Exception $error){
-      $this -> code = 400;
-      return ["error" => [
-        "type" => $error["error"], 
-        "message" => $error["error_description"]
-      ]];
+      $this -> code = $error->getCode() || 500;
+      return ["error" => json_decode($error->getMessage(),true)];
     }
 
     switch($args[0]){
@@ -260,7 +257,9 @@ class UsersController
     $result = json_decode($response, true);
 
     if(array_key_exists("error", $result)){
-      throw new Exception(json_encode($result), 500);
+      throw new Exception(json_encode($result), 400);
+    }else if(!array_key_exists("sub", $result)){
+      throw new Exception(json_encode($result), 400);
     }
     return $result;
   }
