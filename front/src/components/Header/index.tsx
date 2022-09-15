@@ -16,7 +16,6 @@ const Header = () => {
 			forwardLink: "/questionsList",
 		},
 	};
-	console.log(router.pathname);
 	return (
 		<header className='relative w-full h-14 grid grid-cols-5 gap-2 place-items-center bg-susan-blue-100'>
 			<Link href={icons[router.pathname]?.forwardLink || "/"}>
