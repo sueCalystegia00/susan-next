@@ -24,18 +24,21 @@ const Authenticated = () => {
 				type,
 				canAnswer,
 			});
-			if (type == "Non-experimenter") router.replace("/");
 		} catch (error: any) {
 			handleError(error);
 		}
 	};
 
 	const handleError = (err: any) => {
-		console.error(err);
 		setUserContext(null);
 		liff.logout();
 		if (err.message === "IdToken expired.") {
 			router.reload();
+		} else if (err.message === "user not found") {
+			router.replace("/");
+		} else {
+			alert("エラーが発生しました");
+			console.error(err);
 		}
 	};
 
@@ -96,10 +99,7 @@ const Authenticated = () => {
 		} catch (error: any) {
 			if (error instanceof AxiosError) {
 				if (error.response?.data.message == "user not found") {
-					return {
-						type: "Non-experimenter" as User["type"],
-						canAnswer: false as User["canAnswer"],
-					};
+					throw new Error("user not found");
 				} else if (
 					error.response?.data.error_description == "IdToken expired."
 				) {
