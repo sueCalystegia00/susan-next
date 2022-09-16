@@ -30,6 +30,7 @@ export interface DiscussionMessage {
 	index: number;
 	timestamp: string;
 	userType: User["type"];
+	isQuestionersMessage: boolean;
 	messageType: "chat" | "image" | "answer";
 	message: string;
 }

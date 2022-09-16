@@ -14,7 +14,7 @@ import { AuthContext } from "@/contexts/AuthContext";
  */
 const InputAnswerField = () => {
 	const { user } = useContext(AuthContext);
-	const { question, updateAnswerPayload, updateQandA } =
+	const { question, isUsersQuestion, updateAnswerPayload, updateQandA } =
 		useContext(QuestionContext);
 	const { inputtedText, setInputtedText, postDiscussionMessage } =
 		useContext(DiscussionContext);
@@ -43,7 +43,7 @@ const InputAnswerField = () => {
 			await updateQandA(updateAnswerPayload);
 
 			// DBにメッセージを記録
-			const res = await postDiscussionMessage();
+			const res = await postDiscussionMessage(isUsersQuestion);
 			// LINEにメッセージを送信
 			if (res.questionerId) {
 				if (updateAnswerPayload.broadcast) {

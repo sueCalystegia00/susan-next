@@ -1,4 +1,5 @@
 import { DiscussionContext } from "@/contexts/DiscussionContext";
+import { QuestionContext } from "@/contexts/QuestionContext";
 import { useContext } from "react";
 
 /**
@@ -6,6 +7,7 @@ import { useContext } from "react";
  * @returns 質問対応の画像を入力するフォームおよび送信ボタン
  */
 const InputImageField = () => {
+	const { isUsersQuestion } = useContext(QuestionContext);
 	const { postImage, setPostImage, postDiscussionImage } =
 		useContext(DiscussionContext);
 
@@ -20,7 +22,7 @@ const InputImageField = () => {
 
 	const submitHandler = async () => {
 		try {
-			await postDiscussionImage();
+			await postDiscussionImage(isUsersQuestion);
 			setPostImage(undefined);
 		} catch (error: any) {
 			console.error(error);

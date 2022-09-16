@@ -39,7 +39,7 @@ class DiscussionsController
     try{
       // mysqlの実行文(各LINEid毎の最新メッセージを取得)
       $stmt = $db -> pdo() -> prepare(
-        "SELECT `index`,`timestamp`,`userType`,`messageType`,`message`
+        "SELECT `index`,`timestamp`,`userType`,`isQuestionersMessage`,`messageType`,`message`
         FROM `Discussions` 
         WHERE questionIndex = :questionIndex
         ORDER BY `Discussions`.`index`  ASC"
@@ -89,7 +89,8 @@ class DiscussionsController
     }
     // 必須パラメータの確認
     if(!array_key_exists("index",$post) || 
-      !array_key_exists("userIdToken",$post)
+      !array_key_exists("userIdToken",$post) ||
+      !array_key_exists("isUsersQuestion",$post)
     ){
       $this->code = 400;
       return ["error" => [
@@ -119,7 +120,7 @@ class DiscussionsController
             "type" => "invalid_param"
           ]];
         }
-        $insertResponse = $this->setDiscussionMessage($post["index"], $userId, $userType, $messageType, $post["message"]);
+        $insertResponse = $this->setDiscussionMessage($post["index"], $userId, $userType, $post["isUsersQuestion"], $messageType, $post["message"]);
         break;
       
       // スレッドに画像を追加
@@ -136,8 +137,9 @@ class DiscussionsController
         if(!array_key_exists('fileName',$response)){
           return $response;
         }
+        $isUsersQuestion = $post["isUsersQuestion"] == "true" ? true : false;
 
-        $insertResponse = $this->setDiscussionMessage($post["index"], $userId, $userType, $messageType, $response['fileName']);
+        $insertResponse = $this->setDiscussionMessage($post["index"], $userId, $userType, $isUsersQuestion, $messageType, $response['fileName']);
         break;
 
       // 無効なアクセス
@@ -168,18 +170,19 @@ class DiscussionsController
    * @param string $messageType chat/answer
    * @param string $message
    */
-  private function setDiscussionMessage($questionIndex, $userId, $userType, $messageType, $message) {
+  private function setDiscussionMessage($questionIndex, $userId, $userType, $isUsersQuestion, $messageType, $message) {
     $db = new DB();
     $pdo = $db -> pdo();
 
     try{
       // mysqlの実行文の記述
       $stmt = $pdo -> prepare(
-        "INSERT INTO Discussions (questionIndex, userId, userType, messageType, message)
+        "INSERT INTO Discussions (questionIndex, userId, userType, isQuestionersMessage, messageType, message)
         VALUES (
           :questionIndex,
-          :userId,  
+          :userId,
           :userType,
+          (SELECT COUNT(*) FROM `Questions` WHERE `index`=:qIndex AND `questionerId` = :questionerId LIMIT 1),
           :messageType, 
           :message
         )"
@@ -188,6 +191,8 @@ class DiscussionsController
       $stmt->bindValue(':questionIndex', $questionIndex, PDO::PARAM_INT);
       $stmt->bindValue(':userId', $userId, PDO::PARAM_STR);
       $stmt->bindValue(':userType', $userType, PDO::PARAM_STR);
+      $stmt->bindValue(':qIndex', $questionIndex, PDO::PARAM_INT);
+      $stmt->bindValue(':questionerId', $userId, PDO::PARAM_STR);
       $stmt->bindValue(':messageType', $messageType, PDO::PARAM_STR);
       $stmt->bindValue(':message', $message, PDO::PARAM_STR);
       
@@ -202,6 +207,7 @@ class DiscussionsController
           "index" => $lastIndex,
           "timestamp" => $timestamp,
           "userType" => $userType,
+          "isQuestionersMessage" => $isUsersQuestion,
           "messageType" => $messageType,
           "message" => $message
         ];

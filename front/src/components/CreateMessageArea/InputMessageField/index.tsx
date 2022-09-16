@@ -8,7 +8,7 @@ import { QuestionContext } from "@/contexts/QuestionContext";
  * @returns 質問対応のメッセージを入力するフォームおよび送信ボタン
  */
 const InputMessageField = () => {
-	const { question } = useContext(QuestionContext);
+	const { question, isUsersQuestion } = useContext(QuestionContext);
 	const { inputtedText, setInputtedText, postDiscussionMessage } =
 		useContext(DiscussionContext);
 	const { linePayload, pushLineMessage } = useLineMessages(
@@ -19,7 +19,7 @@ const InputMessageField = () => {
 	const submitHandler = async () => {
 		try {
 			// DBにメッセージを記録
-			const res = await postDiscussionMessage();
+			const res = await postDiscussionMessage(isUsersQuestion);
 			// LINEにメッセージを送信
 			if (res.questionerId) {
 				linePayload.userIds = [res.questionerId];
