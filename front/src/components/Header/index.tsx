@@ -17,7 +17,7 @@ const Header = () => {
 		},
 	};
 	return (
-		<header className='relative w-full h-14 grid grid-cols-5 gap-2 place-items-center bg-susan-blue-100'>
+		<header className='relative w-full h-14 grid grid-cols-5 gap-2 place-items-center bg-susanBlue-100'>
 			{icons[router.pathname] ? (
 				<Link href={icons[router.pathname]?.forwardLink}>
 					{/* TODO: ↓forwardRef を使って適切にコンポーネント管理する */}

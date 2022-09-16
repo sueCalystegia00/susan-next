@@ -1,7 +1,7 @@
 export interface User {
 	userUid: string;
 	token: string;
-	type: "student" | "instructor" | "Non-experimenter";
+	type: "student" | "instructor";
 	canAnswer: boolean;
 	//displayName: string;
 	//pictureUrl: string;

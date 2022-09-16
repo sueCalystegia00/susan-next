@@ -11,7 +11,7 @@ const QuestionTextDisplay = () => {
 	const { question } = useContext(QuestionContext);
 
 	return (
-		<div className='w-screen flex flex-col items-center p-4 gap-2 text-slate-50 bg-susan-blue-100'>
+		<div className='w-screen flex flex-col items-center p-4 gap-2 text-slate-50 bg-susanBlue-100'>
 			<div className='relative w-full max-w-5xl flex flex-col items-center'>
 				<span className='absolute top-0 left-0 text-sm font-semibold inline-block py-1 px-2 rounded-lg text-indigo-600 bg-indigo-200'>
 					{question?.lectureNumber

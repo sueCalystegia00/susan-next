@@ -82,7 +82,7 @@ const InputAnswerField = () => {
 				</CheckedToggle>
 			)}
 			<button
-				className='bg-susan-blue-100 text-white disabled:text-slate-500 disabled:bg-slate-700 active:bg-susan-blue-50 font-bold px-8 py-2 rounded-2xl shadow-inner shadow-susan-blue-1000 outline-none focus:outline-none ease-linear transition-all duration-150'
+				className='bg-susanBlue-100 text-white disabled:text-slate-500 disabled:bg-slate-700 active:bg-susanBlue-50 font-bold px-8 py-2 rounded-2xl shadow-inner shadow-susanBlue-1000 outline-none focus:outline-none ease-linear transition-all duration-150'
 				onClick={submitHandler}
 				disabled={!inputtedText}
 			>
