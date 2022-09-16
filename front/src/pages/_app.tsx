@@ -1,11 +1,9 @@
 import React from "react";
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-
 import Authenticated from "@/components/Authenticated";
 import AuthProvider from "@/contexts/AuthContext";
 import useScrollTop from "@/hooks/useScrollTop";
-import DefaultLayout from "@/layouts/Default";
 import Head from "next/head";
 
 const MyApp = ({ Component, pageProps, router }: AppProps) => {
@@ -26,9 +24,7 @@ const MyApp = ({ Component, pageProps, router }: AppProps) => {
 
 			<AuthProvider>
 				<Authenticated />
-				<DefaultLayout>
-					<Component {...pageProps} key={router.asPath} />
-				</DefaultLayout>
+				<Component {...pageProps} key={router.asPath} />
 			</AuthProvider>
 		</>
 	);
