@@ -1,19 +1,15 @@
-import { Dispatch, ReactNode, SetStateAction, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { createContext } from "react";
-import type { Question, Questions } from "@/types/models";
+import type { Question } from "@/types/models";
 import useQuestionsData from "@/hooks/useQuestions";
 import { UpdateAnswerPayload } from "@/types/payloads";
+import axios from "axios";
 
 class QuestionContextProps {
-	questionIndex!: number;
-	question!: Question;
-	setQuestion!: Dispatch<SetStateAction<Question>>;
+	question?: Question;
+	isUsersQuestion: boolean = false;
 	updateAnswerPayload!: UpdateAnswerPayload;
-	setUpdateAnswerPayload!: Dispatch<SetStateAction<UpdateAnswerPayload>>;
-	updateQandA!: (
-		questionIndex: number,
-		updatedQandA: UpdateAnswerPayload
-	) => Promise<Questions | undefined>;
+	updateQandA!: (updatedQandA: UpdateAnswerPayload) => Promise<void>;
 }
 
 export const QuestionContext = createContext<QuestionContextProps>(
@@ -21,35 +17,49 @@ export const QuestionContext = createContext<QuestionContextProps>(
 );
 
 type Props = {
+	userIdToken: string;
 	questionIndex: number;
 	children: ReactNode;
 };
 
-const QuestionProvider = ({ questionIndex, children }: Props) => {
-	const { questions, updateQandA, getOneQuestionDataHandler } =
-		useQuestionsData();
+const QuestionProvider = ({ userIdToken, questionIndex, children }: Props) => {
+	const [isUsersQuestion, setIsUsersQuestion] = useState(false);
 
-	const [question, setQuestion] = useState<Question>(
-		questions[Number(questionIndex)] ||
-			getOneQuestionDataHandler(Number(questionIndex))
-	);
+	const { openingQuestion, updateQandA } = useQuestionsData(questionIndex);
 
-	const [updateAnswerPayload, setUpdateAnswerPayload] =
-		useState<UpdateAnswerPayload>({
-			questionText: question.QuestionText,
-			answerText: question.AnswerText,
-			isShared: question.Shared,
-			intentName: question.IntentName,
-		});
+	const updateAnswerPayload: UpdateAnswerPayload = {
+		...openingQuestion!,
+		answerIdToken: userIdToken,
+	};
+
+	const checkIsUsersQuestion = async () => {
+		try {
+			const { status, data } = await axios.post(
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/view_log/${questionIndex}`,
+				{
+					userIdToken: userIdToken,
+				}
+			);
+			if (status === 201) {
+				setIsUsersQuestion(data.isYourQuestion);
+			} else {
+				throw new Error("check users question: Error");
+			}
+		} catch (error: any) {
+			console.log(error);
+		}
+	};
+
+	useEffect(() => {
+		checkIsUsersQuestion();
+	}, []);
 
 	return (
 		<QuestionContext.Provider
 			value={{
-				questionIndex,
-				question,
-				setQuestion,
+				question: openingQuestion,
+				isUsersQuestion,
 				updateAnswerPayload,
-				setUpdateAnswerPayload,
 				updateQandA,
 			}}
 		>

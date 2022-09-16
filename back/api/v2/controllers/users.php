@@ -27,82 +27,55 @@ class UsersController
       ]];
     }
     try{
-      $verifyResult = $this->verifyLine($_GET["userIdToken"]);
-      $userId = $verifyResult["sub"];
+      $userId = $this->verifyLine($_GET["userIdToken"])["sub"];
+      $res = $this->getUserInfo($userId);
+      return $res;
     }catch(Exception $error){
-      $this -> code = 400;
-      return ["error" => [
-        "type" => "failed_to_verify_line", 
-        "message" => $error->getMessage()
-      ]];
-    }
-
-    switch($args[0]){
-      // 学生か教員・TAか確認する
-      case "position":
-        return $this->checkUserPosition($userId);
-        break;
-
-      // 無効なアクセス
-      default:
-        $this -> code = 400;
-        return ["error" => [
-          "type" => "invalid_access"
-        ]];
+      $this -> code = $error->getCode() || 500;
+      return json_decode($error->getMessage(),true);
     }
   }
 
   /**
-   * DBからユーザが学生か，教員・TAであるか確認する
-   * @param string $lineId LINEのユーザID
+   * DBからユーザ情報を取得する
+   * @param string $userUid LINEのユーザID
    * @return array 
    */
-  private function checkUserPosition($lineId) {
+  public function getUserInfo($userUid) {
     $db = new DB();
     $pdo = $db -> pdo();
     try{
       // 教員・TAか確認する
-      $stmt1 = $pdo -> prepare(
-        "SELECT COUNT(*)
-        FROM `instructor_list` 
-        WHERE LineId = :lineId"
+      $stmt = $pdo -> prepare(
+        "SELECT *
+        FROM `Users` 
+        WHERE userUid = :userUid"
       );
-      $stmt1->bindValue(':lineId', $lineId, PDO::PARAM_STR);
-      $res1 = $stmt1->execute();
+      $stmt->bindValue(':userUid', $userUid, PDO::PARAM_STR);
+      $res = $stmt->execute();
   
-      if(!$res1){
-        throw new Exception('pdo not response (check instructor)');
+      if($res){
+        $user = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+        if($user){
+          return $user;
+        }else{ //存在しない場合
+          throw new Exception(json_encode(["message" => "user not found"]), 404);
+        }
       }else{
-        if($stmt1->fetchColumn() > 0) return ["verifiedId" => $lineId, "position" => "instructor"];
+        throw new Exception(json_encode(["message" => "pdo not response"]), 500);
       }
-
-      // 教員・TAでなければ，学生(実験協力者)かどうか確認する
-      $stmt2 = $pdo -> prepare(
-        "SELECT COUNT(*)
-        FROM `tester_list` 
-        WHERE LineId = :lineId"
-      );
-      $stmt2->bindValue(':lineId', $lineId, PDO::PARAM_STR);
-      // 実行
-      $res2 = $stmt2->execute();
-  
-      if(!$res2){
-        throw new Exception('pdo not response (check student)');
-      }else{
-        if($stmt2->fetchColumn() > 0) return ["verifiedId" => $lineId, "position" => "student"];
-      }
-
-      return ["verifiedId" => $lineId, "position" => "Non-experimenter"];
-  
     } catch(PDOException $error){
-      $this -> code = 500;
-      return [
-        "error" => [
-          "type" => "pdo_exception",
-          "message" => $error->getMessage()
-        ],
-        "verifiedId" => $lineId,
-      ];
+      if($error->getMessage()["message"] == "user not found"){
+        throw new Exception(json_encode( ["error" => [
+          "type" => "not_in_sample"
+        ]]), 404);
+      }else{
+        throw new Exception(json_encode( ["error" => [
+            "type" => "pdo_exception",
+            "message" => json_decode($error->getMessage()),
+          ],
+          "verifiedId" => $userUid,]), 500);
+      }
     }
   }
 
@@ -111,27 +84,27 @@ class UsersController
    * @param int $questionId 質問ID
    * @return string 質問者のLINE ID
    */
-  public function getQuestionerLineId($questionId){
+  public function getQuestionerLineId($questionIndex){
     $db = new DB();
     $pdo = $db -> pdo();
     
     try{
       // mysqlの実行文
       $stmt = $pdo -> prepare(
-        "SELECT QuestionerLineId
-        FROM `bot_qanda` 
-        WHERE `bot_qanda`.`index` = :QuestionId"
+        "SELECT questionerId
+        FROM `Questions` 
+        WHERE `Questions`.`index` = :questionId"
       );
       //データの紐付け
-      $stmt->bindValue(':QuestionId', $questionId, PDO::PARAM_INT);
+      $stmt->bindValue(':questionId', $questionIndex, PDO::PARAM_INT);
       // 実行
       $res = $stmt->execute();
 
       if(!$res){
         throw new Exception('pdo not response');
       }else{
-        $questioner = $stmt->fetchAll(PDO::FETCH_COLUMN)[0];
-        return [ "lineId" => $questioner ];
+        $questionerId = $stmt->fetchAll(PDO::FETCH_COLUMN)[0];
+        return [ "lineId" => $questionerId ];
       }
     } catch(PDOException $error){
       $this -> code = 500;
@@ -165,11 +138,8 @@ class UsersController
       $verifyResult = $this->verifyLine($post["userIdToken"]);
       $userId = $verifyResult["sub"];
     }catch(Exception $error){
-      $this -> code = 400;
-      return ["error" => [
-        "type" => $error["error"], 
-        "message" => $error["error_description"]
-      ]];
+      $this -> code = $error->getCode() || 500;
+      return ["error" => json_decode($error->getMessage(),true)];
     }
 
     switch($args[0]){
@@ -181,9 +151,8 @@ class UsersController
           return ["error" => [
             "type" => "invalid_param"
           ]];
-        }else{
-          return $this->insertAcceptedUserData($userId, $post["answerList"]);
         }
+        return $this->insertAcceptedUserData($userId, $post["name"], $post["type"], $post["canAnswer"], $post["age"], $post["gender"]);
         break;
 
       // 無効なアクセス
@@ -201,29 +170,35 @@ class UsersController
    * @param array $questionnaire アンケートへの回答
    * @return array $result DB追加の成功/失敗
    */
-  private function insertAcceptedUserData($lineId, $questionnaire) {
+  private function insertAcceptedUserData($lineId, $name, $userType, $canAnswer, $age, $gender) {
     $db = new DB();
     $pdo = $db -> pdo();
 
     try{
       // mysqlの実行文の記述
       $stmt = $pdo -> prepare(
-        "INSERT INTO tester_list (LineId, Age, Gender)
-        VALUES (:LineId, :Age, :Gender)"
+        "INSERT INTO Users (userUid, name, type, canAnswer, age, gender)
+        VALUES (:userUid, :name, :type, :canAnswer, :age, :gender)"
       );
       //データの紐付け
-      $stmt->bindValue(':LineId', $lineId, PDO::PARAM_STR);
-      $stmt->bindValue(':Age', $questionnaire['Age'], PDO::PARAM_INT);
-      $stmt->bindValue(':Gender', $questionnaire['Gender'], PDO::PARAM_STR);
-      //$stmt->bindValue(':moodleFrequency', $questionnaire['moodleFrequency'], PDO::PARAM_INT);
-      //$stmt->bindValue(':moodleReason', $questionnaire['moodleReason'], PDO::PARAM_STR);
+      // TODO: php7
+      $stmt->bindValue(':userUid', $lineId, PDO::PARAM_STR);
+      $stmt->bindValue(':name', $name, PDO::PARAM_STR);
+      $stmt->bindValue(':type', $userType, PDO::PARAM_STR);
+      $stmt->bindValue(':canAnswer', $canAnswer, PDO::PARAM_INT);
+      $stmt->bindValue(':age', $age, PDO::PARAM_INT);
+      $stmt->bindValue(':gender', $gender , PDO::PARAM_STR);
       // 実行
       $res = $stmt->execute();
       $lastIndex = $pdo->lastInsertId();
       if($res){
         $this->code = 201;
-        header("Location: ".$this->url.$lastIndex);
-        return [];
+        //header("Location: ".$this->url.$lastIndex);
+        return [
+          "userUid" => $lineId,
+          "type" => $userType,
+          "canAnswer" => $canAnswer,
+        ];
       }else{
         $this->code = 500;
         return ["error" => [
@@ -255,7 +230,7 @@ class UsersController
     return !(is_null($value) || $value === "");
   }
 
-  private function verifyLine($id_token){
+  public function verifyLine($id_token){
     //  Initiate curl session
     $ch = curl_init();
 
@@ -281,11 +256,10 @@ class UsersController
 
     $result = json_decode($response, true);
 
-    if(!array_key_exists("sub", $result)){
-      throw new Exception($result["message"]);
-
-    }else if(array_key_exists("error", $result)){
-      throw new Exception($result["error_description"]);
+    if(array_key_exists("error", $result)){
+      throw new Exception(json_encode($result), 400);
+    }else if(!array_key_exists("sub", $result)){
+      throw new Exception(json_encode($result), 400);
     }
     return $result;
   }

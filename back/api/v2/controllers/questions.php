@@ -27,8 +27,8 @@ class QuestionsController
         break;
       
       // 指定のインデックスの質疑応答情報を1件取得
-      case "specified":
-        return $this->getSelectedQuestionData($_GET['index']);
+      case is_numeric($args[0]):
+        return $this->getSelectedQuestionData($args[0]);
         break;
 
       // 無効なアクセス
@@ -53,19 +53,21 @@ class QuestionsController
     try{
       // mysqlの実行文
       $stmt = $db -> pdo() -> prepare(
-        "SELECT `index`, `timestamp`,`Shared`,`QuestionText`,`AnswerText`,`IntentName`
-        FROM `bot_qanda`
-        WHERE `index` < :StartIndex
-        ORDER BY `bot_qanda`.`index` DESC
+        "SELECT `index`,`timestamp`,`lectureNumber`,`questionText`,`answerText`,`broadcast`,`intentName`
+        FROM `Questions`
+        WHERE `index` < :startIndex
+        ORDER BY `Questions`.`index` DESC
         LIMIT 30"
       );
       //データの紐付け
-      $stmt->bindValue(':StartIndex', $startIndex, PDO::PARAM_INT);
+      $stmt->bindValue(':startIndex', $startIndex, PDO::PARAM_INT);
       // 実行
       $res = $stmt->execute();
   
       if($res){
-        return $stmt->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
+        //$questions = $stmt->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
+        $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $questions;
       }else{
         $this -> code = 500;
         return ["error" => [
@@ -92,8 +94,8 @@ class QuestionsController
     try{
       // mysqlの実行文
       $stmt = $db -> pdo() -> prepare(
-        "SELECT `index`, `timestamp`,`Shared`,`QuestionText`,`AnswerText`,`IntentName`
-        FROM `bot_qanda`
+        "SELECT `index`,`timestamp`,`lectureNumber`,`questionText`,`answerText`,`broadcast`,`intentName`
+        FROM `Questions`
         WHERE `index` = :QuestionIndex"
       );
       //データの紐付け
@@ -102,9 +104,9 @@ class QuestionsController
       $res = $stmt->execute();
   
       if($res){
-        $questionData = $stmt->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
-        if(!empty($questionData)){
-          return $questionData;
+        $question = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if(!empty($question)){
+          return $question[0];
         }else{ //指定したインデックスの質問が存在しない場合
           $this->code = 404;
           return ["error" => [
@@ -134,28 +136,51 @@ class QuestionsController
    */
   public function post($args) {
     $post = $this->request_body;
+    if(!array_key_exists("userIdToken",$post)){
+      $this->code = 400;
+      return ["error" => [
+        "type" => "user token is required"
+      ]];
+    }
+    // ユーザーの存在確認
+    include("users.php");
+    $usersController = new UsersController();
+    try{
+      $userId = $usersController->verifyLine($post["userIdToken"])["sub"];
+    }catch(Exception $error){
+      $this->code = $error->getCode();
+      return ["error" => json_decode($error->getMessage(),true)];
+    }
+
     switch($args[0]){
       // 閲覧ログを記録する
       case "view_log":
-        if(!array_key_exists("userId",$post) || !array_key_exists("index",$post)){
+        if(!is_numeric($args[1])){
           $this->code = 400;
           return ["error" => [
             "type" => "invalid_param"
           ]];
-        }else{
-          return $this->insertQuestionViewLog($post["userId"], $post["index"]);
+        }
+        try{
+          $res["status"] = $this->insertViewingLog($userId, (int) $args[1])["status"];
+          $res["isYourQuestion"] = $this->checkIsYourQuestion((int) $args[1], $userId)["isQuestioner"];
+          $this->code = $res["status"];
+          return $res;
+        }catch(Exception $error){
+          $this->code = json_decode($error->getMessage())->status;
+          return ["error" => json_decode($error->getMessage(),true)];
         }
         break;
       
       // 質問者とユーザが一致するか
-      case "questioner":
-        if(!array_key_exists("userId",$post) || !array_key_exists("index",$post)){
+      case "isYourQuestion":
+        if(!is_numeric($args[1])){
           $this->code = 400;
           return ["error" => [
             "type" => "invalid_param"
           ]];
         }else{
-          return $this->checkIsYourQuestion($post["index"], $post["userId"]);
+          return $this->checkIsYourQuestion((int) $args[1], $userId);
         }
         break;
 
@@ -185,7 +210,7 @@ class QuestionsController
    * @param int $questionIndex 閲覧した質疑応答情報のインデックス
    * @return array DB追加の成功/失敗
    */
-  private function insertQuestionViewLog($lineId, $questionIndex) {
+  private function insertViewingLog($lineId, $questionIndex) {
     $db = new DB();
     $pdo = $db -> pdo();
 
@@ -193,37 +218,58 @@ class QuestionsController
       // mysqlの実行文の記述
       // 指定されたインデックスの質問が存在しない場合はMySQL#1048エラー
       $stmt = $pdo -> prepare(
-        "INSERT INTO question_views (LineId, QuestionId, isSent)
+        "INSERT INTO PageViewHistories (userUid, questionIndex, isQuestionerViewing)
         VALUES (
-          :LineId, 
-          (SELECT `index`FROM `bot_qanda` WHERE `index` = :QuestionId), 
-          0
+          :userUid,
+          (SELECT `index` FROM `Questions` WHERE `index` = :questionIndex), 
+          (SELECT COUNT(*) FROM `Questions` WHERE `index`=:qIndex AND `questionerId` = :questionerId LIMIT 1)
         )"
       );
       //データの紐付け
-      $stmt->bindValue(':LineId', $lineId, PDO::PARAM_STR);
-      $stmt->bindValue(':QuestionId', $questionIndex, PDO::PARAM_INT);
+      $stmt->bindValue(':userUid', $lineId, PDO::PARAM_STR);
+      $stmt->bindValue(':questionIndex', $questionIndex, PDO::PARAM_INT);
+      $stmt->bindValue(':qIndex', $questionIndex, PDO::PARAM_INT);
+      $stmt->bindValue(':questionerId', $lineId, PDO::PARAM_STR);
       
       // 実行
       $res = $stmt->execute();
       $lastIndex = $pdo->lastInsertId();
       if($res){
         $this->code = 201;
-        header("Location: ".$this->url.$lastIndex);
-        return [];
+        //header("Location: ".$this->url.$lastIndex);
+        return [
+          "result" => "success",
+          "status" => 201
+        ];
       }else{
-        $this->code = 500;
-        return ["error" => [
-          "type" => "pdo_not_response"
-        ]];
+        throw new ErrorException(json_encode([
+          "error" => [
+            "type" => "pdo_not_response"
+          ],
+          "status" => 500
+        ]));
       }
 
     } catch(PDOException $error){
-      $this -> code = 500;
-      return ["error" => [
-        "type" => "pdo_exception",
-        "message" => $error
-      ]];
+      throw new PDOException(json_encode([
+          "error" => [
+            "type" => "pdo_exception",
+            "message" => $error->getMessage()
+          ],
+          "status" => 500
+        ]));
+    } catch(Exception $error){
+      if(json_decode($error->getMessage())->error->type == "pdo_not_response"){
+        throw $error;
+      }else{
+        throw new ErrorException(json_encode([
+            "error" => [
+              "type" => "unknown_exception",
+              "message" => $error->getMessage()
+            ],
+            "status" => 500
+          ]));
+      }
     }
   }
 
@@ -239,17 +285,17 @@ class QuestionsController
     try{
       // mysqlの実行文(テーブルに指定のLINE IDが存在するかのみチェック)
       $stmt = $db -> pdo() -> prepare(
-        "SELECT COUNT(*)
-        FROM `bot_qanda` 
-        WHERE `index`=:questionIndex AND `QuestionerLineId` = :lineId"
+        "SELECT COUNT(*) 
+        FROM `Questions` 
+        WHERE `index`=:questionIndex AND `questionerId` = :questionerId LIMIT 1"
       );
       $stmt->bindValue(':questionIndex', $index, PDO::PARAM_STR);
-      $stmt->bindValue(':lineId', $lineId, PDO::PARAM_STR);
+      $stmt->bindValue(':questionerId', $lineId, PDO::PARAM_STR);
       // 実行
       $res = $stmt->execute();
   
       if($res){
-        return ["is_questioner" => $stmt->fetchColumn() > 0];
+        return ["isQuestioner" => $stmt->fetchColumn() > 0];
       
       }else{
         $this -> code = 500;
@@ -275,19 +321,19 @@ class QuestionsController
    * @param string $question_text 質問文
    * @return array 結果
    */
-  public function insertQuestionData($userId, $question_text) {
+  public function insertQuestionData($userId, $questionText) {
     $db = new DB();
     $pdo = $db -> pdo();
 
     try{
       // mysqlの実行文の記述
       $stmtQA = $pdo -> prepare(
-        "INSERT INTO bot_qanda (QuestionerLineId, QuestionText)
-        VALUES (:QuestionerLineId, :QuestionText)"
+        "INSERT INTO Questions (questionerId, questionText)
+        VALUES (:questionerId, :questionText)"
       );
       //データの紐付け
-      $stmtQA->bindValue(':QuestionerLineId', $userId, PDO::PARAM_STR);
-      $stmtQA->bindValue(':QuestionText', $question_text, PDO::PARAM_STR);
+      $stmtQA->bindValue(':questionerId', $userId, PDO::PARAM_STR);
+      $stmtQA->bindValue(':questionText', $questionText, PDO::PARAM_STR);
       
       // 実行
       $resQA = $stmtQA->execute();
@@ -320,7 +366,7 @@ class QuestionsController
       $stmtThread->bindValue(':LineId', $userId, PDO::PARAM_STR);
       $stmtThread->bindValue(':Sender', $userId, PDO::PARAM_STR);
       $stmtThread->bindValue(':MessageType', "chat", PDO::PARAM_STR);
-      $stmtThread->bindValue(':MessageText', $question_text, PDO::PARAM_STR);
+      $stmtThread->bindValue(':MessageText', $questionText, PDO::PARAM_STR);
       
       // 実行
       $resThread = $stmtThread->execute();
@@ -368,7 +414,7 @@ class QuestionsController
       case "answer":
         if(!array_key_exists("questionText",$payload)||
           !array_key_exists("answerText",$payload)||
-          !array_key_exists("isShared",$payload)||
+          !array_key_exists("broadcast",$payload)||
           !array_key_exists("intentName",$payload)
         ){
           $this->code = 400;
@@ -376,7 +422,7 @@ class QuestionsController
             "type" => "invalid_param"
           ]];
         }else{
-          return $this->updateAnswer((int)$args[0], $payload["isShared"], $payload["questionText"], $payload["answerText"], $payload["intentName"]);
+          return $this->updateAnswer((int)$args[0], (int)$payload["broadcast"], $payload["questionText"], $payload["answerText"], $payload["intentName"]);
         }
         break;
 
@@ -392,42 +438,41 @@ class QuestionsController
   /**
    * 質問に対する回答情報を更新する
    * @param int $questionIndex 更新する質疑応答情報のインデックス
-   * @param bool $isShared true:全体通知/false:個別通知
+   * @param int $broadcast 1:全体通知/0:個別通知
    * @param string $questionText 修正後の質問文
    * @param string $answerText 質問に対する応答文
    * @param string $intentName Dialogflowに登録されているインテント名(Format: projects/<Project ID>/agent/intents/<Intent ID>)
    * @return array DB更新結果 || エラーメッセージ
    */
-  private function updateAnswer($questionIndex, $isShared, $questionText, $answerText, $intentName) {
+  private function updateAnswer($questionIndex, $broadcast, $questionText, $answerText, $intentName) {
     $db = new DB();
     try{
       // mysqlの実行文
       $stmt = $db->pdo() -> prepare(
-        "UPDATE `bot_qanda`
-        SET `Shared` = :Shared,
-            `QuestionText` = :QuestionText,
-            `AnswerText` = :AnswerText,
-            `IntentName` = :IntentName
-        WHERE `bot_qanda`.`index` = :QuestionIndex"
+        "UPDATE `Questions`
+        SET `broadcast` = :broadcast,
+            `questionText` = :questionText,
+            `answerText` = :answerText,
+            `intentName` = :intentName
+        WHERE `Questions`.`index` = :questionIndex"
       );
       //データの紐付け
-      $stmt->bindValue(':QuestionIndex', $questionIndex, PDO::PARAM_INT);
-      $stmt->bindValue(':Shared', $isShared ? 1 : 0, PDO::PARAM_INT);
-      $stmt->bindValue(':QuestionText', $questionText, PDO::PARAM_STR);
-      $stmt->bindValue(':AnswerText', $answerText, PDO::PARAM_STR);
-      $stmt->bindValue(':IntentName', $intentName, PDO::PARAM_STR);
+      $stmt->bindValue(':questionIndex', $questionIndex, PDO::PARAM_INT);
+      $stmt->bindValue(':broadcast', $broadcast, PDO::PARAM_INT);
+      $stmt->bindValue(':questionText', $questionText, PDO::PARAM_STR);
+      $stmt->bindValue(':answerText', $answerText, PDO::PARAM_STR);
+      $stmt->bindValue(':intentName', $intentName, PDO::PARAM_STR);
       
       // 実行
       $res = $stmt->execute();
       if($res){
         $this->code = 201;
         return [
-          $questionIndex => [
-            "IsShared" => $isShared,
-            "QuestionText" => $questionText,
-            "AnswerText" => $answerText,
-            "IntentName" => $intentName
-          ]
+          "index" => $questionIndex,
+          "broadcast" => $broadcast,
+          "questionText" => $questionText,
+          "answerText" => $answerText,
+          "intentName" => $intentName
         ];
       }else{
         $this->code = 500;
@@ -435,7 +480,7 @@ class QuestionsController
           "type" => "pdo_not_response",
           "update_param" => [
             "index" => $questionIndex,
-            "isShared" => $isShared,
+            "broadcast" => $broadcast,
             "question" => $questionText,
             "answer" => $answerText,
             "intentName" => $intentName

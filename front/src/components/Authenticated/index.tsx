@@ -16,25 +16,40 @@ const Authenticated = () => {
 		userUid: User["userUid"],
 		token: User["token"]
 	): Promise<void> => {
-		const position = await getUserPosition(token);
-		position
-			? setUserContext({
-					userUid,
-					token,
-					position,
-			  })
-			: handleError(new Error("position is not found"));
+		try {
+			const { type, canAnswer } = await getUserInfo(token);
+			setUserContext({
+				userUid,
+				token,
+				type,
+				canAnswer,
+			});
+		} catch (error: any) {
+			handleError(error);
+		}
 	};
 
 	const handleError = (err: any) => {
-		console.error(err);
 		setUserContext(null);
 		liff.logout();
+		if (err.message === "IdToken expired.") {
+			router.reload();
+		} else if (err.message === "user not found") {
+			router.replace("/");
+		} else {
+			alert("エラーが発生しました");
+			console.error(err);
+		}
 	};
 
 	const liffInit = async () => {
 		try {
-			if (process.env.NODE_ENV == "development") {
+			if (process.env.NODE_ENV === "production") {
+				await liff.init({
+					liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
+					withLoginOnExternalBrowser: true, //外部ブラウザでも自動ログイン(LIFFブラウザは最初から自動でログインが走る)
+				});
+			} else {
 				liff.use(new LiffMockPlugin());
 				await liff.init({
 					liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
@@ -49,11 +64,6 @@ const Authenticated = () => {
 					getIDToken: process.env.NEXT_PUBLIC_DEVELOPING_ID_TOKEN!,
 				}));
 				liff.login();
-			} else {
-				await liff.init({
-					liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
-					withLoginOnExternalBrowser: true, //外部ブラウザでも自動ログイン(LIFFブラウザは最初から自動でログインが走る)
-				});
 			}
 			const profile = await liff.getProfile();
 			const idToken = await liff.getIDToken();
@@ -71,22 +81,39 @@ const Authenticated = () => {
 		}
 	};
 
-	const getUserPosition = async (
-		token: User["token"]
-	): Promise<User["position"] | void> => {
-		const position = await axios
-			.get<User>(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/users/position`,
-				{ params: { userIdToken: token } }
-			)
-			.then((response) => {
-				return response.data.position;
-			})
-			.catch((error: AxiosError<IErrorResponse>) => {
-				handleError(error);
-				router.reload();
-			});
-		return position;
+	const getUserInfo = async (token: User["token"]) => {
+		try {
+			const { status, data } = await axios.get<User>(
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/users`,
+				{
+					params: {
+						userIdToken: token,
+					},
+				}
+			);
+			if (status == 200) {
+				return { type: data.type, canAnswer: !!data.canAnswer };
+			} else {
+				throw new Error("failed to get user info");
+			}
+		} catch (error: any) {
+			if (error instanceof AxiosError) {
+				if (error.response?.data.message == "user not found") {
+					throw new Error("user not found");
+				} else if (
+					error.response?.data.error_description == "IdToken expired."
+				) {
+					throw new Error("IdToken expired.");
+				} else {
+					console.log(error.response?.data);
+					throw new AxiosError(
+						`get user info: ${error.response?.data.error.message}`
+					);
+				}
+			} else {
+				throw new Error(`get user info: unknown error`);
+			}
+		}
 	};
 
 	return (

@@ -23,7 +23,7 @@ const HomePage = () => {
 						</tr>
 						<tr>
 							<td>position</td>
-							<td>：{user ? user.position : "undefined"}</td>
+							<td>：{user ? user.type : "undefined"}</td>
 						</tr>
 					</tbody>
 				</table>

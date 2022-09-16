@@ -6,7 +6,7 @@ const postMessageLog = async (
 	userId: User["userUid"],
 	messageType: EventMessage["type"],
 	message: string,
-	userPosition: User["position"] | "bot",
+	userType: User["type"] | "bot",
 	context: DialogflowContext
 ) => {
 	return await axios
@@ -14,7 +14,7 @@ const postMessageLog = async (
 			userId,
 			messageType,
 			message,
-			sender: userPosition,
+			sender: userType,
 			contextName: context.name,
 			lifespanCount: context.lifespanCount,
 		})

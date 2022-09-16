@@ -24,7 +24,7 @@ const QuestionCard = ({
 		>
 			<div className='flex flex-row gap-x-4 items-center'>
 				<span className='text-sm font-semibold inline-block py-1 px-2 rounded-lg text-indigo-600 bg-indigo-200'>
-					第{lectureNumber}回
+					{lectureNumber ? `第${lectureNumber}回` : "未分類"}
 				</span>
 				<time>{timestamp}</time>
 				{answerStatus && (

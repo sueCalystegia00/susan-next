@@ -1,7 +1,8 @@
 export interface User {
 	userUid: string;
 	token: string;
-	position: "student" | "instructor" | "Non-experimenter";
+	type: "student" | "instructor";
+	canAnswer: boolean;
 	//displayName: string;
 	//pictureUrl: string;
 }
@@ -12,23 +13,26 @@ export interface IErrorResponse {
 }
 
 export interface Question {
-	AnswerText: string;
-	IntentName: string;
-	QuestionText: string;
-	Shared: boolean;
-	timestamp: string;
+	index: number;
+	timestamp?: string;
+	lectureNumber?: number;
+	questionText: string;
+	answerText?: string;
+	intentName?: string;
+	broadcast: boolean;
 }
 
 export interface Questions {
 	[key: number]: Question;
 }
 
-export interface ConversationMessage {
+export interface DiscussionMessage {
 	index: number;
 	timestamp: string;
-	SenderType: User["position"];
-	MessageType: "chat" | "image" | "answer";
-	MessageText: string;
+	userType: User["type"];
+	isQuestionersMessage: boolean;
+	messageType: "chat" | "image" | "answer";
+	message: string;
 }
 
 export interface DialogflowIntent {

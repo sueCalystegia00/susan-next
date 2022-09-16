@@ -1,12 +1,14 @@
 import nodemailer from "nodemailer";
+import Mail from "nodemailer/lib/mailer";
+import SMTPTransport from "nodemailer/lib/smtp-transport";
 
 const transportOptions = {
 	host: "smtp.gmail.com",
 	port: 465,
 	secure: true, // SSL
 	auth: {
-		user: process.env.SENDER_GMAIL_ADDRESS,
-		pass: process.env.SENDER_GMAIL_PASSWORD,
+		user: process.env.SENDER_GMAIL_ADDRESS!,
+		pass: process.env.SENDER_GMAIL_PASSWORD!,
 	},
 };
 
@@ -14,7 +16,7 @@ const mailOptions = (
 	subject: string,
 	message: string,
 	questionIndex: number
-) => ({
+): Mail.Options => ({
 	from: process.env.SENDER_GMAIL_ADDRESS,
 	to: process.env.RECEIVER_GMAIL_ADDRESS,
 	subject: `【SUSAN】${subject}`,
@@ -30,15 +32,19 @@ const sendEmail = async (
 	questionIndex: number
 ) => {
 	const transporter = nodemailer.createTransport(transportOptions);
-	await transporter.sendMail(
-		mailOptions(subject, message, questionIndex),
-		(err, info) => {
-			if (err) {
-				throw err;
+	const mail = mailOptions(subject, message, questionIndex);
+	let result = {} as SMTPTransport.SentMessageInfo;
+	try {
+		await transporter.sendMail(mail, (error, info) => {
+			if (error) {
+				throw error;
 			}
-			console.log(info);
-		}
-	);
+			result = info;
+		});
+		return result;
+	} catch (error: any) {
+		throw new Error(`sendEmail: ${error.message || "unknown error"}`);
+	}
 };
 
 export default sendEmail;

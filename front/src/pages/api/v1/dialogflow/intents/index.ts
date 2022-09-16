@@ -41,7 +41,8 @@ const DialogflowIntentHandler = async (
 					? await createQuestionIntent(
 							Number(body.questionIndex),
 							body.trainingPhrases as DialogflowIntent["trainingPhrases"],
-							body.responseText as DialogflowIntent["responseText"]
+							body.responseText as DialogflowIntent["responseText"],
+							Number(body.lectureNumber)
 					  )
 					: await updateQuestionIntent(
 							body.trainingPhrases as DialogflowIntent["trainingPhrases"],
@@ -50,7 +51,9 @@ const DialogflowIntentHandler = async (
 					  );
 				res.status(201).json(response);
 			} catch (error) {
-				res.status(500).json({ error: error, requestBody: body });
+				res
+					.status(500)
+					.json({ error: JSON.stringify(error), requestBody: body });
 			}
 			break;
 
@@ -100,7 +103,8 @@ const getIntent = async (intentName: DialogflowIntent["intentName"]) => {
 const createQuestionIntent = async (
 	questionIndex: number,
 	trainingPhrases: DialogflowIntent["trainingPhrases"],
-	responseText: DialogflowIntent["responseText"]
+	responseText: DialogflowIntent["responseText"],
+	lectureNumber?: number
 ) => {
 	const createIntentRequest = {
 		parent: agentPath,
@@ -109,14 +113,13 @@ const createQuestionIntent = async (
 			displayName:
 				`0000${questionIndex}`.slice(-4) +
 				`_${trainingPhrases[0].slice(0, 10)}`,
-			parentFollowupIntentName:
-				"projects/susanbotdialogflowagent-u9qh/agent/intents/fd08e1fd-e40a-42b6-ab9d-61fef96db07e",
+			parentFollowupIntentName: `projects/${process.env.DIALOGFLOW_PROJECT_ID}/agent/intents/fd08e1fd-e40a-42b6-ab9d-61fef96db07e`,
 			inputContextNames: [
-				"projects/susanbotdialogflowagent-u9qh/agent/sessions/-/contexts/QuestionStart-followup",
+				`projects/${process.env.DIALOGFLOW_PROJECT_ID}/agent/sessions/-/contexts/QuestionStart-followup`,
 			],
 			outputContexts: [
 				{
-					name: "projects/susanbotdialogflowagent-u9qh/agent/sessions/-/contexts/SendAutoAnswer",
+					name: `projects/${process.env.DIALOGFLOW_PROJECT_ID}/agent/sessions/-/contexts/SendAutoAnswer`,
 					lifespanCount: 1,
 					parameters: null,
 				},
@@ -138,6 +141,10 @@ const createQuestionIntent = async (
 				{
 					displayName: "originQuestion",
 					value: trainingPhrases[0],
+				},
+				{
+					displayName: "lectureNumber",
+					value: `${lectureNumber || ""}`,
 				},
 			],
 			messages: [

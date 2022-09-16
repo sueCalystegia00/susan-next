@@ -1,7 +1,7 @@
 import { User } from "@line/bot-sdk";
-import { ConversationMessage } from "./models";
+import { DiscussionMessage } from "./models";
 
-export interface postConversationResponse {
-	insertedData: ConversationMessage;
-	questioner?: User["userId"];
+export interface postDiscussionResponse {
+	insertedMessage: DiscussionMessage;
+	questionerId?: User["userId"];
 }
