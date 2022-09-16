@@ -7,7 +7,7 @@ module.exports = {
 	theme: {
 		extend: {
 			colors: {
-				"susan-blue": {
+				susanBlue: {
 					50: "#e0eafe",
 					100: "#284275",
 					500: "#182846",

@@ -14,7 +14,7 @@ import { AuthContext } from "@/contexts/AuthContext";
  */
 const InputAnswerField = () => {
 	const { user } = useContext(AuthContext);
-	const { question, updateAnswerPayload, updateQandA } =
+	const { question, isUsersQuestion, updateAnswerPayload, updateQandA } =
 		useContext(QuestionContext);
 	const { inputtedText, setInputtedText, postDiscussionMessage } =
 		useContext(DiscussionContext);
@@ -43,7 +43,7 @@ const InputAnswerField = () => {
 			await updateQandA(updateAnswerPayload);
 
 			// DBにメッセージを記録
-			const res = await postDiscussionMessage();
+			const res = await postDiscussionMessage(isUsersQuestion);
 			// LINEにメッセージを送信
 			if (res.questionerId) {
 				if (updateAnswerPayload.broadcast) {
@@ -82,7 +82,7 @@ const InputAnswerField = () => {
 				</CheckedToggle>
 			)}
 			<button
-				className='bg-susan-blue-100 text-white disabled:text-slate-500 disabled:bg-slate-700 active:bg-susan-blue-50 font-bold px-8 py-2 rounded-2xl shadow-inner shadow-susan-blue-1000 outline-none focus:outline-none ease-linear transition-all duration-150'
+				className='bg-susanBlue-100 text-white disabled:text-slate-500 disabled:bg-slate-700 active:bg-susanBlue-50 font-bold px-8 py-2 rounded-2xl shadow-inner shadow-susanBlue-1000 outline-none focus:outline-none ease-linear transition-all duration-150'
 				onClick={submitHandler}
 				disabled={!inputtedText}
 			>

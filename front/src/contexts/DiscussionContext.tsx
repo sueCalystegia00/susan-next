@@ -14,8 +14,12 @@ class DiscussionContextProps {
 	setPostImage!: Dispatch<SetStateAction<File | undefined>>;
 	messageType: DiscussionMessage["messageType"] = "chat";
 	setMessageType!: (messageType: DiscussionMessage["messageType"]) => void;
-	postDiscussionMessage!: () => Promise<postDiscussionResponse>;
-	postDiscussionImage!: () => Promise<postDiscussionResponse>;
+	postDiscussionMessage!: (
+		isUsersQuestion: boolean
+	) => Promise<postDiscussionResponse>;
+	postDiscussionImage!: (
+		isUsersQuestion: boolean
+	) => Promise<postDiscussionResponse>;
 }
 
 export const DiscussionContext = createContext<DiscussionContextProps>(

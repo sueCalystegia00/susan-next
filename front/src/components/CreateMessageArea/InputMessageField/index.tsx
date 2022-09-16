@@ -8,7 +8,7 @@ import { QuestionContext } from "@/contexts/QuestionContext";
  * @returns 質問対応のメッセージを入力するフォームおよび送信ボタン
  */
 const InputMessageField = () => {
-	const { question } = useContext(QuestionContext);
+	const { question, isUsersQuestion } = useContext(QuestionContext);
 	const { inputtedText, setInputtedText, postDiscussionMessage } =
 		useContext(DiscussionContext);
 	const { linePayload, pushLineMessage } = useLineMessages(
@@ -19,7 +19,7 @@ const InputMessageField = () => {
 	const submitHandler = async () => {
 		try {
 			// DBにメッセージを記録
-			const res = await postDiscussionMessage();
+			const res = await postDiscussionMessage(isUsersQuestion);
 			// LINEにメッセージを送信
 			if (res.questionerId) {
 				linePayload.userIds = [res.questionerId];
@@ -40,7 +40,7 @@ const InputMessageField = () => {
 		<div className='w-full flex flex-col items-center gap-2 p-4 '>
 			<MessageTextArea text={inputtedText} setText={setInputtedText} />
 			<button
-				className='bg-susan-blue-100 text-white disabled:text-slate-500 disabled:bg-slate-700 active:bg-susan-blue-50 font-bold px-8 py-2 rounded-2xl shadow-inner shadow-susan-blue-1000 outline-none focus:outline-none ease-linear transition-all duration-150'
+				className='bg-susanBlue-100 text-white disabled:text-slate-500 disabled:bg-slate-700 active:bg-susanBlue-50 font-bold px-8 py-2 rounded-2xl shadow-inner shadow-susanBlue-1000 outline-none focus:outline-none ease-linear transition-all duration-150'
 				onClick={submitHandler}
 				disabled={!inputtedText}
 			>

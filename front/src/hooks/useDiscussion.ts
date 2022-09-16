@@ -48,7 +48,7 @@ const useDiscussionData = (
 	const [text, setText] = useState<DiscussionMessage["message"]>("");
 
 	// TODO: postDiscussionImageと統合する
-	const postDiscussionMessage = async () => {
+	const postDiscussionMessage = async (isUsersQuestion: boolean) => {
 		try {
 			const { status, data } = await axios.post<postDiscussionResponse>(
 				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/discussions/${messageType}`,
@@ -56,6 +56,7 @@ const useDiscussionData = (
 					index: questionIndex,
 					userIdToken: userIdToken,
 					message: text,
+					isUsersQuestion: isUsersQuestion,
 				}
 			);
 			if (status == 201) {
@@ -79,10 +80,11 @@ const useDiscussionData = (
 	// 画像
 	const [image, setImage] = useState<File>();
 
-	const postDiscussionImage = async () => {
+	const postDiscussionImage = async (isUsersQuestion: boolean) => {
 		const formData = new FormData();
 		formData.append("index", questionIndex.toString());
 		formData.append("userIdToken", userIdToken);
+		formData.append("isUsersQuestion", isUsersQuestion.toString());
 		formData.append("file", image!);
 		try {
 			const { status, data } = await axios.post<postDiscussionResponse>(
