@@ -12,7 +12,6 @@ import Header from "@/components/Header";
 
 const DefaultLayout: FC<LayoutProps> = ({ children }) => {
 	const { isError, isLogIn } = useContext(AuthContext);
-
 	return (
 		<>
 			<Head>
@@ -35,7 +34,7 @@ const DefaultLayout: FC<LayoutProps> = ({ children }) => {
 							<LogoDark />
 						)}
 					</div>
-					セッションが切れました．
+					<p>ログインに失敗しました．</p>
 					<a
 						href={`https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}`}
 						className='relative w-48'

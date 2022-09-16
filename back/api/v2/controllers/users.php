@@ -32,7 +32,7 @@ class UsersController
       return $res;
     }catch(Exception $error){
       $this -> code = $error->getCode() || 500;
-      return [json_decode($error->getMessage(),true)];
+      return json_decode($error->getMessage(),true);
     }
   }
 

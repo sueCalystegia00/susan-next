@@ -24,8 +24,9 @@ const Authenticated = () => {
 				type,
 				canAnswer,
 			});
+			if (type == "Non-experimenter") router.replace("/");
 		} catch (error: any) {
-			handleError(new Error(error));
+			handleError(error);
 		}
 	};
 
@@ -33,6 +34,9 @@ const Authenticated = () => {
 		console.error(err);
 		setUserContext(null);
 		liff.logout();
+		if (err.message === "IdToken expired.") {
+			router.reload();
+		}
 	};
 
 	const liffInit = async () => {
@@ -91,12 +95,17 @@ const Authenticated = () => {
 			}
 		} catch (error: any) {
 			if (error instanceof AxiosError) {
-				if (error.response?.data.error.type == "not_in_sample") {
+				if (error.response?.data.message == "user not found") {
 					return {
 						type: "Non-experimenter" as User["type"],
 						canAnswer: false as User["canAnswer"],
 					};
+				} else if (
+					error.response?.data.error_description == "IdToken expired."
+				) {
+					throw new Error("IdToken expired.");
 				} else {
+					console.log(error.response?.data);
 					throw new AxiosError(
 						`get user info: ${error.response?.data.error.message}`
 					);
