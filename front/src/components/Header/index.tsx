@@ -18,13 +18,18 @@ const Header = () => {
 	};
 	return (
 		<header className='relative w-full h-14 grid grid-cols-5 gap-2 place-items-center bg-susan-blue-100'>
-			<Link href={icons[router.pathname]?.forwardLink || "/"}>
-				{icons[router.pathname]?.element || <div></div>}
-			</Link>
+			{icons[router.pathname] ? (
+				<Link href={icons[router.pathname]?.forwardLink}>
+					{/* TODO: ↓forwardRef を使って適切にコンポーネント管理する */}
+					{icons[router.pathname]?.element}
+				</Link>
+			) : (
+				<div></div>
+			)}
 			<div className='col-span-3 h-full flex items-center content-center'>
 				<LogoHorizon height='100%' />
 			</div>
-			<div className='invisible'></div>
+			<div></div>
 		</header>
 	);
 };

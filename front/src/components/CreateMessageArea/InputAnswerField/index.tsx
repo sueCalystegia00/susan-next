@@ -5,6 +5,7 @@ import { DiscussionContext } from "@/contexts/DiscussionContext";
 import { QuestionContext } from "@/contexts/QuestionContext";
 import useDialogflowIntent from "@/hooks/useDialogflowIntent";
 import useLineMessages from "@/hooks/useLineMessages";
+import { AuthContext } from "@/contexts/AuthContext";
 
 /**
  * @param questionIndex: 質問のインデックス
@@ -12,6 +13,7 @@ import useLineMessages from "@/hooks/useLineMessages";
  * @returns 質問対応の回答メッセージを入力するフォームおよび送信ボタン
  */
 const InputAnswerField = () => {
+	const { user } = useContext(AuthContext);
 	const { question, updateAnswerPayload, updateQandA } =
 		useContext(QuestionContext);
 	const { inputtedText, setInputtedText, postDiscussionMessage } =
@@ -67,17 +69,18 @@ const InputAnswerField = () => {
 	return (
 		<div className='w-full flex flex-col items-center gap-2 p-4 '>
 			<MessageTextArea text={inputtedText} setText={setInputtedText} />
-			<CheckedToggle
-				checked={updateAnswerPayload.broadcast}
-				onChange={() => {
-					updateAnswerPayload.broadcast = !updateAnswerPayload.broadcast;
-				}}
-				children={
+			{user?.type === "instructor" && (
+				<CheckedToggle
+					checked={updateAnswerPayload.broadcast}
+					onChange={() => {
+						updateAnswerPayload.broadcast = !updateAnswerPayload.broadcast;
+					}}
+				>
 					<span className='text-sm text-gray-500'>
 						質問者以外の学生にも回答を通知する
 					</span>
-				}
-			/>
+				</CheckedToggle>
+			)}
 			<button
 				className='bg-susan-blue-100 text-white disabled:text-slate-500 disabled:bg-slate-700 active:bg-susan-blue-50 font-bold px-8 py-2 rounded-2xl shadow-inner shadow-susan-blue-1000 outline-none focus:outline-none ease-linear transition-all duration-150'
 				onClick={submitHandler}
