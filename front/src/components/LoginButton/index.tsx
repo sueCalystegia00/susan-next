@@ -14,7 +14,7 @@ const LoginButton = ({ disabled = false }: LoginButtonProps) => {
 
 	const clickedHandler = () => {
 		setDisabledState(true);
-		router.push(`https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}`);
+		router.push("/register");
 	};
 
 	return (
