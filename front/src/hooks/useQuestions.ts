@@ -17,25 +17,23 @@ const STORAGE_KEY_QUESTIONS = "yoslab/susan-next/questionsList";
  * @returns getOneQuestionDataHandler: 指定の質疑応答情報を1件取得する関数
  */
 const useQuestionsData = (questionIndex?: number) => {
-	/**
-	 * @var セッションストレージから取得した質問情報
-	 */
-	const sessionQuestionsData = sessionStorage.getItem(STORAGE_KEY_QUESTIONS);
-
-	// セッションストレージに質問情報があればそれを利用，なければ空配列を初期値とする
-	const [questions, setQuestions] = useState<Question[]>(
-		sessionQuestionsData ? JSON.parse(sessionQuestionsData) : []
-	);
-
+	const [questions, setQuestions] = useState<Question[]>([]);
 	const [openingQuestion, setOpeningQuestion] = useState<
 		Question | undefined
 	>();
 
-	// 初回のみ，質問情報がなければ取得を試みる
+	// 初回のみ，質問情報取得を試みる
 	useEffect(() => {
-		!questions.length && getQuestionsDataHandler();
+		// セッションストレージから質問情報を取得
+		const sessionQuestionsData = sessionStorage.getItem(STORAGE_KEY_QUESTIONS);
+		if (sessionQuestionsData) {
+			setQuestions(JSON.parse(sessionQuestionsData));
+		} else {
+			getQuestionsDataHandler();
+		}
 	}, []);
 
+	// 閲覧中の質問情報を更新
 	useEffect(() => {
 		if (!questionIndex) return;
 		const q = questions.find((question) => question.index === questionIndex);
