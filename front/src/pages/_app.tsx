@@ -1,10 +1,16 @@
 import React from "react";
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-import Authenticated from "@/components/Authenticated";
-import AuthProvider from "@/contexts/AuthContext";
 import useScrollTop from "@/hooks/useScrollTop";
 import Head from "next/head";
+import AuthProvider from "@/contexts/AuthContext";
+import Authenticated from "@/components/Authenticated";
+
+const requireAuthRoute = [
+	"/register",
+	"/questionsList",
+	"/question/[questionId]",
+];
 
 const MyApp = ({ Component, pageProps, router }: AppProps) => {
 	useScrollTop();
@@ -22,10 +28,14 @@ const MyApp = ({ Component, pageProps, router }: AppProps) => {
 				<meta name='robots' content='noindex,nofollow' />
 			</Head>
 
-			<AuthProvider>
-				<Authenticated />
+			{requireAuthRoute.includes(router.route) ? (
+				<AuthProvider>
+					<Authenticated />
+					<Component {...pageProps} key={router.asPath} />
+				</AuthProvider>
+			) : (
 				<Component {...pageProps} key={router.asPath} />
-			</AuthProvider>
+			)}
 		</>
 	);
 };

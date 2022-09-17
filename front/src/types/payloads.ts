@@ -1,5 +1,12 @@
 import { User, DialogflowIntent, Question } from "./models";
 
+export interface UserRegistrationPayload {
+	userIdToken?: User["token"];
+	canAnswer: User["canAnswer"];
+	age: number;
+	gender: "male" | "female" | "other";
+}
+
 export interface PostDialogflowIntentPayload {
 	questionIndex: number;
 	lectureNumber: Question["lectureNumber"];
