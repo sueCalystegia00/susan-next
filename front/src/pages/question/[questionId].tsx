@@ -6,7 +6,7 @@ import { AuthContext } from "@/contexts/AuthContext";
 import DiscussionProvider from "@/contexts/DiscussionContext";
 import QuestionProvider from "@/contexts/QuestionContext";
 import { useRouter } from "next/router";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import DefaultLayout from "@/layouts/Default";
 
 /**
@@ -18,16 +18,16 @@ const QuestionDetailsPage = () => {
 	const { questionId } = router.query;
 	const { user } = useContext(AuthContext);
 
-	return (
+	return !!user ? (
 		<DefaultLayout>
 			<QuestionProvider
-				userIdToken={user!.token}
+				userIdToken={user.token}
 				questionIndex={Number(questionId)}
 			>
 				<QuestionTextDisplay />
 				<AnswerTextDisplay />
 				<DiscussionProvider
-					userIdToken={user!.token}
+					userIdToken={user.token}
 					questionIndex={Number(questionId)}
 				>
 					<DiscussionDisplay />
@@ -35,6 +35,8 @@ const QuestionDetailsPage = () => {
 				</DiscussionProvider>
 			</QuestionProvider>
 		</DefaultLayout>
+	) : (
+		<></>
 	);
 };
 
