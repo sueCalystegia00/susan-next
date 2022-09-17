@@ -102,7 +102,6 @@ const Authenticated = () => {
 		} catch (error: any) {
 			if (error instanceof AxiosError) {
 				const { status, data } = error.response!;
-				console.debug(status, data);
 				if (status == 400 && data.message == "IdToken expired.") {
 					throw new Error("IdToken expired.");
 				} else if (status == 404 && data.message == "User not found.") {

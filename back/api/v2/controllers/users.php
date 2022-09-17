@@ -153,15 +153,19 @@ class UsersController
 
     switch($args[0]){
       // 学生を実験協力者としてDBのリストに追加する
-      case "new_subject":
+      case "registration":
         // パラメータの存在確認
-        if(!array_key_exists("answerList",$post)){
+        if(!array_key_exists("canAnswer",$post) ||
+          !array_key_exists("age",$post) ||
+          !array_key_exists("gender",$post)){
           $this->code = 400;
           return ["error" => [
             "type" => "invalid_param"
           ]];
         }
-        return $this->insertAcceptedUserData($userId, $post["name"], $post["type"], $post["canAnswer"], $post["age"], $post["gender"]);
+        $name = array_key_exists("name",$post) ? $post["name"] : null;
+        $type = array_key_exists("type",$post) ? $post["type"] : "student";
+        return $this->newUserRegistration($userId, $name, $type, $post["canAnswer"], $post["age"], $post["gender"]);
         break;
 
       // 無効なアクセス
@@ -179,7 +183,7 @@ class UsersController
    * @param array $questionnaire アンケートへの回答
    * @return array $result DB追加の成功/失敗
    */
-  private function insertAcceptedUserData($lineId, $name, $userType, $canAnswer, $age, $gender) {
+  private function newUserRegistration($lineId, $name, $userType, $canAnswer, $age, $gender) {
     $db = new DB();
     $pdo = $db -> pdo();
 
