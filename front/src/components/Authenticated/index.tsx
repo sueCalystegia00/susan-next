@@ -24,22 +24,25 @@ const Authenticated = () => {
 				type,
 				canAnswer,
 			});
+			if (type === "unregistered") router.replace("/register");
 		} catch (error: any) {
-			handleError(error);
+			if (error.message === "IdToken expired.") {
+				// トークンが期限切れの場合は再取得
+				alert("トークンが期限切れです．再度ログインしてください．");
+				setUserContext(null);
+				liff.logout();
+				router.reload();
+			} else {
+				handleError(error);
+			}
 		}
 	};
 
 	const handleError = (err: any) => {
 		setUserContext(null);
 		liff.logout();
-		if (err.message === "IdToken expired.") {
-			router.reload();
-		} else if (err.message === "user not found") {
-			router.replace("/");
-		} else {
-			alert("エラーが発生しました");
-			console.error(err);
-		}
+		router.replace("/");
+		console.error(err);
 	};
 
 	const liffInit = async () => {
@@ -98,17 +101,13 @@ const Authenticated = () => {
 			}
 		} catch (error: any) {
 			if (error instanceof AxiosError) {
-				if (error.response?.data.message == "user not found") {
-					throw new Error("user not found");
-				} else if (
-					error.response?.data.error_description == "IdToken expired."
-				) {
+				const { status, data } = error.response!;
+				if (status == 400 && data.message == "IdToken expired.") {
 					throw new Error("IdToken expired.");
+				} else if (status == 404 && data.message == "User not found.") {
+					return { type: "unregistered" as User["type"], canAnswer: false };
 				} else {
-					console.log(error.response?.data);
-					throw new AxiosError(
-						`get user info: ${error.response?.data.error.message}`
-					);
+					throw error;
 				}
 			} else {
 				throw new Error(`get user info: unknown error`);

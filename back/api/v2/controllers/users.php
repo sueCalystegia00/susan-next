@@ -28,11 +28,13 @@ class UsersController
     }
     try{
       $userId = $this->verifyLine($_GET["userIdToken"])["sub"];
-      $res = $this->getUserInfo($userId);
-      return $res;
+      $result = $this->getUserInfo($userId);
+      $this -> code = $result["status"];
+      return $result["response"];
     }catch(Exception $error){
-      $this -> code = $error->getCode() || 500;
-      return json_decode($error->getMessage(),true);
+      $result = json_decode($error->getMessage(), true);
+      $this -> code = $result["status"];
+      return $result["error"];
     }
   }
 
@@ -57,25 +59,32 @@ class UsersController
       if($res){
         $user = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
         if($user){
-          return $user;
+          return [ "status" => 200, "response" => $user ];
         }else{ //存在しない場合
-          throw new Exception(json_encode(["message" => "user not found"]), 404);
+          throw new Exception(json_encode([
+            "status" => 404, 
+            "error" => [
+              "message" => "User not found."
+            ]
+          ]));
         }
       }else{
-        throw new Exception(json_encode(["message" => "pdo not response"]), 500);
+        throw new Exception(json_encode([
+          "status" => 500, 
+          "error" => [
+            "message" => "pdo not response"
+          ]
+        ]));
       }
     } catch(PDOException $error){
-      if($error->getMessage()["message"] == "user not found"){
-        throw new Exception(json_encode( ["error" => [
-          "type" => "not_in_sample"
-        ]]), 404);
-      }else{
-        throw new Exception(json_encode( ["error" => [
-            "type" => "pdo_exception",
-            "message" => json_decode($error->getMessage()),
-          ],
-          "verifiedId" => $userUid,]), 500);
-      }
+      throw new Exception(json_encode([ 
+        "status" => 500, 
+        "error" => [
+          "type" => "pdo_exception",
+          "message" => json_decode($error->getMessage()),
+          "verifiedId" => $userUid
+        ],
+      ]));
     }
   }
 
@@ -144,15 +153,19 @@ class UsersController
 
     switch($args[0]){
       // 学生を実験協力者としてDBのリストに追加する
-      case "new_subject":
+      case "registration":
         // パラメータの存在確認
-        if(!array_key_exists("answerList",$post)){
+        if(!array_key_exists("canAnswer",$post) ||
+          !array_key_exists("age",$post) ||
+          !array_key_exists("gender",$post)){
           $this->code = 400;
           return ["error" => [
             "type" => "invalid_param"
           ]];
         }
-        return $this->insertAcceptedUserData($userId, $post["name"], $post["type"], $post["canAnswer"], $post["age"], $post["gender"]);
+        $name = array_key_exists("name",$post) ? $post["name"] : null;
+        $type = array_key_exists("type",$post) ? $post["type"] : "student";
+        return $this->newUserRegistration($userId, $name, $type, $post["canAnswer"], $post["age"], $post["gender"]);
         break;
 
       // 無効なアクセス
@@ -170,7 +183,7 @@ class UsersController
    * @param array $questionnaire アンケートへの回答
    * @return array $result DB追加の成功/失敗
    */
-  private function insertAcceptedUserData($lineId, $name, $userType, $canAnswer, $age, $gender) {
+  private function newUserRegistration($lineId, $name, $userType, $canAnswer, $age, $gender) {
     $db = new DB();
     $pdo = $db -> pdo();
 
@@ -257,9 +270,21 @@ class UsersController
     $result = json_decode($response, true);
 
     if(array_key_exists("error", $result)){
-      throw new Exception(json_encode($result), 400);
+      throw new Exception(json_encode([ 
+        "status" => 400, 
+        "error" => [
+          "error" => $result["error"],
+          "message" => $result["error_description"]
+        ],
+      ]));
     }else if(!array_key_exists("sub", $result)){
-      throw new Exception(json_encode($result), 400);
+      throw new Exception(json_encode([ 
+        "status" => 500, 
+        "error" => [
+          "error" => "invalid_response",
+          "message" => json_encode($result)
+        ],
+      ]));
     }
     return $result;
   }

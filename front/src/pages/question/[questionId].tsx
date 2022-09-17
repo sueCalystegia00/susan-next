@@ -6,8 +6,9 @@ import { AuthContext } from "@/contexts/AuthContext";
 import DiscussionProvider from "@/contexts/DiscussionContext";
 import QuestionProvider from "@/contexts/QuestionContext";
 import { useRouter } from "next/router";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import DefaultLayout from "@/layouts/Default";
+import Loader from "@/components/Loader";
 
 /**
  * @returns 質問詳細ページ
@@ -36,7 +37,7 @@ const QuestionDetailsPage = () => {
 			</QuestionProvider>
 		</DefaultLayout>
 	) : (
-		<></>
+		<Loader />
 	);
 };
 
