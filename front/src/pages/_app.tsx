@@ -7,6 +7,7 @@ import AuthProvider from "@/contexts/AuthContext";
 import Authenticated from "@/components/Authenticated";
 
 const requireAuthRoute = [
+	"/",
 	"/register",
 	"/questionsList",
 	"/question/[questionId]",
