@@ -57,9 +57,9 @@ class UsersController
       $res = $stmt->execute();
   
       if($res){
-        $user = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
-        if($user){
-          return [ "status" => 200, "response" => $user ];
+        $user = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if(count($user) != 0){
+          return [ "status" => 200, "response" => $user[0] ];
         }else{ //存在しない場合
           throw new Exception(json_encode([
             "status" => 404, 
