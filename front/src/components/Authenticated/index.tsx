@@ -24,7 +24,7 @@ const Authenticated = () => {
 				type,
 				canAnswer,
 			});
-			if (type === "unregistered") router.replace("/register");
+			if (type === "unregistered") router.replace("/");
 		} catch (error: any) {
 			if (error.message === "IdToken expired.") {
 				// トークンが期限切れの場合は再取得
