@@ -12,10 +12,10 @@ const DefaultLayout: FC<LayoutProps> = ({ children }) => {
 	return isError ? (
 		<div className='relative w-screen min-w-80 h-screen flex flex-col items-center gap-4 p-4'>
 			<div className='w-screen max-w-80 flex flex-col items-center'>
-				{!window.matchMedia("(prefers-color-scheme: dark)").matches ? (
-					<LogoLight />
-				) : (
+				{window.matchMedia("(prefers-color-scheme: dark)").matches ? (
 					<LogoDark />
+				) : (
+					<LogoLight />
 				)}
 			</div>
 			<p>ログインに失敗しました．</p>
