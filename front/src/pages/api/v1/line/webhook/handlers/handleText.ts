@@ -26,20 +26,27 @@ const handleText = async (
 
 		const nlpResult = await detectIntent(message.id, message.text, contexts);
 		//TODO: 解析結果を基にメッセージを返す
-
-		// create a echoing text message
-		const echo: TextMessage[] = [
-			{
-				type: "text",
-				text: `${JSON.stringify(message)}`,
-			},
-			{
-				type: "text",
-				text: `${nlpResult.queryResult?.action || "no action"}`,
-			},
-		];
-		// use reply API
-		return lineClient.replyMessage(replyToken, echo);
+		switch (nlpResult.queryResult?.action) {
+			case "QuestionStart":
+				return await lineClient.replyMessage(replyToken, {
+					type: "text",
+					text: "質問ありがとう! 第何回の講義についての質問ですか？",
+				});
+			default:
+				// create a echoing text message
+				const echo: TextMessage[] = [
+					{
+						type: "text",
+						text: `${JSON.stringify(message)}`,
+					},
+					{
+						type: "text",
+						text: `${nlpResult.queryResult?.action || "no action"}`,
+					},
+				];
+				// use reply API
+				return lineClient.replyMessage(replyToken, echo);
+		}
 	} catch (error) {
 		console.error(error);
 		if (error instanceof AxiosError) {
