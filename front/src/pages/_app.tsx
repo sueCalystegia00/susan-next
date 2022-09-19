@@ -8,7 +8,7 @@ import Authenticated from "@/components/Authenticated";
 
 const requireAuthRoute = [
 	"/",
-	"/register",
+	"/admin/intentsController",
 	"/questionsList",
 	"/question/[questionId]",
 ];
