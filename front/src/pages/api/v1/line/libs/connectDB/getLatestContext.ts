@@ -3,14 +3,14 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 
 const getLatestContexts = async (userId: User["userUid"]) => {
 	try {
-		return await axios
-			.get(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/line/context/${userId}`
-			)
-			.then((response: AxiosResponse<DialogflowContext[]>) => {
-				const { data } = response;
-				return data;
-			});
+		const { status, data } = await axios.get<DialogflowContext[]>(
+			`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/line/context/${userId}`
+		);
+		if (status === 200) {
+			return data;
+		} else {
+			throw new Error(`status code is ${status}`);
+		}
 	} catch (error) {
 		if (error instanceof AxiosError) {
 			throw new Error(error.message);

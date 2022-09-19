@@ -29,28 +29,31 @@ const LineWebhookHandler = async (
 			} catch (error: unknown) {
 				console.error(error);
 				if (error instanceof SignatureValidationFailed) {
-					return res.status(401).end("invalid signature");
+					res.status(401).end("invalid signature");
+					break;
 				} else {
-					return res.status(500).end("something went wrong");
+					res.status(500).end("something went wrong");
+					break;
 				}
 			}
 
 			// handle webhook body
 			const events: WebhookEvent[] = req.body.events;
-			const results = await Promise.all(
-				events.map(async (event: WebhookEvent) => {
-					try {
-						await webhookEventHandler(event);
-					} catch (error: any) {
-						console.error(error);
-						res.status(500).end(error.message);
-					}
-				})
-			);
-			return res.status(200).json({
-				status: "success",
-				results,
-			});
+			try {
+				const results = await Promise.all(
+					events.map(
+						async (event: WebhookEvent) => await webhookEventHandler(event)
+					)
+				);
+				res.status(200).json({
+					status: "success",
+					results,
+				});
+			} catch (error: any) {
+				console.error(error);
+				res.status(500).end(error.message);
+			}
+			break;
 
 		default:
 			res.setHeader("Allow", ["GET", "POST"]);
@@ -63,27 +66,28 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 		case "message":
 			const message = event.message;
 			// ユーザーの最新のコンテキストを取得
-			const latestContexts = await getLatestContexts(event.source.userId!).then(
-				(contexts: DialogflowContext[]) => {
+			const latestContexts = await getLatestContexts(event.source.userId!)
+				.then((contexts: DialogflowContext[]) => {
 					return contexts.map((context) => pickContextId(context));
-				}
-			);
+				})
+				.catch((error: any) => {
+					throw error;
+				});
 			switch (message.type) {
 				case "text":
 					if (message.text.length > 256) {
-						await replyText(
+						return await replyText(
 							event.replyToken,
 							`ごめんなさい．メッセージが長すぎます😫．256文字以下にしてください．(${message.text.length}文字でした)`
 						);
 					} else {
-						await handleText(
+						return await handleText(
 							message,
 							latestContexts,
 							event.replyToken,
 							event.source
 						);
 					}
-					break;
 
 				// case "image":
 				// 	return handleImage(message, event.replyToken);
@@ -97,16 +101,14 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 				// 	return handleSticker(message, event.replyToken);
 
 				default:
-					await replyText(
+					return await replyText(
 						event.replyToken,
 						`ごめんなさい．まだその種類のメッセージ(${message.type})には対応できません😫 `
 					);
 			}
-			break;
 
 		case "follow":
-			await handleFollow(event.replyToken, event.source);
-			break;
+			return await handleFollow(event.replyToken, event.source);
 
 		// case "unfollow":
 		// 	console.log(`Unfollowed this bot: ${JSON.stringify(event)}`);
@@ -134,7 +136,7 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 
 		default:
 			if ("replyToken" in event) {
-				await replyText(
+				return await replyText(
 					event.replyToken,
 					"予期せぬ入力によりエラーが発生しました😫"
 				);

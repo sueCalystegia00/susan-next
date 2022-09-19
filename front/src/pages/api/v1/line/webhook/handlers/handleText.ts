@@ -39,11 +39,11 @@ const handleText = async (
 			},
 		];
 		// use reply API
-		lineClient.replyMessage(replyToken, echo);
+		return lineClient.replyMessage(replyToken, echo);
 	} catch (error) {
 		console.error(error);
 		if (error instanceof AxiosError) {
-			throw new Error("データベースへの接続に失敗しました");
+			throw new AxiosError("データベースへの接続に失敗しました");
 		} else {
 			throw new Error("入力文の解析に失敗しました");
 		}
