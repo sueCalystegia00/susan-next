@@ -3,7 +3,10 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { SignatureValidationFailed, WebhookEvent } from "@line/bot-sdk";
 import { handleFollow, handleText } from "./handlers";
 import { middleware, runMiddleware, replyText, pickContextId } from "../libs";
-import { getLatestContexts } from "../libs/connectDB";
+import { getLatestContexts, postMessageLog } from "../libs/connectDB";
+import { AxiosError } from "axios";
+import { MessageAPIResponseBase } from "@line/bot-sdk/lib/types";
+import { postMessageLogParams } from "@/types/payloads";
 
 // ref: https://nextjs.org/docs/api-routes/api-middlewares#custom-config
 export const config = {
@@ -65,7 +68,8 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 	switch (event.type) {
 		case "message":
 			const message = event.message;
-			// ユーザーの最新のコンテキストを取得
+
+			// 対話ログからユーザーの最新のコンテキストを取得
 			const latestContexts = await getLatestContexts(event.source.userId!)
 				.then((contexts: DialogflowContext[]) => {
 					return contexts.map((context) => pickContextId(context));
@@ -73,21 +77,50 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 				.catch((error: any) => {
 					throw error;
 				});
+
+			// 受信メッセージをログに保存
+			await postMessageLog({
+				userId: event.source.userId!,
+				messageType: message.type,
+				message: message.type == "text" ? message.text : "undefined",
+				userType: "student",
+				context: latestContexts[0],
+			});
+
+			// LINE Botのメッセージ送信結果とDBへ記録するログデータの雛形を準備
+			let res = {
+				messageAPIResponse: undefined as MessageAPIResponseBase | undefined,
+				messageLog: {
+					userId: event.source.userId!,
+					messageType: "text",
+					message: "message",
+					userType: "bot",
+					context: latestContexts[0],
+				} as postMessageLogParams,
+			};
+
+			// メッセージタイプに応じて処理をさらに分岐
 			switch (message.type) {
 				case "text":
 					if (message.text.length > 256) {
-						return await replyText(
+						// Dialogflowの入力文字数限界を超えている場合
+						res.messageAPIResponse = await replyText(
 							event.replyToken,
 							`ごめんなさい．メッセージが長すぎます😫．256文字以下にしてください．(${message.text.length}文字でした)`
 						);
+						res.messageLog.message = `ごめんなさい．メッセージが長すぎます😫．256文字以下にしてください．(${message.text.length}文字でした)`;
 					} else {
-						return await handleText(
-							message,
-							latestContexts,
-							event.replyToken,
-							event.source
-						);
+						// 結果を受け取る
+						res = {
+							...(await handleText(
+								message,
+								latestContexts,
+								event.replyToken,
+								event.source
+							)),
+						};
 					}
+					break;
 
 				// case "image":
 				// 	return handleImage(message, event.replyToken);
@@ -101,11 +134,17 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 				// 	return handleSticker(message, event.replyToken);
 
 				default:
-					return await replyText(
+					res.messageAPIResponse = await replyText(
 						event.replyToken,
 						`ごめんなさい．まだその種類のメッセージ(${message.type})には対応できません😫 `
 					);
+					res.messageLog.message = `ごめんなさい．まだその種類のメッセージ(${message.type})には対応できません😫 `;
 			}
+			res.messageAPIResponse &&
+				(await postMessageLog({
+					...res.messageLog!,
+				}));
+			return res.messageAPIResponse;
 
 		case "follow":
 			return await handleFollow(event.replyToken, event.source);

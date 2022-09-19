@@ -181,7 +181,7 @@ class LineController
             "type" => "invalid_param"
           ]];
         }
-        return $this->insertConversation($post["userId"], $post["messageType"], $post["message"], $post["sender"], $post["contextName"], $post["lifespanCount"]);
+        return $this->insertConversation($post["userId"], $post["messageType"], $post["message"], $post["sender"], $post["contextName"], (int) $post["lifespanCount"]);
         break;
       default:
         $this->code = 400;
@@ -198,7 +198,7 @@ class LineController
    * @param string $user_message ユーザもしくはBotが送信したメッセージ(テキスト以外の場合はunknown_messageを想定)
    * @param string $sender 送信者(学生student，システムBotを想定)
    * @param string $context_name Dialogflowで設定したコンテキスト名
-   * @param string $lifespan_count Dialogflowで設定したコンテキスト持続回数
+   * @param int $lifespan_count Dialogflowで設定したコンテキスト持続回数
    * @return array 更新完了 ? 空配列 : エラーメッセージ
    */
   private function insertConversation($userId, $message_type, $user_message, $sender, $context_name, $lifespan_count) {
@@ -208,16 +208,16 @@ class LineController
     try{
       // mysqlの実行文の記述
       $stmt = $pdo -> prepare(
-        "INSERT INTO line_conversation (LineId, messageType, MessageText, Sender, contextName, lifespanCount)
-        VALUES (:LineId, :messageType, :MessageText, :Sender, :contextName, :lifespanCount)"
+        "INSERT INTO BotTalkLogs (userUid, sender, messageType, abstMessage, contextName, lifespanCount)
+        VALUES (:userUid, :sender, :messageType, :abstMessage, :contextName, :lifespanCount)"
       );
       //データの紐付け
-      $stmt->bindValue(':LineId', $userId, PDO::PARAM_STR);
+      $stmt->bindValue(':userUid', $userId, PDO::PARAM_STR);
+      $stmt->bindValue(':sender', $sender, PDO::PARAM_STR);
       $stmt->bindValue(':messageType', $message_type, PDO::PARAM_STR);
-      $stmt->bindValue(':MessageText', $user_message, PDO::PARAM_STR);
-      $stmt->bindValue(':Sender', $sender, PDO::PARAM_STR);
+      $stmt->bindValue(':abstMessage', $user_message, PDO::PARAM_STR);
       $stmt->bindValue(':contextName', $context_name, PDO::PARAM_STR);
-      $stmt->bindValue(':lifespanCount', $lifespan_count, PDO::PARAM_STR);
+      $stmt->bindValue(':lifespanCount', $lifespan_count, PDO::PARAM_INT);
       
       // 実行
       $res = $stmt->execute();

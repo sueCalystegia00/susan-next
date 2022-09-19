@@ -1,14 +1,13 @@
-import type { DialogflowContext, User } from "@/types/models";
-import type { EventMessage } from "@line/bot-sdk";
-import axios, { AxiosError, AxiosResponse } from "axios";
+import { postMessageLogParams } from "@/types/payloads";
+import axios from "axios";
 
-const postMessageLog = async (
-	userId: User["userUid"],
-	messageType: EventMessage["type"],
-	message: string,
-	userType: User["type"] | "bot",
-	context: DialogflowContext | null
-) => {
+const postMessageLog = async ({
+	userId,
+	messageType,
+	message,
+	userType,
+	context,
+}: postMessageLogParams) => {
 	try {
 		const { status, data } = await axios.post(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/line/message`,
