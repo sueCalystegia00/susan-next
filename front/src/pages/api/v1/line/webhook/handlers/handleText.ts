@@ -4,9 +4,22 @@ import { postMessageLog } from "@/pages/api/v1/line/libs/connectDB";
 import { AxiosError } from "axios";
 import type { DialogflowContext } from "@/types/models";
 import { detectIntent } from "@/pages/api/v1/dialogflow/sessions/detectIntent";
+import { Message } from "@line/bot-sdk/lib/types";
 
 /**
- * LINEbotのテキストメッセージを受け取ったときの処理
+ * LINE botから返信するメッセージ
+ */
+let replyMessage: Message = {
+	type: "text",
+	text: "すみません，よくわかりませんでした🤔",
+};
+/**
+ * DBに保存するログメッセージ
+ */
+let abstractMessage: string = "すみません，よくわかりませんでした🤔";
+
+/**
+ * LINE botのテキストメッセージを受け取ったときの処理
  */
 const handleText = async (
 	message: TextEventMessage,
@@ -23,37 +36,52 @@ const handleText = async (
 			"student",
 			contexts[0]
 		);
-
-		const nlpResult = await detectIntent(message.id, message.text, contexts);
-		//TODO: 解析結果を基にメッセージを返す
-		switch (nlpResult.queryResult?.action) {
-			case "QuestionStart":
-				return await lineClient.replyMessage(replyToken, {
-					type: "text",
-					text: "質問ありがとう! 第何回の講義についての質問ですか？",
-				});
-			default:
-				// create a echoing text message
-				const echo: TextMessage[] = [
-					{
-						type: "text",
-						text: `${JSON.stringify(message)}`,
-					},
-					{
-						type: "text",
-						text: `${nlpResult.queryResult?.action || "no action"}`,
-					},
-				];
-				// use reply API
-				return lineClient.replyMessage(replyToken, echo);
-		}
-	} catch (error) {
-		console.error(error);
+	} catch (error: any) {
 		if (error instanceof AxiosError) {
 			throw new AxiosError("データベースへの接続に失敗しました");
 		} else {
-			throw new Error("入力文の解析に失敗しました");
+			throw new Error("予期せぬエラーが発生しました");
 		}
+	}
+
+	try {
+		/**
+		 * Dialogflowの解析結果
+		 */
+		const nlpResult = await detectIntent(message.id, message.text, contexts);
+		if (!nlpResult.queryResult) throw new Error("queryResultが存在しません");
+
+		switch (nlpResult.queryResult.action) {
+			case "QuestionStart":
+				replyMessage = {
+					type: "text",
+					text: "質問を256字未満で具体的に書いてもらえる？\nメッセージの確認してから送信するか決められますよ😊",
+				} as TextMessage;
+				abstractMessage = replyMessage.text;
+				break;
+
+			default:
+				// create a echoing text message
+				replyMessage = {
+					type: "text",
+					text: `${JSON.stringify(message)}`,
+				} as TextMessage;
+				abstractMessage = "すみません，よくわかりませんでした🤔";
+		}
+
+		// 受信メッセージをログに保存
+		await postMessageLog(
+			source.userId!,
+			replyMessage.type,
+			abstractMessage,
+			"bot",
+			nlpResult.queryResult.outputContexts![0] as DialogflowContext
+		);
+
+		// use reply API
+		return lineClient.replyMessage(replyToken, replyMessage);
+	} catch (error) {
+		throw new Error("入力文の解析に失敗しました");
 	}
 };
 

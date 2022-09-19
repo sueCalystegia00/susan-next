@@ -7,23 +7,23 @@ const postMessageLog = async (
 	messageType: EventMessage["type"],
 	message: string,
 	userType: User["type"] | "bot",
-	context: DialogflowContext
+	context: DialogflowContext | null
 ) => {
-	return await axios
-		.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/line/message`, {
-			userId,
-			messageType,
-			message,
-			sender: userType,
-			contextName: context.name,
-			lifespanCount: context.lifespanCount,
-		})
-		.then((response: AxiosResponse) => {
-			const { status } = response;
-			return status;
-		})
-		.catch((error: AxiosError) => {
-			throw new Error(error.message);
-		});
+	try {
+		const { status, data } = await axios.post(
+			`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/line/message`,
+			{
+				userId,
+				messageType,
+				message,
+				sender: userType,
+				contextName: context?.name,
+				lifespanCount: context?.lifespanCount,
+			}
+		);
+		return status;
+	} catch (error: any) {
+		throw error;
+	}
 };
 export default postMessageLog;
