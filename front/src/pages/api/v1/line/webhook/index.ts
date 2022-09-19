@@ -4,9 +4,7 @@ import { SignatureValidationFailed, WebhookEvent } from "@line/bot-sdk";
 import { handleFollow, handleText } from "./handlers";
 import { middleware, runMiddleware, replyText, pickContextId } from "../libs";
 import { getLatestContexts, postMessageLog } from "../libs/connectDB";
-import { AxiosError } from "axios";
-import { MessageAPIResponseBase } from "@line/bot-sdk/lib/types";
-import { postMessageLogParams } from "@/types/payloads";
+import { botResponse } from "./types";
 
 // ref: https://nextjs.org/docs/api-routes/api-middlewares#custom-config
 export const config = {
@@ -88,15 +86,15 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 			});
 
 			// LINE Botのメッセージ送信結果とDBへ記録するログデータの雛形を準備
-			let res = {
-				messageAPIResponse: undefined as MessageAPIResponseBase | undefined,
+			let res: botResponse = {
+				messageAPIResponse: undefined,
 				messageLog: {
 					userId: event.source.userId!,
 					messageType: "text",
 					message: "message",
 					userType: "bot",
-					context: latestContexts[0],
-				} as postMessageLogParams,
+					context: null,
+				},
 			};
 
 			// メッセージタイプに応じて処理をさらに分岐
@@ -111,14 +109,14 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 						res.messageLog.message = `ごめんなさい．メッセージが長すぎます😫．256文字以下にしてください．(${message.text.length}文字でした)`;
 					} else {
 						// 結果を受け取る
-						res = {
-							...(await handleText(
-								message,
-								latestContexts,
-								event.replyToken,
-								event.source
-							)),
-						};
+						const _res = await handleText(
+							message,
+							latestContexts,
+							event.replyToken,
+							event.source
+						);
+						res.messageAPIResponse = _res.messageAPIResponse;
+						res.messageLog = _res.messageLog;
 					}
 					break;
 

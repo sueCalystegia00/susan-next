@@ -122,7 +122,7 @@ class LineController
 
     try{
       $stmt = $pdo -> prepare(
-        "SELECT `MessageText`
+        "SELECT `message`
         FROM `BotTalkLogs` 
         WHERE userUid = :userUid AND sender = 'student' AND (contextName = 'questionstart-followup' OR contextName = 'checktoasktheteacherdirectly-yes-followup')
         ORDER BY `BotTalkLogs`.`index`  DESC
@@ -208,14 +208,14 @@ class LineController
     try{
       // mysqlの実行文の記述
       $stmt = $pdo -> prepare(
-        "INSERT INTO BotTalkLogs (userUid, sender, messageType, abstMessage, contextName, lifespanCount)
-        VALUES (:userUid, :sender, :messageType, :abstMessage, :contextName, :lifespanCount)"
+        "INSERT INTO BotTalkLogs (userUid, sender, messageType, message, contextName, lifespanCount)
+        VALUES (:userUid, :sender, :messageType, :message, :contextName, :lifespanCount)"
       );
       //データの紐付け
       $stmt->bindValue(':userUid', $userId, PDO::PARAM_STR);
       $stmt->bindValue(':sender', $sender, PDO::PARAM_STR);
       $stmt->bindValue(':messageType', $messageType, PDO::PARAM_STR);
-      $stmt->bindValue(':abstMessage', $userMessage, PDO::PARAM_STR);
+      $stmt->bindValue(':message', $userMessage, PDO::PARAM_STR);
       $stmt->bindValue(':contextName', $contextName, PDO::PARAM_STR);
       $stmt->bindValue(':lifespanCount', $lifespanCount, PDO::PARAM_INT);
       
