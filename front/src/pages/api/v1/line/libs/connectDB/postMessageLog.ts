@@ -1,5 +1,6 @@
 import { postMessageLogParams } from "@/types/payloads";
 import axios from "axios";
+import { pickContextId } from "../pickContextId";
 
 const postMessageLog = async ({
 	userId,
@@ -8,6 +9,7 @@ const postMessageLog = async ({
 	userType,
 	context,
 }: postMessageLogParams) => {
+	const sliceContext = context ? pickContextId(context) : context;
 	try {
 		const { status, data } = await axios.post(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/line/message`,
@@ -16,8 +18,8 @@ const postMessageLog = async ({
 				messageType,
 				message,
 				sender: userType,
-				contextName: context?.name,
-				lifespanCount: context?.lifespanCount,
+				contextName: sliceContext?.name,
+				lifespanCount: sliceContext?.lifespanCount,
 			}
 		);
 		return status;

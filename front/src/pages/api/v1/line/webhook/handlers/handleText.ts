@@ -1,9 +1,16 @@
-import type { TextEventMessage, TextMessage, EventSource } from "@line/bot-sdk";
-import { lineClient } from "@/pages/api/v1/line/libs";
 import type { DialogflowContext } from "@/types/models";
+import type { postMessageLogParams } from "@/types/payloads";
+import type {
+	Message,
+	TextEventMessage,
+	TextMessage,
+	EventSource,
+} from "@line/bot-sdk/lib/types";
+import { lineClient } from "@/pages/api/v1/line/libs";
 import { detectIntent } from "@/pages/api/v1/dialogflow/sessions/detectIntent";
-import { Message } from "@line/bot-sdk/lib/types";
-import { postMessageLogParams } from "@/types/payloads";
+import { offerSendNewMessage } from "../../libs/flexMessages";
+import calcLectureNumber from "@/utils/calcLectureNumber";
+import getInputQuestion from "../../libs/connectDB/getInputQuestion";
 
 /**
  * LINE botのテキストメッセージを受け取ったときの処理
@@ -31,17 +38,29 @@ const handleText = async (
 
 	switch (nlpResult.queryResult.action) {
 		case "QuestionStart":
+			// 質問文の入力を促すメッセージを返す
+			const { type, number } = calcLectureNumber(new Date());
 			replyMessage = {
 				type: "text",
-				text: "質問を256字未満で具体的に書いてもらえる？\nメッセージの確認してから送信するか決められますよ😊",
+				text:
+					type && number
+						? `データサイエンス入門${type}第${number}回講義の質問を受付中です！256字未満で具体的に書いてもらえる？😊`
+						: "質問を256字未満で具体的に書いてもらえる？😊",
 			} as TextMessage;
+			break;
+
+		case "NotFoundAnswer":
+		case "RequestDifferentAnswer":
+			// 質問文の確認・送信または修正を促すメッセージを返す
+			const inputQuestionText = await getInputQuestion(source.userId!);
+			replyMessage = offerSendNewMessage(inputQuestionText);
 			break;
 
 		default:
 			// create a echoing text message
 			replyMessage = {
 				type: "text",
-				text: `${JSON.stringify(message)}`,
+				text: `${message.text}...？ すみません，よくわかりませんでした🤔`,
 			} as TextMessage;
 	}
 
@@ -56,7 +75,10 @@ const handleText = async (
 		userId: source.userId!,
 		userType: "bot",
 		messageType: replyMessage.type,
-		message: replyMessage.text,
+		message:
+			replyMessage.type === "text"
+				? replyMessage.text
+				: replyMessage.altText || "unknown message",
 		context: nlpResult.queryResult.outputContexts
 			? (nlpResult.queryResult.outputContexts[0] as DialogflowContext)
 			: null,

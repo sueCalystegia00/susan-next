@@ -1,4 +1,4 @@
-import type { EventMessage } from "@line/bot-sdk/lib/types";
+import { EventMessage, Message } from "@line/bot-sdk/dist/types";
 import type { User, DialogflowIntent, Question, DialogflowContext } from "./models";
 
 export interface UserRegistrationPayload {
@@ -38,7 +38,7 @@ export interface PushLineMessagePayload {
 
 export interface postMessageLogParams {
 	userId: User["userUid"];
-	messageType: EventMessage["type"];
+	messageType: Message["type"] | EventMessage["type"];
 	message: string;
 	userType: User["type"] | "bot";
 	context: DialogflowContext | null;
