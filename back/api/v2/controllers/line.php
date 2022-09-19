@@ -181,7 +181,7 @@ class LineController
             "type" => "invalid_param"
           ]];
         }
-        return $this->insertConversation($post["userId"], $post["messageType"], $post["message"], $post["sender"], $post["contextName"], (int) $post["lifespanCount"]);
+        return $this->insertConversation($post["userId"], $post["sender"], $post["messageType"], $post["message"], $post["contextName"], (int) $post["lifespanCount"]);
         break;
       default:
         $this->code = 400;
@@ -201,7 +201,7 @@ class LineController
    * @param int $lifespan_count Dialogflowで設定したコンテキスト持続回数
    * @return array 更新完了 ? 空配列 : エラーメッセージ
    */
-  private function insertConversation($userId, $message_type, $user_message, $sender, $context_name, $lifespan_count) {
+  private function insertConversation($userId, $sender, $messageType, $userMessage, $contextName, $lifespanCount) {
     $db = new DB();
     $pdo = $db -> pdo();
 
@@ -214,10 +214,10 @@ class LineController
       //データの紐付け
       $stmt->bindValue(':userUid', $userId, PDO::PARAM_STR);
       $stmt->bindValue(':sender', $sender, PDO::PARAM_STR);
-      $stmt->bindValue(':messageType', $message_type, PDO::PARAM_STR);
-      $stmt->bindValue(':abstMessage', $user_message, PDO::PARAM_STR);
-      $stmt->bindValue(':contextName', $context_name, PDO::PARAM_STR);
-      $stmt->bindValue(':lifespanCount', $lifespan_count, PDO::PARAM_INT);
+      $stmt->bindValue(':messageType', $messageType, PDO::PARAM_STR);
+      $stmt->bindValue(':abstMessage', $userMessage, PDO::PARAM_STR);
+      $stmt->bindValue(':contextName', $contextName, PDO::PARAM_STR);
+      $stmt->bindValue(':lifespanCount', $lifespanCount, PDO::PARAM_INT);
       
       // 実行
       $res = $stmt->execute();
