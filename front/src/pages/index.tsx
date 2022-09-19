@@ -15,6 +15,14 @@ const HomePage = () => {
 		user?.token
 	);
 
+	useEffect(() => {
+		user?.type !== "unregistered" && router.replace("/questionsList");
+	}, []);
+
+	useEffect(() => {
+		setIsDarkMode(window.matchMedia("(prefers-color-scheme: dark)").matches);
+	}, []);
+
 	const handleRegistration = async () => {
 		try {
 			await userRegistration();
@@ -29,10 +37,6 @@ const HomePage = () => {
 			}
 		}
 	};
-
-	useEffect(() => {
-		setIsDarkMode(window.matchMedia("(prefers-color-scheme: dark)").matches);
-	}, []);
 
 	return (
 		<DefaultLayout>

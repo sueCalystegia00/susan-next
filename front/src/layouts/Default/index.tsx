@@ -11,11 +11,11 @@ const DefaultLayout: FC<LayoutProps> = ({ children }) => {
 	const { isError, isLogIn } = useContext(AuthContext);
 	return isError ? (
 		<div className='relative w-screen min-w-80 h-screen flex flex-col items-center gap-4 p-4'>
-			<div className='w-screen max-w-80 flex flex-col items-center'>
+			<div className='w-screen max-w flex flex-col items-center'>
 				{window.matchMedia("(prefers-color-scheme: dark)").matches ? (
-					<LogoDark />
+					<LogoDark height='128' />
 				) : (
-					<LogoLight />
+					<LogoLight height='128' />
 				)}
 			</div>
 			<p>ログインに失敗しました．</p>
