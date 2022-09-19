@@ -55,7 +55,7 @@ class LineController
    * ボットとの直前9時間以内の会話におけるコンテキストを取得する
    * @param string $lineid ユーザのLINEid
    */
-  private function getLatestContext($lineid) {
+  private function getLatestContext($userUid) {
     $db = new DB();
     $pdo = $db -> pdo();
 
@@ -63,12 +63,12 @@ class LineController
       // mysqlの実行文(各LINEid毎の最新メッセージを取得)
       $stmt = $pdo -> prepare(
         "SELECT `contextName`, `lifespanCount`
-        FROM `line_conversation` 
-        WHERE LineId = :lineid AND timestamp >= DATE_SUB(NOW(),INTERVAL 9 HOUR) AND Sender = 'bot' AND contextName IS NOT NULL
-        ORDER BY `line_conversation`.`index`  DESC
+        FROM `BotTalkLogs` 
+        WHERE userUid = :userUid AND timestamp >= DATE_SUB(NOW(),INTERVAL 9 HOUR) AND sender = 'bot' AND contextName IS NOT NULL
+        ORDER BY `BotTalkLogs`.`index`  DESC
         LIMIT 1"
       );
-      $stmt->bindValue(':lineid', $lineid, PDO::PARAM_STR);
+      $stmt->bindValue(':userUid', $userUid, PDO::PARAM_STR);
       // 実行
       $res = $stmt->execute();
 
@@ -123,12 +123,12 @@ class LineController
     try{
       $stmt = $pdo -> prepare(
         "SELECT `MessageText`
-        FROM `line_conversation` 
-        WHERE LineId = :lineid AND Sender = 'student' AND (contextName = 'questionstart-followup' OR contextName = 'checktoasktheteacherdirectly-yes-followup')
-        ORDER BY `line_conversation`.`index`  DESC
+        FROM `BotTalkLogs` 
+        WHERE userUid = :userUid AND sender = 'student' AND (contextName = 'questionstart-followup' OR contextName = 'checktoasktheteacherdirectly-yes-followup')
+        ORDER BY `BotTalkLogs`.`index`  DESC
         limit 3"
       );
-      $stmt->bindValue(':lineid', $userId, PDO::PARAM_STR);
+      $stmt->bindValue(':userUid', $userId, PDO::PARAM_STR);
       // 実行
       $res = $stmt->execute();
 
