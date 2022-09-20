@@ -19,7 +19,9 @@ const postNewQuestion = async ({
 		if (status === 201) {
 			return data;
 		} else {
-			throw new Error("failed to post new question");
+			throw new Error(
+				JSON.stringify({ message: "failed to post new question", data: data })
+			);
 		}
 	} catch (error) {
 		throw error;

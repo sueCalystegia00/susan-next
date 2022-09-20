@@ -136,22 +136,30 @@ class QuestionsController
    */
   public function post($args) {
     $post = $this->request_body;
-    if(!array_key_exists("userIdToken",$post)){
-      $this->code = 400;
-      return ["error" => [
-        "type" => "user token is required"
-      ]];
+    switch($args[0]){
+      case "newQuestion": // チャットボットから新規質問登録するときはuserIdTokenが取得できない
+        break;
+      //case "view_log":
+      //case "isYourQuestion":
+      default:
+        if(!array_key_exists("userIdToken",$post)){
+          $this->code = 400;
+          return ["error" => [
+            "type" => "user token is required"
+          ]];
+        }
+        // ユーザーの存在確認
+        include("users.php");
+        $usersController = new UsersController();
+        try{
+          $userId = $usersController->verifyLine($post["userIdToken"])["sub"];
+        }catch(Exception $error){
+          $this->code = $error->getCode();
+          return ["error" => json_decode($error->getMessage(),true)];
+        }
+        break;
     }
-    // ユーザーの存在確認
-    include("users.php");
-    $usersController = new UsersController();
-    try{
-      $userId = $usersController->verifyLine($post["userIdToken"])["sub"];
-    }catch(Exception $error){
-      $this->code = $error->getCode();
-      return ["error" => json_decode($error->getMessage(),true)];
-    }
-
+    
     switch($args[0]){
       // 閲覧ログを記録する
       case "view_log":
