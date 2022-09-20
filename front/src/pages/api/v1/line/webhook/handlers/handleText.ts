@@ -99,18 +99,25 @@ const handleText = async (
 			break;
 
 		default:
-			// create a echoing text message
-			replyMessage = [
-				{
-					type: "text",
-					text: `すみません，よくわかりませんでした🤔`,
-				} as TextMessage,
-				{
-					type: "sticker",
-					packageId: "11539",
-					stickerId: "52114129",
-				} as StickerMessage,
-			];
+			// 原則DialogflowのIntentに設定しているResponseを返す，設定されていない場合は不明なメッセージとして返答するふぃｘ
+			replyMessage = nlpResult.queryResult.fulfillmentText
+				? [
+						{
+							type: "text",
+							text: `${nlpResult.queryResult.fulfillmentText}`,
+						} as TextMessage,
+				  ]
+				: [
+						{
+							type: "text",
+							text: `すみません，よくわかりませんでした🤔`,
+						} as TextMessage,
+						{
+							type: "sticker",
+							packageId: "11539",
+							stickerId: "52114129",
+						} as StickerMessage,
+				  ];
 	}
 
 	/**
