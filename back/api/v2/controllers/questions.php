@@ -136,6 +136,7 @@ class QuestionsController
    */
   public function post($args) {
     $post = $this->request_body;
+    // TODO: userIdTokenのチェック方法を検討
     switch($args[0]){
       case "newQuestion": // チャットボットから新規質問登録するときはuserIdTokenが取得できない
         break;
@@ -326,14 +327,13 @@ class QuestionsController
   }
 
   /**
-   * 新規の質問をDBに登録する (LINEbotからも呼び出せるようにpublic)
-   * TODO:なんとかしてprivateにしたい
+   * 新規の質問をDBに登録する
    * @param string $userId 質問者のLINEid
    * @param int $lectureNumber 質問の対象となる講義の番号
    * @param string $question_text 質問文
    * @return array 結果
    */
-  public function insertQuestionData($userId, $lectureNumber, $questionText) {
+  private function insertQuestionData($userId, $lectureNumber, $questionText) {
     $db = new DB();
     $pdo = $db -> pdo();
 
@@ -390,6 +390,10 @@ class QuestionsController
 
       $this->code = 201;
       //header("Location: ".$this->url.$lastIndexQA);
+
+      include(dirname( __FILE__)."/../utils/sendEmail.php");
+      sendEmailToInstructors("newQuestion", "新しい質問が投稿されました", $lastIndexQA);
+
       return [
         "questionIndex" => $lastIndexQA,
         "discussionIndex" => $lastIndexThread
