@@ -6,13 +6,6 @@ import Head from "next/head";
 import AuthProvider from "@/contexts/AuthContext";
 import Authenticated from "@/components/Authenticated";
 
-const requireAuthRoute = [
-	"/",
-	"/admin/intentsController",
-	"/questionsList",
-	"/question/[questionId]",
-];
-
 const MyApp = ({ Component, pageProps, router }: AppProps) => {
 	useScrollTop();
 
@@ -29,14 +22,10 @@ const MyApp = ({ Component, pageProps, router }: AppProps) => {
 				<meta name='robots' content='noindex,nofollow' />
 			</Head>
 
-			{requireAuthRoute.includes(router.route) ? (
-				<AuthProvider>
-					<Authenticated />
-					<Component {...pageProps} key={router.asPath} />
-				</AuthProvider>
-			) : (
+			<AuthProvider>
+				<Authenticated />
 				<Component {...pageProps} key={router.asPath} />
-			)}
+			</AuthProvider>
 		</>
 	);
 };
