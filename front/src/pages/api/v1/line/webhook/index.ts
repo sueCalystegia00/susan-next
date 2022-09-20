@@ -3,7 +3,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { SignatureValidationFailed, WebhookEvent } from "@line/bot-sdk";
 import { handleFollow, handleText } from "./handlers";
 import { middleware, runMiddleware, replyText, pickContextId } from "../libs";
-import { getLatestContexts } from "../libs/connectDB";
+import { getLatestContexts, postMessageLog } from "../libs/connectDB";
+import { botResponse } from "./types";
 
 // ref: https://nextjs.org/docs/api-routes/api-middlewares#custom-config
 export const config = {
@@ -29,28 +30,31 @@ const LineWebhookHandler = async (
 			} catch (error: unknown) {
 				console.error(error);
 				if (error instanceof SignatureValidationFailed) {
-					return res.status(401).end("invalid signature");
+					res.status(401).end("invalid signature");
+					break;
 				} else {
-					return res.status(500).end("something went wrong");
+					res.status(500).end("something went wrong");
+					break;
 				}
 			}
 
 			// handle webhook body
 			const events: WebhookEvent[] = req.body.events;
-			const results = await Promise.all(
-				events.map(async (event: WebhookEvent) => {
-					try {
-						await webhookEventHandler(event);
-					} catch (error: any) {
-						console.error(error);
-						res.status(500).end(error.message);
-					}
-				})
-			);
-			return res.status(200).json({
-				status: "success",
-				results,
-			});
+			try {
+				const results = await Promise.all(
+					events.map(
+						async (event: WebhookEvent) => await webhookEventHandler(event)
+					)
+				);
+				res.status(200).json({
+					status: "success",
+					results,
+				});
+			} catch (error: any) {
+				console.error(error);
+				res.status(500).end(error.message);
+			}
+			break;
 
 		default:
 			res.setHeader("Allow", ["GET", "POST"]);
@@ -62,26 +66,57 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 	switch (event.type) {
 		case "message":
 			const message = event.message;
-			// ユーザーの最新のコンテキストを取得
-			const latestContexts = await getLatestContexts(event.source.userId!).then(
-				(contexts: DialogflowContext[]) => {
+
+			// 対話ログからユーザーの最新のコンテキストを取得
+			const latestContexts = await getLatestContexts(event.source.userId!)
+				.then((contexts: DialogflowContext[]) => {
 					return contexts.map((context) => pickContextId(context));
-				}
-			);
+				})
+				.catch((error: any) => {
+					throw error;
+				});
+
+			// 受信メッセージをログに保存
+			await postMessageLog({
+				userId: event.source.userId!,
+				messageType: message.type,
+				message: message.type == "text" ? message.text : "undefined",
+				userType: "student",
+				context: latestContexts[0],
+			});
+
+			// LINE Botのメッセージ送信結果とDBへ記録するログデータの雛形を準備
+			let res: botResponse = {
+				messageAPIResponse: undefined,
+				messageLog: {
+					userId: event.source.userId!,
+					messageType: "text",
+					message: "message",
+					userType: "bot",
+					context: null,
+				},
+			};
+
+			// メッセージタイプに応じて処理をさらに分岐
 			switch (message.type) {
 				case "text":
 					if (message.text.length > 256) {
-						await replyText(
+						// Dialogflowの入力文字数限界を超えている場合
+						res.messageAPIResponse = await replyText(
 							event.replyToken,
 							`ごめんなさい．メッセージが長すぎます😫．256文字以下にしてください．(${message.text.length}文字でした)`
 						);
+						res.messageLog.message = `ごめんなさい．メッセージが長すぎます😫．256文字以下にしてください．(${message.text.length}文字でした)`;
 					} else {
-						await handleText(
+						// 結果を受け取る
+						const _res = await handleText(
 							message,
 							latestContexts,
 							event.replyToken,
 							event.source
 						);
+						res.messageAPIResponse = _res.messageAPIResponse;
+						res.messageLog = _res.messageLog;
 					}
 					break;
 
@@ -97,16 +132,17 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 				// 	return handleSticker(message, event.replyToken);
 
 				default:
-					await replyText(
+					res.messageAPIResponse = await replyText(
 						event.replyToken,
 						`ごめんなさい．まだその種類のメッセージ(${message.type})には対応できません😫 `
 					);
+					res.messageLog.message = `ごめんなさい．まだその種類のメッセージ(${message.type})には対応できません😫 `;
 			}
-			break;
+			res.messageAPIResponse && (await postMessageLog(res.messageLog!));
+			return res.messageAPIResponse;
 
 		case "follow":
-			await handleFollow(event.replyToken, event.source);
-			break;
+			return await handleFollow(event.replyToken, event.source);
 
 		// case "unfollow":
 		// 	console.log(`Unfollowed this bot: ${JSON.stringify(event)}`);
@@ -134,7 +170,7 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 
 		default:
 			if ("replyToken" in event) {
-				await replyText(
+				return await replyText(
 					event.replyToken,
 					"予期せぬ入力によりエラーが発生しました😫"
 				);

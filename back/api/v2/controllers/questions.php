@@ -136,22 +136,31 @@ class QuestionsController
    */
   public function post($args) {
     $post = $this->request_body;
-    if(!array_key_exists("userIdToken",$post)){
-      $this->code = 400;
-      return ["error" => [
-        "type" => "user token is required"
-      ]];
+    // TODO: userIdTokenのチェック方法を検討
+    switch($args[0]){
+      case "newQuestion": // チャットボットから新規質問登録するときはuserIdTokenが取得できない
+        break;
+      //case "view_log":
+      //case "isYourQuestion":
+      default:
+        if(!array_key_exists("userIdToken",$post)){
+          $this->code = 400;
+          return ["error" => [
+            "type" => "user token is required"
+          ]];
+        }
+        // ユーザーの存在確認
+        include("users.php");
+        $usersController = new UsersController();
+        try{
+          $userId = $usersController->verifyLine($post["userIdToken"])["sub"];
+        }catch(Exception $error){
+          $this->code = $error->getCode();
+          return ["error" => json_decode($error->getMessage(),true)];
+        }
+        break;
     }
-    // ユーザーの存在確認
-    include("users.php");
-    $usersController = new UsersController();
-    try{
-      $userId = $usersController->verifyLine($post["userIdToken"])["sub"];
-    }catch(Exception $error){
-      $this->code = $error->getCode();
-      return ["error" => json_decode($error->getMessage(),true)];
-    }
-
+    
     switch($args[0]){
       // 閲覧ログを記録する
       case "view_log":
@@ -184,14 +193,17 @@ class QuestionsController
         }
         break;
 
-      case "new-question":
-        if(!array_key_exists("userId",$post) || !array_key_exists("question",$post)){
+      case "newQuestion":
+        if(!array_key_exists("userId",$post) || 
+          !array_key_exists("lectureNumber",$post) ||
+          !array_key_exists("questionText",$post)
+        ){
           $this->code = 400;
           return ["error" => [
             "type" => "invalid_param"
           ]];
         }else{
-          return $this->insertQuestionData($post["userId"], $post["question"]);
+          return $this->insertQuestionData($post["userId"], $post["lectureNumber"], $post["questionText"]);
         }
         break;
 
@@ -315,24 +327,25 @@ class QuestionsController
   }
 
   /**
-   * 新規の質問をDBに登録する (LINEbotからも呼び出せるようにpublic)
-   * TODO:なんとかしてprivateにしたい
+   * 新規の質問をDBに登録する
    * @param string $userId 質問者のLINEid
+   * @param int $lectureNumber 質問の対象となる講義の番号
    * @param string $question_text 質問文
    * @return array 結果
    */
-  public function insertQuestionData($userId, $questionText) {
+  private function insertQuestionData($userId, $lectureNumber, $questionText) {
     $db = new DB();
     $pdo = $db -> pdo();
 
     try{
       // mysqlの実行文の記述
       $stmtQA = $pdo -> prepare(
-        "INSERT INTO Questions (questionerId, questionText)
-        VALUES (:questionerId, :questionText)"
+        "INSERT INTO Questions (questionerId, lectureNumber, questionText)
+        VALUES (:questionerId, :lectureNumber, :questionText)"
       );
       //データの紐付け
       $stmtQA->bindValue(':questionerId', $userId, PDO::PARAM_STR);
+      $stmtQA->bindValue(':lectureNumber', $lectureNumber, PDO::PARAM_INT);
       $stmtQA->bindValue(':questionText', $questionText, PDO::PARAM_STR);
       
       // 実行
@@ -348,25 +361,20 @@ class QuestionsController
 
       // mysqlの実行文の記述
       $stmtThread = $pdo -> prepare(
-        "INSERT INTO thread_conversation (QuestionId, SenderType, Sender, MessageType, MessageText)
+        "INSERT INTO Discussions (questionIndex, userId, userType, isQuestionersMessage, messageType, message)
         VALUES (
-          :QuestionId, 
-          (SELECT IF( EXISTS(
-            SELECT `LineId`
-            FROM `instructor_list`
-            WHERE `LineId` = :LineId), 
-            'instructor', 'student') as 'SenderType'),
-          :Sender, 
-          :MessageType, 
-          :MessageText
+          :questionIndex, 
+          :userId,
+          'student',
+          1,
+          'chat', 
+          :message
         )"
       );
       //データの紐付け
-      $stmtThread->bindValue(':QuestionId', $lastIndexQA, PDO::PARAM_INT);
-      $stmtThread->bindValue(':LineId', $userId, PDO::PARAM_STR);
-      $stmtThread->bindValue(':Sender', $userId, PDO::PARAM_STR);
-      $stmtThread->bindValue(':MessageType', "chat", PDO::PARAM_STR);
-      $stmtThread->bindValue(':MessageText', $questionText, PDO::PARAM_STR);
+      $stmtThread->bindValue(':questionIndex', $lastIndexQA, PDO::PARAM_INT);
+      $stmtThread->bindValue(':userId', $userId, PDO::PARAM_STR);
+      $stmtThread->bindValue(':message', $questionText, PDO::PARAM_STR);
       
       // 実行
       $resThread = $stmtThread->execute();
@@ -381,10 +389,14 @@ class QuestionsController
       }
 
       $this->code = 201;
-      header("Location: ".$this->url.$lastIndexQA);
+      //header("Location: ".$this->url.$lastIndexQA);
+
+      include(dirname( __FILE__)."/../utils/sendEmail.php");
+      sendEmailToInstructors("newQuestion", "新しい質問が投稿されました", $lastIndexQA);
+
       return [
-        "QAIndex" => $lastIndexQA,
-        "ThreadIndex" => $lastIndexThread
+        "questionIndex" => $lastIndexQA,
+        "discussionIndex" => $lastIndexThread
       ];
 
     } catch(PDOException $error){

@@ -55,7 +55,7 @@ class LineController
    * ボットとの直前9時間以内の会話におけるコンテキストを取得する
    * @param string $lineid ユーザのLINEid
    */
-  private function getLatestContext($lineid) {
+  private function getLatestContext($userUid) {
     $db = new DB();
     $pdo = $db -> pdo();
 
@@ -63,12 +63,12 @@ class LineController
       // mysqlの実行文(各LINEid毎の最新メッセージを取得)
       $stmt = $pdo -> prepare(
         "SELECT `contextName`, `lifespanCount`
-        FROM `line_conversation` 
-        WHERE LineId = :lineid AND timestamp >= DATE_SUB(NOW(),INTERVAL 9 HOUR) AND Sender = 'bot' AND contextName IS NOT NULL
-        ORDER BY `line_conversation`.`index`  DESC
+        FROM `BotTalkLogs` 
+        WHERE userUid = :userUid AND timestamp >= DATE_SUB(NOW(),INTERVAL 9 HOUR) AND sender = 'bot' AND contextName IS NOT NULL
+        ORDER BY `BotTalkLogs`.`index`  DESC
         LIMIT 1"
       );
-      $stmt->bindValue(':lineid', $lineid, PDO::PARAM_STR);
+      $stmt->bindValue(':userUid', $userUid, PDO::PARAM_STR);
       // 実行
       $res = $stmt->execute();
 
@@ -122,13 +122,13 @@ class LineController
 
     try{
       $stmt = $pdo -> prepare(
-        "SELECT `MessageText`
-        FROM `line_conversation` 
-        WHERE LineId = :lineid AND Sender = 'student' AND (contextName = 'questionstart-followup' OR contextName = 'checktoasktheteacherdirectly-yes-followup')
-        ORDER BY `line_conversation`.`index`  DESC
+        "SELECT `message`
+        FROM `BotTalkLogs` 
+        WHERE userUid = :userUid AND sender = 'student' AND (contextName = 'questionstart-followup' OR contextName = 'checktoasktheteacherdirectly-yes-followup')
+        ORDER BY `BotTalkLogs`.`index`  DESC
         limit 3"
       );
-      $stmt->bindValue(':lineid', $userId, PDO::PARAM_STR);
+      $stmt->bindValue(':userUid', $userId, PDO::PARAM_STR);
       // 実行
       $res = $stmt->execute();
 
@@ -181,7 +181,7 @@ class LineController
             "type" => "invalid_param"
           ]];
         }
-        return $this->insertConversation($post["userId"], $post["messageType"], $post["message"], $post["sender"], $post["contextName"], $post["lifespanCount"]);
+        return $this->insertConversation($post["userId"], $post["sender"], $post["messageType"], $post["message"], $post["contextName"], (int) $post["lifespanCount"]);
         break;
       default:
         $this->code = 400;
@@ -198,26 +198,26 @@ class LineController
    * @param string $user_message ユーザもしくはBotが送信したメッセージ(テキスト以外の場合はunknown_messageを想定)
    * @param string $sender 送信者(学生student，システムBotを想定)
    * @param string $context_name Dialogflowで設定したコンテキスト名
-   * @param string $lifespan_count Dialogflowで設定したコンテキスト持続回数
+   * @param int $lifespan_count Dialogflowで設定したコンテキスト持続回数
    * @return array 更新完了 ? 空配列 : エラーメッセージ
    */
-  private function insertConversation($userId, $message_type, $user_message, $sender, $context_name, $lifespan_count) {
+  private function insertConversation($userId, $sender, $messageType, $userMessage, $contextName, $lifespanCount) {
     $db = new DB();
     $pdo = $db -> pdo();
 
     try{
       // mysqlの実行文の記述
       $stmt = $pdo -> prepare(
-        "INSERT INTO line_conversation (LineId, messageType, MessageText, Sender, contextName, lifespanCount)
-        VALUES (:LineId, :messageType, :MessageText, :Sender, :contextName, :lifespanCount)"
+        "INSERT INTO BotTalkLogs (userUid, sender, messageType, message, contextName, lifespanCount)
+        VALUES (:userUid, :sender, :messageType, :message, :contextName, :lifespanCount)"
       );
       //データの紐付け
-      $stmt->bindValue(':LineId', $userId, PDO::PARAM_STR);
-      $stmt->bindValue(':messageType', $message_type, PDO::PARAM_STR);
-      $stmt->bindValue(':MessageText', $user_message, PDO::PARAM_STR);
-      $stmt->bindValue(':Sender', $sender, PDO::PARAM_STR);
-      $stmt->bindValue(':contextName', $context_name, PDO::PARAM_STR);
-      $stmt->bindValue(':lifespanCount', $lifespan_count, PDO::PARAM_STR);
+      $stmt->bindValue(':userUid', $userId, PDO::PARAM_STR);
+      $stmt->bindValue(':sender', $sender, PDO::PARAM_STR);
+      $stmt->bindValue(':messageType', $messageType, PDO::PARAM_STR);
+      $stmt->bindValue(':message', $userMessage, PDO::PARAM_STR);
+      $stmt->bindValue(':contextName', $contextName, PDO::PARAM_STR);
+      $stmt->bindValue(':lifespanCount', $lifespanCount, PDO::PARAM_INT);
       
       // 実行
       $res = $stmt->execute();

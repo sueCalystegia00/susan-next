@@ -1,17 +1,8 @@
 import { DialogflowContext } from "@/types/models";
 import { v2 } from "@google-cloud/dialogflow";
+import clientConfig from "../libs/clientConfig";
 
-const sessionsClient = new v2.SessionsClient({
-	credentials: {
-		private_key:
-			process.env.NODE_ENV !== "development"
-				? process.env.DIALOGFLOW_PRIVATE_KEY
-				: process.env.DIALOGFLOW_PRIVATE_KEY!.replace(/\\n/gm, "\n"),
-		client_email: process.env.DIALOGFLOW_CLIENT_EMAIL,
-	},
-	//keyFilename: process.env.DIALOGFLOW_KEYFILE_PATH,
-	projectId: process.env.DIALOGFLOW_PROJECT_ID,
-});
+const sessionsClient = new v2.SessionsClient(clientConfig);
 const languageCode = "ja";
 
 /**
