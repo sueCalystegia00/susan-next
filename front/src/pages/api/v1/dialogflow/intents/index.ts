@@ -1,15 +1,9 @@
 import { DialogflowIntent } from "@/types/models";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { v2 } from "@google-cloud/dialogflow";
+import clientConfig from "../libs/clientConfig";
 
-const intentsClient = new v2.IntentsClient({
-	credentials: {
-		private_key: process.env.DIALOGFLOW_PRIVATE_KEY!.replace(/\\n/gm, "\n"),
-		client_email: process.env.DIALOGFLOW_CLIENT_EMAIL,
-	},
-	//keyFilename: process.env.DIALOGFLOW_KEYFILE_PATH,
-	projectId: process.env.DIALOGFLOW_PROJECT_ID,
-});
+const intentsClient = new v2.IntentsClient(clientConfig);
 const agentPath = intentsClient.projectAgentPath(
 	process.env.DIALOGFLOW_PROJECT_ID!
 );
@@ -31,7 +25,7 @@ const DialogflowIntentHandler = async (
 				);
 				res.status(200).json(response);
 			} catch (error) {
-				res.status(500).json({ error: error });
+				res.status(404).end("Intent not found");
 			}
 			break;
 

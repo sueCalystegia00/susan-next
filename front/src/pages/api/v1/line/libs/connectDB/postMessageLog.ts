@@ -1,29 +1,30 @@
-import type { DialogflowContext, User } from "@/types/models";
-import type { EventMessage } from "@line/bot-sdk";
-import axios, { AxiosError, AxiosResponse } from "axios";
+import { postMessageLogParams } from "@/types/payloads";
+import axios from "axios";
+import { pickContextId } from "../pickContextId";
 
-const postMessageLog = async (
-	userId: User["userUid"],
-	messageType: EventMessage["type"],
-	message: string,
-	userType: User["type"] | "bot",
-	context: DialogflowContext
-) => {
-	return await axios
-		.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/line/message`, {
-			userId,
-			messageType,
-			message,
-			sender: userType,
-			contextName: context.name,
-			lifespanCount: context.lifespanCount,
-		})
-		.then((response: AxiosResponse) => {
-			const { status } = response;
-			return status;
-		})
-		.catch((error: AxiosError) => {
-			throw new Error(error.message);
-		});
+const postMessageLog = async ({
+	userId,
+	messageType,
+	message,
+	userType,
+	context,
+}: postMessageLogParams) => {
+	const sliceContext = context ? pickContextId(context) : context;
+	try {
+		const { status, data } = await axios.post(
+			`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/line/message`,
+			{
+				userId,
+				messageType,
+				message,
+				sender: userType,
+				contextName: sliceContext?.name,
+				lifespanCount: sliceContext?.lifespanCount,
+			}
+		);
+		return status;
+	} catch (error: any) {
+		throw error;
+	}
 };
 export default postMessageLog;

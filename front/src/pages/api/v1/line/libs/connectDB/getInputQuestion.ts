@@ -1,10 +1,10 @@
-import type { DialogflowContext, User } from "@/types/models";
+import { Question, User } from "@/types/models";
 import axios, { AxiosError, AxiosResponse } from "axios";
 
-const getLatestContexts = async (userId: User["userUid"]) => {
+const getInputQuestion = async (userId: User["userUid"]) => {
 	try {
-		const { status, data } = await axios.get<DialogflowContext[]>(
-			`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/line/context/${userId}`
+		const { status, data } = await axios.get<Question["questionText"]>(
+			`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/line/question/${userId}`
 		);
 		if (status === 200) {
 			return data;
@@ -20,4 +20,4 @@ const getLatestContexts = async (userId: User["userUid"]) => {
 	}
 };
 
-export default getLatestContexts;
+export default getInputQuestion;

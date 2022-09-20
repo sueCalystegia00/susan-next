@@ -1,4 +1,10 @@
-import { User, DialogflowIntent, Question } from "./models";
+import { EventMessage, Message } from "@line/bot-sdk/dist/types";
+import type {
+	User,
+	DialogflowIntent,
+	Question,
+	DialogflowContext,
+} from "./models";
 
 export interface UserRegistrationPayload {
 	userIdToken?: User["token"];
@@ -33,4 +39,18 @@ export interface PushLineMessagePayload {
 			questionText?: Question["questionText"];
 		};
 	};
+}
+
+export interface postMessageLogParams {
+	userId: User["userUid"];
+	messageType: Message["type"] | EventMessage["type"];
+	message: string;
+	userType: User["type"] | "bot";
+	context: DialogflowContext | null;
+}
+
+export interface postNewQuestionParams {
+	userId: User["userUid"];
+	questionText: Question["questionText"];
+	lectureNumber: Question["lectureNumber"];
 }
