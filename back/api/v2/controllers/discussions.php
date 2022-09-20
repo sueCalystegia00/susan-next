@@ -204,6 +204,10 @@ class DiscussionsController
       if($res){
         $this->code = 201;
         //header("Location: ".$this->url.$lastIndex);
+        if($messageType != "image"){
+          include(dirname( __FILE__)."/../utils/sendEmail.php");
+          sendEmailToInstructors("message", "追加のメッセージが投稿されました", $questionIndex);
+        }
         return [
           "index" => $lastIndex,
           "timestamp" => $timestamp,

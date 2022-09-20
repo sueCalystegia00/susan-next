@@ -17,7 +17,6 @@ import {
 import calcLectureNumber from "@/utils/calcLectureNumber";
 import getInputQuestion from "../../libs/connectDB/getInputQuestion";
 import postNewQuestion from "../../libs/connectDB/postNewQuestion";
-import sendEmail from "@/utils/sendEmail";
 
 /**
  * LINE botのテキストメッセージを受け取ったときの処理
