@@ -79,6 +79,7 @@ const handleText = async (
 			// TODO: 質問送信処理
 			const index: number = 1;
 			replyMessage = [completeSendNewQuestion(index)];
+			nlpResult.queryResult.outputContexts = null; // 質問送信後はcontextを削除する
 			break;
 
 		case "cancel":
@@ -94,6 +95,7 @@ const handleText = async (
 					stickerId: "52114128",
 				} as StickerMessage,
 			];
+			nlpResult.queryResult.outputContexts = null; // contextを削除する
 			break;
 
 		default:

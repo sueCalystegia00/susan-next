@@ -5,7 +5,7 @@ const completeSendNewQuestion = (
 	sendQuestionIndex: Question["index"]
 ): FlexMessage => ({
 	type: "flex",
-	altText: "まだ誰もしていない質問を送ってみよう！",
+	altText: "質問を送信しました！",
 	contents: {
 		type: "bubble",
 		header: {

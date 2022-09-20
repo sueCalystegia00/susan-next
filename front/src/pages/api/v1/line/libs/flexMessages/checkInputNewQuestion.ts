@@ -5,7 +5,7 @@ const checkInputNewQuestion = (
 	inputQuestionText: Question["questionText"]
 ): FlexMessage => ({
 	type: "flex",
-	altText: "まだ誰もしていない質問を送ってみよう！",
+	altText: "この質問文で間違いないですか？",
 	contents: {
 		type: "bubble",
 		header: {

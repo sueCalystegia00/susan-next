@@ -138,10 +138,7 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 					);
 					res.messageLog.message = `ごめんなさい．まだその種類のメッセージ(${message.type})には対応できません😫 `;
 			}
-			res.messageAPIResponse &&
-				(await postMessageLog({
-					...res.messageLog!,
-				}));
+			res.messageAPIResponse && (await postMessageLog(res.messageLog!));
 			return res.messageAPIResponse;
 
 		case "follow":
