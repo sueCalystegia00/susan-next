@@ -1,7 +1,7 @@
 import { Question } from "@/types/models";
 import type { FlexMessage } from "@line/bot-sdk";
 
-const offerSendNewMessage = (
+const checkInputNewQuestion = (
 	inputQuestionText: Question["questionText"]
 ): FlexMessage => ({
 	type: "flex",
@@ -14,25 +14,22 @@ const offerSendNewMessage = (
 			contents: [
 				{
 					type: "text",
-					text: "🙋🏻‍♂️先生に質問してみよう！",
-					weight: "bold",
+					text: "🙋🏻‍♂️この質問を送る？",
 					size: "lg",
+					weight: "bold",
+					align: "center",
 					color: "#FFFFFF",
 				},
 				{
 					type: "text",
-					text: "まだ誰もしていない質問です🥳",
+					text: "この質問文で間違いないですか？",
 					color: "#FFFFFF",
 					wrap: true,
-				},
-				{
-					type: "text",
-					text: "匿名で送信して先生に答えてもらいましょう！",
-					color: "#FFFFFF",
-					wrap: true,
+					align: "center",
 				},
 			],
 			backgroundColor: "#284275",
+			paddingAll: "lg",
 		},
 		body: {
 			type: "box",
@@ -41,57 +38,59 @@ const offerSendNewMessage = (
 				{
 					type: "text",
 					text: "入力された質問文",
-					size: "xs",
 					align: "center",
+					wrap: true,
+					size: "xs",
 					color: "#B4B4B4",
 					offsetBottom: "md",
 				},
 				{
 					type: "text",
 					text: `${inputQuestionText}`,
+					align: "start",
 					wrap: true,
 				},
 			],
+			justifyContent: "center",
 		},
 		footer: {
 			type: "box",
 			layout: "vertical",
-			spacing: "sm",
+			spacing: "none",
 			contents: [
 				{
 					type: "button",
 					style: "link",
-					height: "sm",
 					action: {
 						type: "message",
-						label: "このまま先生に送る",
+						label: "この質問を送る",
 						text: "質問を送信",
 					},
+					height: "sm",
 				},
 				{
 					type: "button",
 					style: "link",
-					height: "sm",
 					action: {
 						type: "message",
 						label: "書き直す",
 						text: "書き直す",
 					},
+					height: "sm",
 				},
 				{
 					type: "button",
 					style: "link",
-					height: "sm",
 					action: {
 						type: "message",
 						label: "質問しない",
 						text: "キャンセル",
 					},
+					height: "sm",
 				},
 			],
-			flex: 0,
 		},
 	},
 });
 
-export default offerSendNewMessage;
+export default checkInputNewQuestion;
