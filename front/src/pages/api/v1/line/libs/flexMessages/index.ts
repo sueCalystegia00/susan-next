@@ -1,3 +1,4 @@
+import autoAnswerFlexMessage from "./autoAnswerFlexMessage";
 import followFlexMessage from "./followFlexMessage";
 import questionResponseMessage from "./questionResponseFlexMessage";
 import questionAnswerMessage from "./questionAnswerFlexMessage";
@@ -8,6 +9,7 @@ import checkInputNewQuestion from "./checkInputNewQuestion";
 
 export {
 	announceFlexMessage,
+	autoAnswerFlexMessage,
 	followFlexMessage,
 	questionResponseMessage,
 	questionAnswerMessage,

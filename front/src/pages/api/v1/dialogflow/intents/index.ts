@@ -127,6 +127,7 @@ const createQuestionIntent = async (
 					],
 				};
 			}),
+			action: "AnswerToTheQuestion",
 			parameters: [
 				{
 					displayName: "questionIndex",
