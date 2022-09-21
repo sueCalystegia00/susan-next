@@ -107,7 +107,7 @@ const createQuestionIntent = async (
 			displayName:
 				`0000${questionIndex}`.slice(-4) +
 				`_${trainingPhrases[0].slice(0, 10)}`,
-			parentFollowupIntentName: `projects/${process.env.DIALOGFLOW_PROJECT_ID}/agent/intents/fd08e1fd-e40a-42b6-ab9d-61fef96db07e`,
+			parentFollowupIntentName: `projects/${process.env.DIALOGFLOW_PROJECT_ID}/agent/intents/5ea1a85b-07a2-4e6e-b242-9a9e7738f50e`,
 			inputContextNames: [
 				`projects/${process.env.DIALOGFLOW_PROJECT_ID}/agent/sessions/-/contexts/QuestionStart-followup`,
 			],
@@ -127,6 +127,7 @@ const createQuestionIntent = async (
 					],
 				};
 			}),
+			action: "AnswerToTheQuestion",
 			parameters: [
 				{
 					displayName: "questionIndex",

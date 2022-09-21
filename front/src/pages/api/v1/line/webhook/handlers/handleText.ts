@@ -10,6 +10,7 @@ import type {
 import { lineClient } from "@/pages/api/v1/line/libs";
 import { detectIntent } from "@/pages/api/v1/dialogflow/sessions/detectIntent";
 import {
+	autoAnswerFlexMessage,
 	checkInputNewQuestion,
 	completeSendNewQuestion,
 	offerSendNewMessage,
@@ -57,6 +58,18 @@ const handleText = async (
 							? `データサイエンス入門${type}第${number}回講義の質問を受付中です！256字未満で具体的に書いてもらえる？😊`
 							: "質問を256字未満で具体的に書いてもらえる？😊",
 				} as TextMessage,
+			];
+			break;
+
+		case "AnswerToTheQuestion": // 自動回答
+			let autoAnswerParameters = nlpResult.queryResult.parameters!.fields!;
+			replyMessage = [
+				autoAnswerFlexMessage(
+					Number(autoAnswerParameters["questionIndex"].stringValue!),
+					autoAnswerParameters["originQuestion"].stringValue!,
+					nlpResult.queryResult.fulfillmentText!,
+					Number(autoAnswerParameters["lectureNumber"].stringValue!)
+				),
 			];
 			break;
 
