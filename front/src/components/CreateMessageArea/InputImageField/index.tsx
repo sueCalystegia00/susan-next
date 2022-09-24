@@ -1,12 +1,14 @@
+import Loader from "@/components/Loader";
 import { DiscussionContext } from "@/contexts/DiscussionContext";
 import { QuestionContext } from "@/contexts/QuestionContext";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 
 /**
  * @param questionIndex: 質問のインデックス
  * @returns 質問対応の画像を入力するフォームおよび送信ボタン
  */
 const InputImageField = () => {
+	const [isLoading, setIsLoading] = useState(false);
 	const { isUsersQuestion } = useContext(QuestionContext);
 	const { postImage, setPostImage, postDiscussionImage } =
 		useContext(DiscussionContext);
@@ -21,6 +23,7 @@ const InputImageField = () => {
 	};
 
 	const submitHandler = async () => {
+		setIsLoading(true);
 		try {
 			await postDiscussionImage(isUsersQuestion);
 			setPostImage(undefined);
@@ -28,11 +31,14 @@ const InputImageField = () => {
 			console.error(error);
 			alert(`エラーが発生しました. 
 			Error:${JSON.stringify(error)}`);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
 	return (
-		<div className='w-full flex flex-col items-center gap-2 p-4 '>
+		<div className='relative w-full flex flex-col items-center gap-2 p-4 '>
+			{isLoading && <Loader />}
 			<div className='relative w-full'>
 				<input
 					id='input-image'

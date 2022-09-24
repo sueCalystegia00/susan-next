@@ -66,7 +66,7 @@ const AuthProvider = ({ children }: Props) => {
 				liff.login();
 			}
 		} catch (error) {
-			lineLogout();
+			setUser(null);
 			throw error;
 		}
 	};
@@ -88,16 +88,16 @@ const AuthProvider = ({ children }: Props) => {
 			});
 			if (type === "unregistered") router.replace("/");
 		} catch (error: any) {
+			setUser(null);
 			if (error.message === "IdToken expired.") {
 				// トークンが期限切れの場合は再取得
 				alert("トークンが期限切れです．再度ログインしてください．");
 				await lineLogout();
+				
 				// 自動ログインを無効化することでトークンを更新する
 				router.replace(
 					`https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/?disable_auto_login=true`
 				);
-			} else {
-				setUser(null);
 			}
 		}
 	};
