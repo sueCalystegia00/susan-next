@@ -22,7 +22,6 @@ const MyApp = ({ Component, pageProps, router }: AppProps) => {
 			</Head>
 
 			<AuthProvider>
-				{/* <Authenticated /> */}
 				<Component {...pageProps} key={router.asPath} />
 			</AuthProvider>
 		</>

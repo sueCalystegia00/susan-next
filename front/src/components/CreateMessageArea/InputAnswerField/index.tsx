@@ -1,11 +1,12 @@
 import MessageTextArea from "@/components/MessageTextArea";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import CheckedToggle from "../../CheckedToggle";
 import { DiscussionContext } from "@/contexts/DiscussionContext";
 import { QuestionContext } from "@/contexts/QuestionContext";
 import useDialogflowIntent from "@/hooks/useDialogflowIntent";
 import useLineMessages from "@/hooks/useLineMessages";
 import { AuthContext } from "@/contexts/AuthContext";
+import Loader from "@/components/Loader";
 
 /**
  * @param questionIndex: 質問のインデックス
@@ -13,6 +14,7 @@ import { AuthContext } from "@/contexts/AuthContext";
  * @returns 質問対応の回答メッセージを入力するフォームおよび送信ボタン
  */
 const InputAnswerField = () => {
+	const [isLoading, setIsLoading] = useState(false);
 	const { user } = useContext(AuthContext);
 	const { question, isUsersQuestion, updateAnswerPayload, updateQandA } =
 		useContext(QuestionContext);
@@ -33,6 +35,7 @@ const InputAnswerField = () => {
 	}, [inputtedText]);
 
 	const submitHandler = async () => {
+		setIsLoading(true);
 		try {
 			// Dialogflowのインテントを更新，更新後のintentNameを取得
 			updateAnswerPayload.intentName = (await postIntent(
@@ -63,11 +66,14 @@ const InputAnswerField = () => {
 			console.error(error);
 			alert(`エラーが発生しました. 
 			Error:${JSON.stringify(error)}`);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
 	return (
-		<div className='w-full flex flex-col items-center gap-2 p-4 '>
+		<div className='relative w-full flex flex-col items-center gap-2 p-4 '>
+			{isLoading && <Loader />}
 			<MessageTextArea text={inputtedText} setText={setInputtedText} />
 			{user?.type === "instructor" && (
 				<CheckedToggle
