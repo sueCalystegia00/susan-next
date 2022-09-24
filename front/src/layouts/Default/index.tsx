@@ -8,7 +8,7 @@ import { AuthContext } from "@/contexts/AuthContext";
 import Loader from "@/components/Loader";
 
 const DefaultLayout: FC<LayoutProps> = ({ children }) => {
-	const { isError, isLogIn } = useContext(AuthContext);
+	const { isError, isLoggedIn } = useContext(AuthContext);
 	return isError ? (
 		<div className='relative w-screen min-w-80 h-screen flex flex-col items-center gap-4 p-4'>
 			<div className='w-screen max-w flex flex-col items-center'>
@@ -24,7 +24,7 @@ const DefaultLayout: FC<LayoutProps> = ({ children }) => {
 	) : (
 		<div className='relative w-screen min-w-80 min-h-full flex flex-col items-center'>
 			<Header />
-			{isLogIn ? children : <Loader />}
+			{isLoggedIn ? children : <Loader />}
 		</div>
 	);
 };
