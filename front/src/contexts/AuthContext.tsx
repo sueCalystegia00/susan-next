@@ -33,8 +33,6 @@ const AuthProvider = ({ children }: Props) => {
 	const isError = user === null;
 
 	useEffect(() => {
-		const secondRedirect = router.query;
-		console.debug("secondRedirect", secondRedirect);
 		(async () => {
 			liff = (await import("@line/liff")).default;
 			await initializeLiff();
