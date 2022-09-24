@@ -4,7 +4,6 @@ import type { AppProps } from "next/app";
 import useScrollTop from "@/hooks/useScrollTop";
 import Head from "next/head";
 import AuthProvider from "@/contexts/AuthContext";
-import Authenticated from "@/components/Authenticated";
 
 const MyApp = ({ Component, pageProps, router }: AppProps) => {
 	useScrollTop();
@@ -23,7 +22,6 @@ const MyApp = ({ Component, pageProps, router }: AppProps) => {
 			</Head>
 
 			<AuthProvider>
-				<Authenticated />
 				<Component {...pageProps} key={router.asPath} />
 			</AuthProvider>
 		</>

@@ -2,6 +2,9 @@ import QuestionCard from "@/components/QuestionCard";
 import InfiniteScroll from "react-infinite-scroll-component";
 import useQuestions from "@/hooks/useQuestions";
 import DefaultLayout from "@/layouts/Default";
+import noQuestionsImage from "@/assets/waitingQuestion.png";
+import Image from "next/image";
+import Loader from "@/components/Loader";
 
 /**
  * @returns 質問一覧ページ
@@ -12,26 +15,35 @@ const QuestionsListPage = () => {
 	return (
 		<DefaultLayout>
 			<div className='relative w-full'>
-				<InfiniteScroll
-					dataLength={questions.length} //現在のデータの長さ
-					next={getQuestionsDataHandler} // スクロール位置を監視してコールバック（次のデータを読み込ませる）
-					hasMore={questions.slice(-1)[0]?.index != 1 || false} // さらにスクロールするかどうか（index:1の質問があればfalseを返すことで無限スクロールを回避）
-					loader={null} // ローディング中のコンポーネント
-					//height={420} // 高さ（なくても良い）
-				>
-					<ul className='flex flex-col gap-3 p-2'>
-						{questions.map((question, key) => (
-							<QuestionCard
-								key={key}
-								id={question.index} // questionId
-								timestamp={question.timestamp} // timestamp
-								answerStatus={!!question.answerText} // answerStatus
-								lectureNumber={question.lectureNumber} // lectureNumber
-								questionText={question.questionText} // questionText
-							/>
-						))}
-					</ul>
-				</InfiniteScroll>
+				{questions.length ? (
+					<InfiniteScroll
+						dataLength={questions.length} //現在のデータの長さ
+						next={getQuestionsDataHandler} // スクロール位置を監視してコールバック（次のデータを読み込ませる）
+						hasMore={questions.slice(-1)[0]?.index != 1 || false} // さらにスクロールするかどうか（index:1の質問があればfalseを返すことで無限スクロールを回避）
+						loader={Loader()} // ローディング中のコンポーネント
+						//height={420} // 高さ（なくても良い）
+					>
+						<ul className='flex flex-col gap-3 p-2'>
+							{questions.map((question, key) => (
+								<QuestionCard
+									key={key}
+									id={question.index} // questionId
+									timestamp={question.timestamp} // timestamp
+									answerStatus={!!question.answerText} // answerStatus
+									lectureNumber={question.lectureNumber} // lectureNumber
+									questionText={question.questionText} // questionText
+								/>
+							))}
+						</ul>
+					</InfiniteScroll>
+				) : (
+					<div className='relative w-full h-screen flex flex-col items-center justify-center'>
+						<h2 className='text-xl font-bold'>まだ質問が投稿されてないよ</h2>
+						<div className='relative w-full max-w-sm h-1/3'>
+							<Image src={noQuestionsImage} layout='fill' objectFit='contain' />
+						</div>
+					</div>
+				)}
 			</div>
 		</DefaultLayout>
 	);

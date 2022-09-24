@@ -34,7 +34,7 @@ const QuestionCard = ({
 							height='70'
 							viewBox='0 0 48 48'
 							fill='#2ad3a6'
-							alt='line loader'
+							alt='answer status'
 						/>
 					</span>
 				)}
