@@ -41,6 +41,7 @@ const AuthProvider = ({ children }: Props) => {
 	}, []);
 
 	const initializeLiff = async () => {
+		refreshExpiredIdToken();
 		try {
 			if (!liff) throw new Error("failed to import liff");
 
@@ -92,12 +93,6 @@ const AuthProvider = ({ children }: Props) => {
 			if (error.message === "IdToken expired.") {
 				// トークンが期限切れの場合は再取得
 				alert("トークンが期限切れです．再度ログインしてください．");
-				await lineLogout();
-				
-				// 自動ログインを無効化することでトークンを更新する
-				router.replace(
-					`https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/?disable_auto_login=true`
-				);
 			}
 		}
 	};
@@ -140,6 +135,38 @@ const AuthProvider = ({ children }: Props) => {
 				throw new Error(`get user info: unknown error`);
 			}
 		}
+	};
+
+	/**
+	 * トークンが期限切れの場合はLocalStorageに保存しているLIFF関連のデータを削除する
+	 * @see https://zenn.dev/arahabica/articles/274bb147a91d8a
+	 */
+	const refreshExpiredIdToken = () => {
+		const keyPrefix = `LIFF_STORE:${process.env.NEXT_PUBLIC_LIFF_ID}:`;
+		const key = keyPrefix + "decodedIDToken";
+		const decodedIDTokenString = localStorage.getItem(key);
+		if (!decodedIDTokenString) return;
+		const decodedIDToken = JSON.parse(decodedIDTokenString);
+
+		// 有効期限をチェック
+		if (new Date().getTime() < decodedIDToken.exp * 1000) return;
+
+		const keys = getLiffLocalStorageKeys(keyPrefix);
+		keys.map((key) => localStorage.removeItem(key));
+	};
+
+	/**
+	 * liff関連のlocalStorageのキーのリストを取得
+	 */
+	const getLiffLocalStorageKeys = (prefix: string) => {
+		const keys = [];
+		for (var i = 0; i < localStorage.length; i++) {
+			const key = localStorage.key(i);
+			if (key?.indexOf(prefix) === 0) {
+				keys.push(key);
+			}
+		}
+		return keys;
 	};
 
 	return (
