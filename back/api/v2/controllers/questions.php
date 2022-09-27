@@ -30,6 +30,11 @@ class QuestionsController
       case is_numeric($args[0]):
         return $this->getSelectedQuestionData($args[0]);
         break;
+      
+      // 最新質問5件を取得(チャットボットの「みんなの質問を見せて」返答用)
+      case "latest":
+        return $this->getLatestQuestionsData();
+        break;
 
       // 無効なアクセス
       default:
@@ -119,6 +124,43 @@ class QuestionsController
           "type" => "pdo_not_response"
         ]];
       }
+    } catch(PDOException $error){
+      $this -> code = 500;
+      return ["error" => [
+        "type" => "pdo_exception",
+        "message" => $error
+      ]];
+    }
+  }
+
+  /**
+   * 最新質問5件を取得(チャットボットの「みんなの質問を見せて」返答用)
+   * @return array 質問データ
+   */
+  private function getLatestQuestionsData(){
+    $db = new DB();
+    try{
+      // mysqlの実行文
+      $stmt = $db -> pdo() -> prepare(
+        "SELECT `index`,`timestamp`,`lectureNumber`,`questionText`,`answerText`,`broadcast`,`intentName`
+        FROM `Questions`
+        ORDER BY `Questions`.`index` DESC
+        LIMIT 5"
+      );
+      // 実行
+      $res = $stmt->execute();
+  
+      if($res){
+        //$questions = $stmt->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
+        $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $questions;
+      }else{
+        $this -> code = 500;
+        return ["error" => [
+          "type" => "pdo_not_response"
+        ]];
+      }
+
     } catch(PDOException $error){
       $this -> code = 500;
       return ["error" => [
