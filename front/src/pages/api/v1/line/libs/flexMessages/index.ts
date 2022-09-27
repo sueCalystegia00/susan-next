@@ -6,6 +6,7 @@ import announceFlexMessage from "./announceFlexMessage";
 import offerSendNewMessage from "./offerSendNewMessage";
 import completeSendNewQuestion from "./completeSendNewQuestion";
 import checkInputNewQuestion from "./checkInputNewQuestion";
+import latestQuestionsCarousel from "./latestQuestionsCarousel";
 
 export {
 	announceFlexMessage,
@@ -16,4 +17,5 @@ export {
 	offerSendNewMessage,
 	completeSendNewQuestion,
 	checkInputNewQuestion,
+	latestQuestionsCarousel,
 };

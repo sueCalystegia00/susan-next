@@ -13,11 +13,13 @@ import {
 	autoAnswerFlexMessage,
 	checkInputNewQuestion,
 	completeSendNewQuestion,
+	latestQuestionsCarousel,
 	offerSendNewMessage,
 } from "../../libs/flexMessages";
 import calcLectureNumber from "@/utils/calcLectureNumber";
 import getInputQuestion from "../../libs/connectDB/getInputQuestion";
 import postNewQuestion from "../../libs/connectDB/postNewQuestion";
+import getLatestQuestions from "../../libs/connectDB/getLatestQuestions";
 
 /**
  * LINE botのテキストメッセージを受け取ったときの処理
@@ -98,6 +100,11 @@ const handleText = async (
 			});
 			replyMessage = [completeSendNewQuestion(questionIndex)];
 			nlpResult.queryResult.outputContexts = null; // 質問送信後はcontextを削除する
+			break;
+
+		case "ShowOthersQuestions":
+			// 他の質問を表示する
+			replyMessage = [latestQuestionsCarousel(await getLatestQuestions())];
 			break;
 
 		case "cancel":
