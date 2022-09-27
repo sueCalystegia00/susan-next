@@ -37,9 +37,9 @@ const QuestionsListPage = () => {
 						</ul>
 					</InfiniteScroll>
 				) : (
-					<div className='relative w-full h-screen flex flex-col items-center justify-center'>
-						<h2 className='text-xl font-bold'>まだ質問が投稿されてないよ</h2>
-						<div className='relative w-full max-w-sm h-1/3'>
+					<div className='relative w-full flex flex-col items-center gap-10 p-10'>
+						<h2 className='text-lg font-bold'>まだ質問が投稿されてないよ</h2>
+						<div className='relative w-full max-w-sm h-64'>
 							<Image src={noQuestionsImage} layout='fill' objectFit='contain' />
 						</div>
 					</div>
