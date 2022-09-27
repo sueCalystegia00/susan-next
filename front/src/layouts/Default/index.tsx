@@ -22,7 +22,7 @@ const DefaultLayout: FC<LayoutProps> = ({ children }) => {
 			<LoginButton />
 		</div>
 	) : (
-		<div className='relative w-screen min-w-80 min-h-full flex flex-col items-center'>
+		<div className='relative w-screen min-w-80 min-h-screen flex flex-col items-center'>
 			<Header />
 			{isLoggedIn ? children : <Loader />}
 		</div>
