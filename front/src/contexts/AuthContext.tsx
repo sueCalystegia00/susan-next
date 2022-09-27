@@ -27,59 +27,37 @@ type Props = {
  */
 const AuthProvider = ({ children }: Props) => {
 	const router = useRouter();
-	let liff: Liff | null = null;
+	let liff: Liff;
 	const [user, setUser] = useState<User | null | undefined>(undefined);
 	const isLoggedIn = !!user && !!user.type;
 	const isError = user === null;
 
 	useEffect(() => {
-		(async () => {
-			liff = (await import("@line/liff")).default;
-			await initializeLiff();
-			await lineLogin();
-		})();
-	}, []);
-
-	const initializeLiff = async () => {
-		refreshExpiredIdToken();
-		try {
-			if (!liff) throw new Error("failed to import liff");
-
-			if (process.env.NODE_ENV === "production") {
-				await liff.init({
+		import("@line/liff")
+			.then((module) => {
+				liff = module.default;
+				const initConfig = {
 					liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
 					withLoginOnExternalBrowser: true, //外部ブラウザでも自動ログイン(LIFFブラウザは最初から自動でログインが走る)
-				});
-			} else {
-				liff.use(new LiffMockPlugin());
-				await liff.init({
-					liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
-					mock: true,
-				});
-				liff.$mock.set((p) => ({
-					...p,
-					getProfile: {
-						displayName: "Developer",
-						userId: process.env.NEXT_PUBLIC_DEVELOPER_LINE_ID!,
-					},
-					getIDToken: process.env.NEXT_PUBLIC_DEVELOPING_ID_TOKEN!,
-				}));
-				liff.login();
-			}
-		} catch (error) {
-			setUser(null);
-			throw error;
-		}
-	};
+					mock: process.env.NODE_ENV === "development", // 開発環境ではmockを使用
+				};
+				initConfig.mock && setMock(liff);
+				refreshExpiredIdToken();
+				liff.init(initConfig, setUserInfo);
+			})
+			.catch((e) => {
+				console.error(e);
+				setUser(null);
+			});
+	}, []);
 
-	const lineLogin = async () => {
-		if (!liff) throw new Error("liff have not been initialized");
+	const setUserInfo = async () => {
+		if (!liff.isLoggedIn()) {
+			await liff.login();
+		}
+		const userId = (await liff.getProfile())?.userId;
+		const idToken = liff.getIDToken();
 		try {
-			if (!liff.isLoggedIn()) {
-				await liff.login();
-			}
-			const userId = (await liff.getProfile())?.userId;
-			const idToken = await liff.getIDToken();
 			const { type, canAnswer } = await getUserInfo(idToken!);
 			setUser({
 				userUid: userId!,
@@ -99,7 +77,6 @@ const AuthProvider = ({ children }: Props) => {
 
 	const lineLogout = async () => {
 		liff && (await liff.ready.then(() => liff?.logout()));
-		liff = null;
 		setUser(undefined);
 	};
 
@@ -167,6 +144,22 @@ const AuthProvider = ({ children }: Props) => {
 			}
 		}
 		return keys;
+	};
+
+	/**
+	 * [開発環境用] LIFF Mockを利用
+	 * @param liff
+	 */
+	const setMock = (liff: Liff) => {
+		liff.use(new LiffMockPlugin());
+		liff.$mock.set((p) => ({
+			...p,
+			getProfile: {
+				displayName: "Developer",
+				userId: process.env.NEXT_PUBLIC_DEVELOPER_LINE_ID!,
+			},
+			getIDToken: process.env.NEXT_PUBLIC_DEVELOPING_ID_TOKEN!,
+		}));
 	};
 
 	return (
