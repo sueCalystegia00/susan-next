@@ -16,12 +16,12 @@ const CreateMessageArea = () => {
 	const { messageType } = useContext(DiscussionContext);
 	const { isUsersQuestion } = useContext(QuestionContext);
 	return isUsersQuestion || user?.canAnswer ? (
-		<>
+		<div className='absolute bottom-0 w-full'>
 			<MessageTypeSelector />
 			{messageType === "chat" && <InputMessageField />}
 			{messageType === "image" && <InputImageField />}
 			{messageType === "answer" && <InputAnswerField />}
-		</>
+		</div>
 	) : (
 		<></>
 	);
