@@ -1,6 +1,7 @@
 import type { QuestionCardProps } from "./types";
 import { useRouter } from "next/router";
 import CheckIcon from "@/assets/task_alt_FILL1_wght400_GRAD0_opsz48.svg";
+import stringToFormatDateTime from "@/utils/stringToFormatDateTime";
 
 /**
  * @param id: 質問のID
@@ -26,7 +27,7 @@ const QuestionCard = ({
 				<span className='text-sm font-semibold inline-block py-1 px-2 rounded-lg text-indigo-600 bg-indigo-200'>
 					{lectureNumber ? `第${lectureNumber}回` : "未分類"}
 				</span>
-				<time>{timestamp}</time>
+				<time>{stringToFormatDateTime(timestamp!)}</time>
 				{answerStatus && (
 					<span className='absolute top-1 right-1 opacity-40 -z-10'>
 						<CheckIcon
