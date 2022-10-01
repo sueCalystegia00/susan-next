@@ -213,9 +213,10 @@ class QuestionsController
           ]];
         }
         try{
-          $res["status"] = $this->insertViewingLog($userId, (int) $args[1])["status"];
+          $recordStatus = $this->insertViewingLog($userId, (int) $args[1])["status"];
           $res["isYourQuestion"] = $this->checkIsYourQuestion((int) $args[1], $userId)["isQuestioner"];
-          $this->code = $res["status"];
+          $res["isAssigner"] = $res["isYourQuestion"] ? false : $this->checkIsAssigner((int) $args[1], $userId)["isAssigner"];
+          $this->code = $recordStatus;
           return $res;
         }catch(Exception $error){
           $this->code = json_decode($error->getMessage())->status;
@@ -244,9 +245,23 @@ class QuestionsController
           return ["error" => [
             "type" => "invalid_param"
           ]];
-        }else{
-          return $this->insertQuestionData($post["userId"], $post["lectureNumber"], $post["questionText"]);
         }
+        
+        $resInsert = $this->insertQuestionData($post["userId"], $post["lectureNumber"], $post["questionText"]);
+        if(!array_key_exists("questionIndex", $resInsert)){
+          $this->code = 500;
+          return ["error" => $resInsert];
+        }
+        $resAssign = $this->assignStudentAnswerer($resInsert["questionIndex"]);
+        if(!array_key_exists("assignedStudents", $resAssign)){
+          $this->code = 500;
+          return ["error" => $resAssign];
+        }
+
+        return [
+          "questionIndex" => $resInsert["questionIndex"], 
+          "assignedStudents" => $resAssign["assignedStudents"]
+        ];
         break;
 
       // 無効なアクセス
@@ -369,6 +384,47 @@ class QuestionsController
   }
 
   /**
+   * ユーザが質問の回答者に割り振られているか確認する
+   * @param int $index 質問のインデックス
+   * @param string $lineId ユーザID
+   * @return array
+   */
+  private function checkIsAssigner($index, $lineId){
+    $db = new DB();
+  
+    try{
+      // mysqlの実行文(テーブルに指定のLINE IDが存在するかのみチェック)
+      $stmt = $db -> pdo() -> prepare(
+        "SELECT COUNT(*) 
+        FROM `Assignments` 
+        WHERE `questionIndex`=:questionIndex AND `userUid` = :userUid LIMIT 1"
+      );
+      $stmt->bindValue(':questionIndex', $index, PDO::PARAM_INT);
+      $stmt->bindValue(':userUid', $lineId, PDO::PARAM_STR);
+      // 実行
+      $res = $stmt->execute();
+  
+      if($res){
+        return ["isAssigner" => $stmt->fetchColumn() > 0];
+      
+      }else{
+        $this -> code = 500;
+        return ["error" => [
+          "type" => "pdo_not_response"
+        ]];
+      }
+  
+    } catch(PDOException $error){
+      $this -> code = 500;
+      return ["error" => [
+        "type" => "pdo_exception",
+        "message" => $error
+      ]];
+    }
+    return [];
+  }
+
+  /**
    * 新規の質問をDBに登録する
    * @param string $userId 質問者のLINEid
    * @param int $lectureNumber 質問の対象となる講義の番号
@@ -401,7 +457,7 @@ class QuestionsController
         ]];
       }
 
-      // mysqlの実行文の記述
+      /* // mysqlの実行文の記述
       $stmtThread = $pdo -> prepare(
         "INSERT INTO Discussions (questionIndex, userId, userType, isQuestionersMessage, messageType, message)
         VALUES (
@@ -428,17 +484,17 @@ class QuestionsController
           "type" => "pdo_not_response",
           "message" => "fail to insert to Thread Database"
         ]];
-      }
+      } */
 
       $this->code = 201;
       //header("Location: ".$this->url.$lastIndexQA);
 
       include(dirname( __FILE__)."/../utils/sendEmail.php");
-      sendEmailToInstructors("newQuestion", "新しい質問が投稿されました", $lastIndexQA);
+      sendEmailToInstructors("newQuestion", $questionText, $lastIndexQA);
 
       return [
         "questionIndex" => $lastIndexQA,
-        "discussionIndex" => $lastIndexThread
+        //"discussionIndex" => $lastIndexThread
       ];
 
     } catch(PDOException $error){
@@ -446,6 +502,64 @@ class QuestionsController
       return ["error" => [
         "type" => "pdo_exception",
         "message" => $error
+      ]];
+    }
+  }
+
+  private function assignStudentAnswerer($questionIndex){
+    $db = new DB();
+    $pdo = $db -> pdo();
+
+    try{
+      // mysqlの実行文の記述
+      $stmtA = $pdo -> prepare(
+        "SELECT `userUid`
+        FROM `Users`
+        WHERE `type` = 'student' AND `canAnswer` = 1
+        ORDER BY RAND() LIMIT 3"
+      );
+      
+      // 実行
+      $res = $stmtA->execute();
+      if(!$res) throw new Exception("fail to assign student answerer");
+      $assignedStudents = $stmtA->fetchAll(PDO::FETCH_ASSOC);
+
+      $sqlB = "INSERT INTO `Assignments` (`questionIndex`, `userUid`)
+              VALUES ";
+      foreach(array_keys($assignedStudents) as $key){
+        $sqlB .= "(:questionIndex".$key.", :studentId".$key."),";
+      }
+      $sqlB = substr($sqlB, 0, -1);
+      $stmtB = $pdo -> prepare($sqlB);
+
+      foreach($assignedStudents as $key => $student){
+        $stmtB->bindValue(':questionIndex'.$key, $questionIndex, PDO::PARAM_INT);
+        $stmtB->bindValue(':studentId'.$key, $student["userUid"], PDO::PARAM_STR);
+      }
+
+      $res = $stmtB->execute();
+      if(!$res) throw new Exception("fail to assign student answerer");
+
+      $this->code = 201;
+      // userId(文字列)の配列に変換する
+      $userIds = array_map(function($student){
+        return $student["userUid"];
+      }, $assignedStudents);
+      return [
+        "assignedStudents" => $userIds
+      ];
+
+    } catch(PDOException $error){
+      $this -> code = 500;
+      return ["error" => [
+        "type" => "pdo_exception",
+        "message" => $error
+      ]];
+    } catch(Exception $error){
+      $this -> code = 500;
+      return ["error" => [
+        "type" => "exception",
+        "message" => $error->getMessage()
       ]];
     }
   }

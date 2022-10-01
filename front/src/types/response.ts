@@ -8,5 +8,6 @@ export interface postDiscussionResponse {
 
 export interface postNewQuestionResponse {
 	questionIndex: Question["index"];
-	discussionIndex: number;
+	discussionIndex?: number;
+	assignedStudents: User["userId"][];
 }

@@ -16,7 +16,7 @@ import Loader from "@/components/Loader";
 const InputAnswerField = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const { user } = useContext(AuthContext);
-	const { question, isUsersQuestion, updateAnswerPayload, updateQandA } =
+	const { question, relevance, updateAnswerPayload, updateQandA } =
 		useContext(QuestionContext);
 	const { inputtedText, setInputtedText, postDiscussionMessage } =
 		useContext(DiscussionContext);
@@ -46,7 +46,7 @@ const InputAnswerField = () => {
 			await updateQandA(updateAnswerPayload);
 
 			// DBにメッセージを記録
-			const res = await postDiscussionMessage(isUsersQuestion);
+			const res = await postDiscussionMessage(relevance === "questioner");
 			// LINEにメッセージを送信
 			if (res.questionerId) {
 				if (updateAnswerPayload.broadcast) {
