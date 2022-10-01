@@ -1,4 +1,10 @@
-import { ReactNode, useEffect, useState } from "react";
+import {
+	Dispatch,
+	ReactNode,
+	SetStateAction,
+	useEffect,
+	useState,
+} from "react";
 import { createContext } from "react";
 import type { Question } from "@/types/models";
 import useQuestionsData from "@/hooks/useQuestions";
@@ -9,6 +15,7 @@ class QuestionContextProps {
 	question?: Question;
 	relevance: "questioner" | "assigner" | null = null;
 	updateAnswerPayload!: UpdateAnswerPayload;
+	setUpdateAnswerPayload!: Dispatch<SetStateAction<UpdateAnswerPayload>>;
 	updateQandA!: (updatedQandA: UpdateAnswerPayload) => Promise<void>;
 }
 
@@ -29,10 +36,11 @@ const QuestionProvider = ({ userIdToken, questionIndex, children }: Props) => {
 
 	const { openingQuestion, updateQandA } = useQuestionsData(questionIndex);
 
-	const updateAnswerPayload: UpdateAnswerPayload = {
-		...openingQuestion!,
-		answerIdToken: userIdToken,
-	};
+	const [updateAnswerPayload, setUpdateAnswerPayload] =
+		useState<UpdateAnswerPayload>({
+			...openingQuestion!,
+			answerIdToken: userIdToken,
+		});
 
 	const checkQuestionRelevance = async () => {
 		try {
@@ -63,12 +71,20 @@ const QuestionProvider = ({ userIdToken, questionIndex, children }: Props) => {
 		checkQuestionRelevance();
 	}, []);
 
+	useEffect(() => {
+		setUpdateAnswerPayload({
+			...openingQuestion!,
+			answerIdToken: userIdToken,
+		});
+	}, [openingQuestion]);
+
 	return (
 		<QuestionContext.Provider
 			value={{
 				question: openingQuestion,
 				relevance,
 				updateAnswerPayload,
+				setUpdateAnswerPayload,
 				updateQandA,
 			}}
 		>
