@@ -9,7 +9,7 @@ import { useContext, useState } from "react";
  */
 const InputImageField = () => {
 	const [isLoading, setIsLoading] = useState(false);
-	const { isUsersQuestion } = useContext(QuestionContext);
+	const { relevance } = useContext(QuestionContext);
 	const { postImage, setPostImage, postDiscussionImage } =
 		useContext(DiscussionContext);
 
@@ -25,7 +25,7 @@ const InputImageField = () => {
 	const submitHandler = async () => {
 		setIsLoading(true);
 		try {
-			await postDiscussionImage(isUsersQuestion);
+			await postDiscussionImage(relevance === "questioner");
 			setPostImage(undefined);
 		} catch (error: any) {
 			console.error(error);

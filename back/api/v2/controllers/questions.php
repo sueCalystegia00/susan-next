@@ -213,9 +213,10 @@ class QuestionsController
           ]];
         }
         try{
-          $res["status"] = $this->insertViewingLog($userId, (int) $args[1])["status"];
+          $recordStatus = $this->insertViewingLog($userId, (int) $args[1])["status"];
           $res["isYourQuestion"] = $this->checkIsYourQuestion((int) $args[1], $userId)["isQuestioner"];
-          $this->code = $res["status"];
+          $res["isAssigner"] = $res["isYourQuestion"] ? false : $this->checkIsAssigner((int) $args[1], $userId)["isAssigner"];
+          $this->code = $recordStatus;
           return $res;
         }catch(Exception $error){
           $this->code = json_decode($error->getMessage())->status;
@@ -364,6 +365,47 @@ class QuestionsController
   
       if($res){
         return ["isQuestioner" => $stmt->fetchColumn() > 0];
+      
+      }else{
+        $this -> code = 500;
+        return ["error" => [
+          "type" => "pdo_not_response"
+        ]];
+      }
+  
+    } catch(PDOException $error){
+      $this -> code = 500;
+      return ["error" => [
+        "type" => "pdo_exception",
+        "message" => $error
+      ]];
+    }
+    return [];
+  }
+
+  /**
+   * ユーザが質問の回答者に割り振られているか確認する
+   * @param int $index 質問のインデックス
+   * @param string $lineId ユーザID
+   * @return array
+   */
+  private function checkIsAssigner($index, $lineId){
+    $db = new DB();
+  
+    try{
+      // mysqlの実行文(テーブルに指定のLINE IDが存在するかのみチェック)
+      $stmt = $db -> pdo() -> prepare(
+        "SELECT COUNT(*) 
+        FROM `Assignments` 
+        WHERE `questionIndex`=:questionIndex AND `userUid` = :userUid LIMIT 1"
+      );
+      $stmt->bindValue(':questionIndex', $index, PDO::PARAM_INT);
+      $stmt->bindValue(':userUid', $lineId, PDO::PARAM_STR);
+      // 実行
+      $res = $stmt->execute();
+  
+      if($res){
+        return ["isAssigner" => $stmt->fetchColumn() > 0];
       
       }else{
         $this -> code = 500;

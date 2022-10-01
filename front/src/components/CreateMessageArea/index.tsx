@@ -14,8 +14,8 @@ import MessageTypeSelector from "./MessageTypeSelector";
 const CreateMessageArea = () => {
 	const { user } = useContext(AuthContext);
 	const { messageType } = useContext(DiscussionContext);
-	const { isUsersQuestion } = useContext(QuestionContext);
-	return isUsersQuestion || user?.canAnswer ? (
+	const { relevance } = useContext(QuestionContext);
+	return user?.type === "instructor" || relevance !== null ? (
 		<div className='absolute bottom-0 w-full'>
 			<MessageTypeSelector />
 			{messageType === "chat" && <InputMessageField />}

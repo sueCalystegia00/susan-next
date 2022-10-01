@@ -7,7 +7,7 @@ import axios from "axios";
 
 class QuestionContextProps {
 	question?: Question;
-	isUsersQuestion: boolean = false;
+	relevance: "questioner" | "assigner" | null = null;
 	updateAnswerPayload!: UpdateAnswerPayload;
 	updateQandA!: (updatedQandA: UpdateAnswerPayload) => Promise<void>;
 }
@@ -23,7 +23,9 @@ type Props = {
 };
 
 const QuestionProvider = ({ userIdToken, questionIndex, children }: Props) => {
-	const [isUsersQuestion, setIsUsersQuestion] = useState(false);
+	const [relevance, setRelevance] = useState<"questioner" | "assigner" | null>(
+		null
+	);
 
 	const { openingQuestion, updateQandA } = useQuestionsData(questionIndex);
 
@@ -32,16 +34,23 @@ const QuestionProvider = ({ userIdToken, questionIndex, children }: Props) => {
 		answerIdToken: userIdToken,
 	};
 
-	const checkIsUsersQuestion = async () => {
+	const checkQuestionRelevance = async () => {
 		try {
-			const { status, data } = await axios.post(
+			const { status, data } = await axios.post<{
+				isYourQuestion: boolean;
+				isAssigner: boolean;
+			}>(
 				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/view_log/${questionIndex}`,
 				{
 					userIdToken: userIdToken,
 				}
 			);
 			if (status === 201) {
-				setIsUsersQuestion(data.isYourQuestion);
+				if (data.isYourQuestion) {
+					setRelevance("questioner");
+				} else if (data.isAssigner) {
+					setRelevance("assigner");
+				}
 			} else {
 				throw new Error("check users question: Error");
 			}
@@ -51,14 +60,14 @@ const QuestionProvider = ({ userIdToken, questionIndex, children }: Props) => {
 	};
 
 	useEffect(() => {
-		checkIsUsersQuestion();
+		checkQuestionRelevance();
 	}, []);
 
 	return (
 		<QuestionContext.Provider
 			value={{
 				question: openingQuestion,
-				isUsersQuestion,
+				relevance,
 				updateAnswerPayload,
 				updateQandA,
 			}}

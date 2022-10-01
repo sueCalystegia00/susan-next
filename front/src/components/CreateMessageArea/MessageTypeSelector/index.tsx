@@ -6,6 +6,7 @@ import type { DiscussionMessage } from "@/types/models";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/contexts/AuthContext";
 import { DiscussionContext } from "@/contexts/DiscussionContext";
+import { QuestionContext } from "@/contexts/QuestionContext";
 
 /**
  * @returns 質問対応メッセージの形式を選択するコンポーネント
@@ -13,6 +14,7 @@ import { DiscussionContext } from "@/contexts/DiscussionContext";
  */
 const MessageTypeSelector = () => {
 	const { user } = useContext(AuthContext);
+	const { relevance } = useContext(QuestionContext);
 	const { messageType, setMessageType } = useContext(DiscussionContext);
 	const [buttons, setButtons] = useState([
 		{
@@ -29,8 +31,8 @@ const MessageTypeSelector = () => {
 
 	useEffect(() => {
 		if (
-			user!.type === "instructor" &&
-			!buttons.find((b) => b.value === "answer")
+			!buttons.find((b) => b.value === "answer") &&
+			(user!.type === "instructor" || relevance === "assigner")
 		) {
 			setButtons([
 				...buttons,
