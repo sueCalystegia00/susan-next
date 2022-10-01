@@ -94,15 +94,20 @@ const handleText = async (
 		case "CompleteWritingQuestion": // input:「質問を送信する」
 			// 質問文の送信完了を伝えるメッセージを返す
 			// 質問文をDBに登録する
+			let postNewQuestionText = await getInputQuestion(source.userId!);
 			const { questionIndex, discussionIndex, assignedStudents } =
 				await postNewQuestion({
 					userId: source.userId!,
 					lectureNumber: calcLectureNumber(new Date()).number,
-					questionText: await getInputQuestion(source.userId!),
+					questionText: postNewQuestionText,
 				});
 			replyMessage = [completeSendNewQuestion(questionIndex)];
 			nlpResult.queryResult.outputContexts = null; // 質問送信後はcontextを削除する
-			notifyNewQuestion({ userIds: assignedStudents, questionIndex });
+			notifyNewQuestion({
+				userIds: assignedStudents,
+				questionIndex,
+				questionText: postNewQuestionText,
+			});
 			break;
 
 		case "ShowOthersQuestions":
