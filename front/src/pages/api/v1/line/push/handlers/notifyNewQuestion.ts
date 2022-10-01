@@ -20,7 +20,13 @@ const notifyNewQuestion = async ({
 		},
 	];
 
-	return await lineClient.multicast(userIds, message);
+	try {
+		return await lineClient.multicast(userIds, message);
+	} catch (error) {
+		throw new Error(
+			JSON.stringify({ error: error, props: { userIds, message } })
+		);
+	}
 };
 
 export default notifyNewQuestion;

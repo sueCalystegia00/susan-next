@@ -499,8 +499,12 @@ class QuestionsController
       if(!$res) throw new Exception("fail to assign student answerer");
 
       $this->code = 201;
+      // userId(文字列)の配列に変換する
+      $userIds = array_map(function($student){
+        return $student["userUid"];
+      }, $assignedStudents);
       return [
-        "assignedStudents" => $assignedStudents
+        "assignedStudents" => $userIds
       ];
 
     } catch(PDOException $error){
