@@ -72,6 +72,9 @@ class QuestionsController
       if($res){
         //$questions = $stmt->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
         $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach($questions as $key => $question){
+          $questions[$key]["broadcast"] = (bool)$question["broadcast"];
+        }
         return $questions;
       }else{
         $this -> code = 500;
@@ -111,6 +114,7 @@ class QuestionsController
       if($res){
         $question = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if(!empty($question)){
+          $question[0]["broadcast"] = (bool)$question[0]["broadcast"];
           return $question[0];
         }else{ //指定したインデックスの質問が存在しない場合
           $this->code = 404;
