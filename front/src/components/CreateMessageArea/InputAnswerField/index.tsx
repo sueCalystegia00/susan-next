@@ -16,8 +16,13 @@ import Loader from "@/components/Loader";
 const InputAnswerField = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const { user } = useContext(AuthContext);
-	const { question, relevance, updateAnswerPayload, updateQandA } =
-		useContext(QuestionContext);
+	const {
+		question,
+		relevance,
+		updateAnswerPayload,
+		setUpdateAnswerPayload,
+		updateQandA,
+	} = useContext(QuestionContext);
 	const { inputtedText, setInputtedText, postDiscussionMessage } =
 		useContext(DiscussionContext);
 	const { intent, setIntent, postIntent } = useDialogflowIntent(
@@ -27,7 +32,10 @@ const InputAnswerField = () => {
 	const { linePayload, pushLineMessage } = useLineMessages("answer", question);
 
 	useEffect(() => {
-		updateAnswerPayload.answerText = inputtedText;
+		setUpdateAnswerPayload({
+			...updateAnswerPayload,
+			answerText: inputtedText,
+		});
 		setIntent({
 			...intent,
 			responseText: inputtedText,
@@ -38,12 +46,17 @@ const InputAnswerField = () => {
 		setIsLoading(true);
 		try {
 			// Dialogflowのインテントを更新，更新後のintentNameを取得
-			updateAnswerPayload.intentName = (await postIntent(
-				question!
-			))!.intentName;
+			const updatedIntentName = (await postIntent(question!))!.intentName;
+			setUpdateAnswerPayload({
+				...updateAnswerPayload,
+				intentName: updatedIntentName,
+			});
 
 			// DBの質問と回答を更新
-			await updateQandA(updateAnswerPayload);
+			await updateQandA({
+				...updateAnswerPayload,
+				intentName: updatedIntentName,
+			});
 
 			// DBにメッセージを記録
 			const res = await postDiscussionMessage(relevance === "questioner");
@@ -79,7 +92,10 @@ const InputAnswerField = () => {
 				<CheckedToggle
 					checked={updateAnswerPayload.broadcast}
 					onChange={() => {
-						updateAnswerPayload.broadcast = !updateAnswerPayload.broadcast;
+						setUpdateAnswerPayload({
+							...updateAnswerPayload,
+							broadcast: !updateAnswerPayload.broadcast,
+						});
 					}}
 				>
 					<span className='text-sm text-gray-500'>

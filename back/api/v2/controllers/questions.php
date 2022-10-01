@@ -582,6 +582,23 @@ class QuestionsController
       ]];
     }
     $payload = $this->request_body;
+
+    if(!array_key_exists("userIdToken",$payload)){
+      $this->code = 400;
+      return ["error" => [
+        "type" => "user token is required"
+      ]];
+    }
+    // ユーザーの存在確認
+    include("users.php");
+    $usersController = new UsersController();
+    try{
+      $userId = $usersController->verifyLine($payload["userIdToken"])["sub"];
+    }catch(Exception $error){
+      $this->code = $error->getCode();
+      return ["error" => json_decode($error->getMessage(),true)];
+    }
+
     switch($args[1]){
       case "answer":
         if(!array_key_exists("questionText",$payload)||
@@ -594,7 +611,7 @@ class QuestionsController
             "type" => "invalid_param"
           ]];
         }else{
-          return $this->updateAnswer((int)$args[0], (int)$payload["broadcast"], $payload["questionText"], $payload["answerText"], $payload["intentName"]);
+          return $this->updateAnswer((int)$args[0], (int)$payload["broadcast"], $payload["questionText"], $userId, $payload["answerText"], $payload["intentName"]);
         }
         break;
 
@@ -612,11 +629,12 @@ class QuestionsController
    * @param int $questionIndex 更新する質疑応答情報のインデックス
    * @param int $broadcast 1:全体通知/0:個別通知
    * @param string $questionText 修正後の質問文
+   * @param string $userUid 回答者のユーザーID
    * @param string $answerText 質問に対する応答文
    * @param string $intentName Dialogflowに登録されているインテント名(Format: projects/<Project ID>/agent/intents/<Intent ID>)
    * @return array DB更新結果 || エラーメッセージ
    */
-  private function updateAnswer($questionIndex, $broadcast, $questionText, $answerText, $intentName) {
+  private function updateAnswer($questionIndex, $broadcast, $questionText, $userUid, $answerText, $intentName) {
     $db = new DB();
     try{
       // mysqlの実行文
@@ -625,6 +643,7 @@ class QuestionsController
         SET `broadcast` = :broadcast,
             `questionText` = :questionText,
             `answerText` = :answerText,
+            `respondentId` = :userUid,
             `intentName` = :intentName
         WHERE `Questions`.`index` = :questionIndex"
       );
@@ -633,6 +652,7 @@ class QuestionsController
       $stmt->bindValue(':broadcast', $broadcast, PDO::PARAM_INT);
       $stmt->bindValue(':questionText', $questionText, PDO::PARAM_STR);
       $stmt->bindValue(':answerText', $answerText, PDO::PARAM_STR);
+      $stmt->bindValue(':userUid', $userUid, PDO::PARAM_STR);
       $stmt->bindValue(':intentName', $intentName, PDO::PARAM_STR);
       
       // 実行

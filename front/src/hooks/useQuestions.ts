@@ -100,6 +100,7 @@ const useQuestionsData = (questionIndex?: number) => {
 			const { status, data } = await axios.put<Question>(
 				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questions/${updateAnswerPayload.index}/answer`,
 				{
+					userIdToken: updateAnswerPayload.answerIdToken,
 					questionText: updateAnswerPayload.questionText,
 					answerText: updateAnswerPayload.answerText,
 					broadcast: updateAnswerPayload.broadcast,
