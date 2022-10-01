@@ -66,7 +66,7 @@ const followFlexMessage: FlexMessage = {
 					action: {
 						type: "uri",
 						label: "実験同意ページを開く",
-						uri: `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/initialsetting/`, // TODO: ここを変更する
+						uri: `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/`, // TODO: ここを変更する
 					},
 				},
 			],
