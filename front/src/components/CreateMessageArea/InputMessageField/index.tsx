@@ -10,7 +10,7 @@ import Loader from "@/components/Loader";
  */
 const InputMessageField = () => {
 	const [isLoading, setIsLoading] = useState(false);
-	const { question, isUsersQuestion } = useContext(QuestionContext);
+	const { question, relevance } = useContext(QuestionContext);
 	const { inputtedText, setInputtedText, postDiscussionMessage } =
 		useContext(DiscussionContext);
 	const { linePayload, pushLineMessage } = useLineMessages(
@@ -22,7 +22,7 @@ const InputMessageField = () => {
 		setIsLoading(true);
 		try {
 			// DBにメッセージを記録
-			const res = await postDiscussionMessage(isUsersQuestion);
+			const res = await postDiscussionMessage(relevance === "questioner");
 			// LINEにメッセージを送信
 			if (res.questionerId) {
 				linePayload.userIds = [res.questionerId];

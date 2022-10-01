@@ -20,6 +20,7 @@ import calcLectureNumber from "@/utils/calcLectureNumber";
 import getInputQuestion from "../../libs/connectDB/getInputQuestion";
 import postNewQuestion from "../../libs/connectDB/postNewQuestion";
 import getLatestQuestions from "../../libs/connectDB/getLatestQuestions";
+import notifyNewQuestion from "../../push/handlers/notifyNewQuestion";
 
 /**
  * LINE botのテキストメッセージを受け取ったときの処理
@@ -93,13 +94,20 @@ const handleText = async (
 		case "CompleteWritingQuestion": // input:「質問を送信する」
 			// 質問文の送信完了を伝えるメッセージを返す
 			// 質問文をDBに登録する
-			const { questionIndex, discussionIndex } = await postNewQuestion({
-				userId: source.userId!,
-				lectureNumber: calcLectureNumber(new Date()).number,
-				questionText: await getInputQuestion(source.userId!),
-			});
+			let postNewQuestionText = await getInputQuestion(source.userId!);
+			const { questionIndex, discussionIndex, assignedStudents } =
+				await postNewQuestion({
+					userId: source.userId!,
+					lectureNumber: calcLectureNumber(new Date()).number,
+					questionText: postNewQuestionText,
+				});
 			replyMessage = [completeSendNewQuestion(questionIndex)];
 			nlpResult.queryResult.outputContexts = null; // 質問送信後はcontextを削除する
+			notifyNewQuestion({
+				userIds: assignedStudents,
+				questionIndex,
+				questionText: postNewQuestionText,
+			});
 			break;
 
 		case "ShowOthersQuestions":

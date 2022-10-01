@@ -36,12 +36,12 @@ const completeSendNewQuestion = (
 				},
 				{
 					type: "text",
-					text: "補足説明や画像は「質問の詳細へ」から追加できます👇",
-					align: "start",
+					text: "プログラムの質問は詳細から，\nぜひ画像も投稿ください！",
 					wrap: true,
+					weight: "bold",
 				},
 			],
-			justifyContent: "center",
+			spacing: "md",
 		},
 		footer: {
 			type: "box",
