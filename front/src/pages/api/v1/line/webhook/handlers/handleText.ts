@@ -17,9 +17,11 @@ import {
 	offerSendNewMessage,
 } from "../../libs/flexMessages";
 import calcLectureNumber from "@/utils/calcLectureNumber";
-import getInputQuestion from "../../libs/connectDB/getInputQuestion";
-import postNewQuestion from "../../libs/connectDB/postNewQuestion";
-import getLatestQuestions from "../../libs/connectDB/getLatestQuestions";
+import {
+	getInputQuestion,
+	getLatestQuestions,
+	postNewQuestion,
+} from "../../libs/connectDB";
 import notifyNewQuestion from "../../push/handlers/notifyNewQuestion";
 
 /**
@@ -32,7 +34,7 @@ const handleText = async (
 	source: EventSource
 ) => {
 	/**
-	 * LINE botから返信するメッセージ
+	 * LINE botから返信するメッセージ配列
 	 */
 	let replyMessage: Message[] = [
 		{
@@ -65,7 +67,7 @@ const handleText = async (
 			break;
 
 		case "AnswerToTheQuestion": // 自動回答
-			let autoAnswerParameters = nlpResult.queryResult.parameters!.fields!;
+			let autoAnswerParameters = nlpResult.queryResult.parameters!.fields!; // DialogflowのIntentに設定されたパラメータ
 			replyMessage = [
 				autoAnswerFlexMessage(
 					Number(autoAnswerParameters["questionIndex"].stringValue!),
@@ -76,15 +78,15 @@ const handleText = async (
 			];
 			break;
 
-		case "NotFoundAnswer":
-		case "RequestDifferentAnswer":
+		case "NotFoundAnswer": // 類似質問が見つからなかったとき
+		case "RequestDifferentAnswer": // input: 「求めた回答ではありません」
 			// 質問文の確認・送信または修正を促すメッセージを返す
 			replyMessage = [
 				offerSendNewMessage(await getInputQuestion(source.userId!)),
 			];
 			break;
 
-		case "FreeWriting":
+		case "FreeWriting": // input: 「(質問を)書き直す」
 			// 書き直した質問文の確認・送信または修正を促すメッセージを返す
 			replyMessage = [
 				checkInputNewQuestion(await getInputQuestion(source.userId!)),
@@ -110,8 +112,7 @@ const handleText = async (
 			});
 			break;
 
-		case "ShowOthersQuestions":
-			// 他の質問を表示する
+		case "ShowOthersQuestions": // input:「みんなの質問を見せて」
 			replyMessage = [latestQuestionsCarousel(await getLatestQuestions())];
 			break;
 
@@ -160,6 +161,9 @@ const handleText = async (
 		replyToken,
 		replyMessage
 	);
+	/**
+	 * DBに登録する対話ログの内容
+	 */
 	const messageLog: postMessageLogParams = {
 		userId: source.userId!,
 		userType: "bot",

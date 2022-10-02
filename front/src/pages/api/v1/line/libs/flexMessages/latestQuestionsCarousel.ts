@@ -5,6 +5,10 @@ import type {
 	FlexMessage,
 } from "@line/bot-sdk/lib/types";
 
+/**
+ * 最新質問をカルーセルで表示するFlexMessageを生成する
+ * @param questions 最大5件の質問
+ */
 const latestQuestionsCarousel = (questions: Question[]): FlexMessage => {
 	return {
 		type: "flex",

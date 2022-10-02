@@ -1,6 +1,10 @@
 import { Question } from "@/types/models";
 import type { FlexMessage } from "@line/bot-sdk";
 
+/**
+ * 質問投稿が完了したことを通知するFlexMessageを生成する
+ * @param sendQuestionIndex 登録した質問のインデックス
+ */
 const completeSendNewQuestion = (
 	sendQuestionIndex: Question["index"]
 ): FlexMessage => ({

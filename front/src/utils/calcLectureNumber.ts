@@ -1,5 +1,12 @@
+/**
+ * 送信日時から講義回数を計算する
+ * @returns type 講義の前・後半(A or B)
+ * @returns number 講義回数
+ */
 const calcLectureNumber = (date: Date) => {
-	// 第3Qから第4Qかどうか
+	/**
+	 * 第3Qか第4Qかどうか
+	 */
 	const isAorB = date <= new Date(2022, 12, 6) ? "A" : "B";
 
 	// TODO: クイックソート的なアルゴリズムがあるのではなかろうか...

@@ -1,6 +1,13 @@
 import { Question } from "@/types/models";
 import type { FlexMessage } from "@line/bot-sdk";
 
+/**
+ * 自動回答のFlexMessageを生成する
+ * @param questionIndex 質問のインデックス
+ * @param questionText 質問文
+ * @param answerText 回答文
+ * @param lectureNumber 講義回数
+ */
 const autoAnswerFlexMessage = (
 	questionIndex: number,
 	questionText: Question["questionText"],
@@ -149,7 +156,7 @@ const autoAnswerFlexMessage = (
 						action: {
 							type: "message",
 							label: "求めた回答ではない",
-							text: "求めた回答では有りません",
+							text: "求めた回答ではありません",
 						},
 						height: "sm",
 					},

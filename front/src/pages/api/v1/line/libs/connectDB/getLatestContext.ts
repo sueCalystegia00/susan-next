@@ -1,6 +1,11 @@
 import type { DialogflowContext, User } from "@/types/models";
 import axios, { AxiosError, AxiosResponse } from "axios";
 
+/**
+ * DBの対話ログから最新のコンテキストを取得する
+ * @param userId 
+ * @returns 
+ */
 const getLatestContexts = async (userId: User["userUid"]) => {
 	try {
 		const { status, data } = await axios.get<DialogflowContext[]>(

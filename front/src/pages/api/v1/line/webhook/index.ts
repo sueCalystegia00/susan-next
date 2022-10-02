@@ -1,18 +1,28 @@
+import { botResponse } from "./types";
 import type { DialogflowContext } from "@/types/models";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { SignatureValidationFailed, WebhookEvent } from "@line/bot-sdk";
+import type {
+	MessageAPIResponseBase,
+	WebhookEvent,
+} from "@line/bot-sdk/lib/types";
+import { SignatureValidationFailed } from "@line/bot-sdk";
 import { handleFollow, handleText } from "./handlers";
 import { middleware, runMiddleware, replyText, pickContextId } from "../libs";
 import { getLatestContexts, postMessageLog } from "../libs/connectDB";
-import { botResponse } from "./types";
 
-// ref: https://nextjs.org/docs/api-routes/api-middlewares#custom-config
+/**
+ * @ref https://nextjs.org/docs/api-routes/api-middlewares#custom-config
+ */
 export const config = {
 	api: {
 		bodyParser: false,
 	},
 };
 
+/**
+ * LINEボットのWebhookエンドポイント
+ * @ref https://developers.line.biz/en/reference/messaging-api/#webhooks
+ */
 const LineWebhookHandler = async (
 	req: NextApiRequest,
 	res: NextApiResponse
@@ -62,12 +72,18 @@ const LineWebhookHandler = async (
 	}
 };
 
-const webhookEventHandler = async (event: WebhookEvent) => {
+/**
+ * 各webhookイベントに対する処理
+ */
+const webhookEventHandler = async (
+	event: WebhookEvent
+): Promise<void | MessageAPIResponseBase> => {
 	switch (event.type) {
+		// LINEボットのトークより何らかのメッセージを受信したとき
 		case "message":
 			const message = event.message;
 
-			// 対話ログからユーザーの最新のコンテキストを取得
+			// DBの対話ログからユーザーの最新のコンテキストを取得
 			const latestContexts = await getLatestContexts(event.source.userId!)
 				.then((contexts: DialogflowContext[]) => {
 					return contexts.map((context) => pickContextId(context));
@@ -76,7 +92,7 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 					throw error;
 				});
 
-			// 受信メッセージをログに保存
+			// ユーザからの受信メッセージを対話ログに保存
 			await postMessageLog({
 				userId: event.source.userId!,
 				messageType: message.type,
@@ -99,6 +115,7 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 
 			// メッセージタイプに応じて処理をさらに分岐
 			switch (message.type) {
+				// テキストメッセージを受信したとき
 				case "text":
 					if (message.text.length > 256) {
 						// Dialogflowの入力文字数限界を超えている場合
@@ -108,7 +125,7 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 						);
 						res.messageLog.message = `ごめんなさい．メッセージが長すぎます😫．256文字以下にしてください．(${message.text.length}文字でした)`;
 					} else {
-						// 結果を受け取る
+						// テキストメッセージ処理用のハンドラにイベントを渡し，結果を受け取る
 						const _res = await handleText(
 							message,
 							latestContexts,
@@ -120,15 +137,15 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 					}
 					break;
 
-				// case "image":
+				// case "image": // 画像メッセージを受信したとき
 				// 	return handleImage(message, event.replyToken);
-				// case "video":
+				// case "video": // 動画メッセージを受信したとき
 				// 	return handleVideo(message, event.replyToken);
-				// case "audio":
+				// case "audio": // 音声メッセージを受信したとき
 				// 	return handleAudio(message, event.replyToken);
-				// case "location":
+				// case "location": // 位置情報メッセージを受信したとき
 				// 	return handleLocation(message, event.replyToken);
-				// case "sticker":
+				// case "sticker": // スタンプメッセージを受信したとき
 				// 	return handleSticker(message, event.replyToken);
 
 				default:
@@ -138,9 +155,12 @@ const webhookEventHandler = async (event: WebhookEvent) => {
 					);
 					res.messageLog.message = `ごめんなさい．まだその種類のメッセージ(${message.type})には対応できません😫 `;
 			}
+			// bot側のメッセージ送信結果をDBに保存
 			res.messageAPIResponse && (await postMessageLog(res.messageLog!));
+			// botの送信結果を返す
 			return res.messageAPIResponse;
 
+		// LINEボットを友だち追加(ブロック解除)したとき
 		case "follow":
 			return await handleFollow(event.replyToken, event.source);
 

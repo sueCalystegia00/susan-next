@@ -1,6 +1,12 @@
 import type { Question } from "@/types/models";
 import type { FlexMessage } from "@line/bot-sdk";
 
+/**
+ * 回答協力を依頼するFlexMessageを生成する
+ * @param questionIndex 質問インデックス
+ * @param questionText 質問文
+ * @returns 
+ */
 const assignNewQuestionFlexMessage = (
 	questionIndex: Question["index"],
 	questionText: Question["questionText"]
