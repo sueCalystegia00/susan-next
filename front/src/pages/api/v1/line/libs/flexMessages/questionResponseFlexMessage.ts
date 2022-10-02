@@ -1,6 +1,11 @@
 import { DiscussionMessage } from "@/types/models";
 import type { FlexMessage } from "@line/bot-sdk";
 
+/**
+ * 新しいメッセージが投稿されたことを通知するFlexMessageを生成する
+ * @param questionIndex 質問インデックス
+ * @param responseText 応答文
+ */
 const questionResponseMessage = (
 	questionIndex: number,
 	responseText: DiscussionMessage["message"]

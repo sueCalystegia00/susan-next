@@ -1,6 +1,10 @@
 import { Question } from "@/types/models";
 import type { FlexMessage } from "@line/bot-sdk";
 
+/**
+ * 書き直した質問文を送信するか確認するFlexMessageを生成する
+ * @param inputQuestionText 質問文
+ */
 const checkInputNewQuestion = (
 	inputQuestionText: Question["questionText"]
 ): FlexMessage => ({

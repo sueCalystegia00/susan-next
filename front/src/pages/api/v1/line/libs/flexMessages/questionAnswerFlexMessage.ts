@@ -1,6 +1,12 @@
 import { Question } from "@/types/models";
 import type { FlexMessage } from "@line/bot-sdk";
 
+/**
+ * 質問と回答を表示するFlexMessageを生成する
+ * @param questionIndex 質問インデックス
+ * @param questionText 質問文
+ * @param answerText 回答文
+ */
 const displayQandA = (
 	questionIndex: number,
 	questionText: Question["questionText"],

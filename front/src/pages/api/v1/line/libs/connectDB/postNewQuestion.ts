@@ -2,6 +2,10 @@ import type { postNewQuestionParams } from "@/types/payloads";
 import type { postNewQuestionResponse } from "@/types/response";
 import axios from "axios";
 
+/**
+ * 新規の質問をDBに登録する
+ * 質問のインデックス，回答を依頼する学生協力者のユーザIDを返す
+ */
 const postNewQuestion = async ({
 	userId,
 	lectureNumber,

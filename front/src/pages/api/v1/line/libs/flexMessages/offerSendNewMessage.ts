@@ -1,6 +1,10 @@
 import { Question } from "@/types/models";
 import type { FlexMessage } from "@line/bot-sdk";
 
+/**
+ * 新規の質問として投稿することを促すFlexMessageを生成する
+ * @param inputQuestionText 質問文
+ */
 const offerSendNewMessage = (
 	inputQuestionText: Question["questionText"]
 ): FlexMessage => ({

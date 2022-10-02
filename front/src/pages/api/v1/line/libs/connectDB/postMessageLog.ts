@@ -2,6 +2,9 @@ import { postMessageLogParams } from "@/types/payloads";
 import axios from "axios";
 import { pickContextId } from "../pickContextId";
 
+/**
+ * DBに対話ログを登録するAPIを叩く
+ */
 const postMessageLog = async ({
 	userId,
 	messageType,

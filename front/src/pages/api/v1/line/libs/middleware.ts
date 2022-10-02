@@ -24,4 +24,9 @@ export const runMiddleware = (
 	});
 };
 
+/**
+ * LINEボットのWebhookエンドポイントのミドルウェア
+ * 署名検証とbodyのパースを行う
+ * @ref https://line.github.io/line-bot-sdk-nodejs/api-reference/middleware.html
+ */
 export const middleware = _middleware(linebotConfig);

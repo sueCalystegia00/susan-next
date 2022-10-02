@@ -1,5 +1,4 @@
 import type { Question, User } from "@/types/models";
-import type { TextMessage } from "@line/bot-sdk/lib/types";
 import { lineClient } from "../../libs";
 import { assignNewQuestionFlexMessage } from "../../libs/flexMessages";
 /**

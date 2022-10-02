@@ -1,6 +1,10 @@
 import { Question, User } from "@/types/models";
 import axios, { AxiosError, AxiosResponse } from "axios";
 
+/**
+ * チャットボットに送信した質問文をDBの対話ログから取得する
+ * @param userId
+ */
 const getInputQuestion = async (userId: User["userUid"]) => {
 	try {
 		const { status, data } = await axios.get<Question["questionText"]>(

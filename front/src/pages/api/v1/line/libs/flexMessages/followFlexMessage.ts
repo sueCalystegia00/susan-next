@@ -1,5 +1,9 @@
 import type { FlexMessage } from "@line/bot-sdk";
 
+/**
+ * フォローイベント(友だち追加・ブロック解除)のFlexMessage
+ * 実験同意を求めるLIFFページへ誘導する
+ */
 const followFlexMessage: FlexMessage = {
 	type: "flex",
 	altText: "フォローありがとうございます！",
@@ -66,7 +70,7 @@ const followFlexMessage: FlexMessage = {
 					action: {
 						type: "uri",
 						label: "実験同意ページを開く",
-						uri: `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/`, // TODO: ここを変更する
+						uri: `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/`,
 					},
 				},
 			],
