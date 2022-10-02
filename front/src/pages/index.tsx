@@ -181,7 +181,11 @@ const HomePage = () => {
 								</p>
 								<p>協力していただける場合でも，質問投稿はできます．</p>
 								<p>
-									協力していただいた際には，本授業や別途予定している自主演習での評価・加点などを検討しています．
+									協力していただいた際には，
+									<span className='font-bold underline underline-offset-[-3px] decoration-4 decoration-sky-500/50'>
+										本授業や別途予定している自主演習での評価・加点などを検討
+									</span>
+									しています．
 								</p>
 							</div>
 							<label className='flex items-center gap-2 text-lg'>
