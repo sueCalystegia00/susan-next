@@ -256,7 +256,9 @@ class QuestionsController
           $this->code = 500;
           return ["error" => $resInsert];
         }
-        $resAssign = $this->assignStudentAnswerer($post["userId"], $resInsert["questionIndex"]);
+        include("users.php");
+        $usersController = new UsersController();
+        $resAssign = $usersController->assignStudentAnswerer($post["userId"], $resInsert["questionIndex"]);
         if(!array_key_exists("assignedStudents", $resAssign)){
           $this->code = 500;
           return ["error" => $resAssign];
@@ -506,71 +508,6 @@ class QuestionsController
       return ["error" => [
         "type" => "pdo_exception",
         "message" => $error
-      ]];
-    }
-  }
-
-  /**
-   * 質問の回答者を割り振り，DBに登録する
-   * @param string $questionerId 質問者のLINEid
-   * @param int $questionIndex 質問のインデックス
-   */
-  private function assignStudentAnswerer($questionerId, $questionIndex){
-    $db = new DB();
-    $pdo = $db -> pdo();
-
-    try{
-      // mysqlの実行文の記述
-      $stmtA = $pdo -> prepare(
-        "SELECT `userUid`
-        FROM `Users`
-        WHERE `userUid` != :questionerId AND `type` = 'student' AND `canAnswer` = 1
-        ORDER BY RAND() LIMIT 3"
-      );
-      
-      //データの紐付け
-      $stmtA->bindValue(':questionerId', $questionerId, PDO::PARAM_STR);
-      // 実行
-      $res = $stmtA->execute();
-      if(!$res) throw new Exception("fail to assign student answerer");
-      $assignedStudents = $stmtA->fetchAll(PDO::FETCH_ASSOC);
-
-      $sqlB = "INSERT INTO `Assignments` (`questionIndex`, `userUid`)
-              VALUES ";
-      foreach(array_keys($assignedStudents) as $key){
-        $sqlB .= "(:questionIndex".$key.", :studentId".$key."),";
-      }
-      $sqlB = substr($sqlB, 0, -1);
-      $stmtB = $pdo -> prepare($sqlB);
-
-      foreach($assignedStudents as $key => $student){
-        $stmtB->bindValue(':questionIndex'.$key, $questionIndex, PDO::PARAM_INT);
-        $stmtB->bindValue(':studentId'.$key, $student["userUid"], PDO::PARAM_STR);
-      }
-
-      $res = $stmtB->execute();
-      if(!$res) throw new Exception("fail to assign student answerer");
-
-      $this->code = 201;
-      // userId(文字列)の配列に変換する
-      $userIds = array_map(function($student){
-        return $student["userUid"];
-      }, $assignedStudents);
-      return [
-        "assignedStudents" => $userIds
-      ];
-
-    } catch(PDOException $error){
-      $this -> code = 500;
-      return ["error" => [
-        "type" => "pdo_exception",
-        "message" => $error
-      ]];
-    } catch(Exception $error){
-      $this -> code = 500;
-      return ["error" => [
-        "type" => "exception",
-        "message" => $error->getMessage()
       ]];
     }
   }

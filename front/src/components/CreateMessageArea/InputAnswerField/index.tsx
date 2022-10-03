@@ -61,12 +61,12 @@ const InputAnswerField = () => {
 			// DBにメッセージを記録
 			const res = await postDiscussionMessage(relevance === "questioner");
 			// LINEにメッセージを送信
-			if (res.questionerId) {
+			if (res.pushTo) {
 				if (updateAnswerPayload.broadcast) {
 					linePayload.userIds = [];
 					linePayload.broadcast = true;
 				} else {
-					linePayload.userIds = [res.questionerId];
+					linePayload.userIds = res.pushTo;
 				}
 				linePayload.event.message.text = updateAnswerPayload.answerText!;
 				linePayload.event.question!.questionText = question!.questionText;
