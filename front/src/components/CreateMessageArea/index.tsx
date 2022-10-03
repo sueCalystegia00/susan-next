@@ -16,7 +16,7 @@ const CreateMessageArea = () => {
 	const { messageType } = useContext(DiscussionContext);
 	const { relevance } = useContext(QuestionContext);
 	return user?.type === "instructor" || relevance !== null ? (
-		<div className='absolute bottom-0 w-full'>
+		<div className='w-full'>
 			<MessageTypeSelector />
 			{messageType === "chat" && <InputMessageField />}
 			{messageType === "image" && <InputImageField />}
