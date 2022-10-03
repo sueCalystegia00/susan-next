@@ -197,11 +197,11 @@ const HomePage = () => {
 							</div>
 						</section>
 
-						<section className='max-w-full flex flex-col gap-2 items-start'>
+						<section className='w-full flex flex-col gap-2 items-start'>
 							<h2 className='text-lg font-bold'>
 								回答に協力していただけますか？
 							</h2>
-							<div className='text-sm max-w-xl'>
+							<div className='text-sm w-full'>
 								<p>
 									質問が投稿された際に，教員と一緒に回答に協力していただける学生を募集しています．
 								</p>
@@ -213,6 +213,7 @@ const HomePage = () => {
 									</span>
 									しています．
 								</p>
+								<p>また回答は義務ではなく，各個人の可能な範囲で構いません．</p>
 							</div>
 							<div className='w-full flex space-x-4'>
 								{[
