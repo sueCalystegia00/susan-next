@@ -1,5 +1,10 @@
 <?php
 
+require_once(dirname(__FILE__)."/../../../vendor/autoload.php");
+use Dotenv\Dotenv;
+$dotenv = Dotenv::createImmutable(__DIR__."/../../../"); //.envを読み込む
+$dotenv->load();
+
 /**
  * 教員にメール通知する
  * @param string $type 新規質問/メッセージ
@@ -11,8 +16,8 @@ function sendEmailToInstructors($type, $messageText, $questionIndex){
   mb_language("Japanese");
   mb_internal_encoding("UTF-8");
 
-  include(dirname( __FILE__)."/../../../envs/instructorsAddress.php"); //教員のメールアドレス
-  $to = $instructorsAddress;
+  //教員のメールアドレス
+  $to = getenv("INSTRUCTOR_EMAIL");
   
   if($type === "newQuestion"){
     $subject = "[SUSANbot] 新しい質問 が投稿されました";
