@@ -91,7 +91,7 @@ class UsersController
   /**
    * 質問者のLINE IDを取得する
    * @param int $questionId 質問ID
-   * @return string 質問者のLINE ID
+   * @return array lineId: string 質問者のLINE ID
    */
   public function getQuestionerLineId($questionIndex){
     $db = new DB();
@@ -126,6 +126,46 @@ class UsersController
     } finally{
       //echo "finally!!";
     } 
+  }
+
+  /**
+   * 質問に割り振られた協力者のLINE IDを取得する
+   * @param int $questionIndex 質問Index
+   * @return array assigneeIds: string[] 協力者のLINE ID配列
+   */
+  public function getAssignedStudent($questionIndex){
+    $db = new DB();
+    $pdo = $db -> pdo();
+
+    try{
+      // mysqlの実行文
+      $stmt = $pdo -> prepare(
+        "SELECT `userUid`
+        FROM `Assignments` 
+        WHERE `questionIndex` = :questionIndex"
+      );
+      //データの紐付け
+      $stmt->bindValue(':questionIndex', $questionIndex, PDO::PARAM_INT);
+      // 実行
+      $res = $stmt->execute();
+
+      if(!$res){
+        throw new Exception('pdo not response');
+      }else{
+        $assigneeIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        return [ "assigneeIds" => $assigneeIds ];
+      }
+    } catch(PDOException $error){
+      $this -> code = 500;
+      return [
+        "error" => [
+          "type" => "pdo_exception",
+          "message" => $error->getMessage()
+        ],
+      ];
+    } finally{
+      //echo "finally!!";
+    }
   }
 
 
@@ -228,6 +268,67 @@ class UsersController
     }
   }
 
+
+  /**
+   * 質問の回答者を割り振り，DBに登録する
+   * @param string $questionerId 質問者のLINEid
+   * @param int $questionIndex 質問のインデックス
+   */
+  public function assignStudentAnswerer($questionerId, $questionIndex){
+    $db = new DB();
+    $pdo = $db -> pdo();
+
+    try{
+      // mysqlの実行文の記述
+      $stmtA = $pdo -> prepare(
+        "SELECT `userUid`
+        FROM `Users`
+        WHERE `userUid` != :questionerId AND `type` = 'student' AND `canAnswer` = 1
+        ORDER BY RAND() LIMIT 3"
+      );
+      
+      //データの紐付け
+      $stmtA->bindValue(':questionerId', $questionerId, PDO::PARAM_STR);
+      // 実行
+      $res = $stmtA->execute();
+      if(!$res) throw new Exception("fail to assign student answerer");
+      $assignedStudents = $stmtA->fetchAll(PDO::FETCH_COLUMN);
+
+      $sqlB = "INSERT INTO `Assignments` (`questionIndex`, `userUid`)
+              VALUES ";
+      foreach(array_keys($assignedStudents) as $key){
+        $sqlB .= "(:questionIndex".$key.", :studentId".$key."),";
+      }
+      $sqlB = substr($sqlB, 0, -1);
+      $stmtB = $pdo -> prepare($sqlB);
+
+      foreach($assignedStudents as $key => $studentId){
+        $stmtB->bindValue(':questionIndex'.$key, $questionIndex, PDO::PARAM_INT);
+        $stmtB->bindValue(':studentId'.$key, $studentId, PDO::PARAM_STR);
+      }
+
+      $res = $stmtB->execute();
+      if(!$res) throw new Exception("fail to assign student answerer");
+
+      $this->code = 201;
+      return [
+        "assignedStudents" => $assignedStudents
+      ];
+
+    } catch(PDOException $error){
+      $this -> code = 500;
+      return ["error" => [
+        "type" => "pdo_exception",
+        "message" => $error
+      ]];
+    } catch(Exception $error){
+      $this -> code = 500;
+      return ["error" => [
+        "type" => "exception",
+        "message" => $error->getMessage()
+      ]];
+    }
+  }
 
 
   /**************************************************************************** */

@@ -156,10 +156,12 @@ class DiscussionsController
       $this->code = 500;
       return $insertResponse;
     }
-    $questioner = $usersController->getQuestionerLineId($post["index"]);
+    $questioner = $usersController->getQuestionerLineId($post["index"])["lineId"];
+    $assignees = $usersController->getAssignedStudent($post["index"])["assigneeIds"];
+    $assignees[] = $questioner;
     return [
       "insertedMessage" => $insertResponse,
-      "questionerId" => $questioner["lineId"],
+      "pushTo" => $assignees,
     ];
   }
 

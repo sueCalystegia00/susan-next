@@ -3,7 +3,7 @@ import { DiscussionMessage, Question } from "./models";
 
 export interface postDiscussionResponse {
 	insertedMessage: DiscussionMessage;
-	questionerId?: User["userId"];
+	pushTo?: User["userId"][];
 }
 
 export interface postNewQuestionResponse {
