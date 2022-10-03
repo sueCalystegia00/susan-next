@@ -1,6 +1,9 @@
 <?php
 
-include(dirname( __FILE__)."/../envs/dbInfo.php"); //DBに接続するための情報
+require_once(dirname(__FILE__)."/../vendor/autoload.php");
+use Dotenv\Dotenv;
+$dotenv = Dotenv::createImmutable(__DIR__."/../"); //.envを読み込む
+$dotenv->load();
 
 /**
  * データベースに接続するために利用する
@@ -13,10 +16,11 @@ class DB
    */
   function pdo()
   {
-    /**
-     * @var string[] $db_setting intelephense(1006)対策用のdocコメント
-     */
-    global $db_setting;
+    $db_setting = [
+      "dsn" => getenv("DB_DSN"),
+      "user" => getenv("DB_USER"),
+      "password" => getenv("DB_PASSWORD"),
+    ];;
 
     try{
       $driver_option = [
