@@ -18,7 +18,7 @@ const mailOptions = (
 	questionIndex: number
 ): Mail.Options => ({
 	from: process.env.SENDER_GMAIL_ADDRESS,
-	to: process.env.RECEIVER_GMAIL_ADDRESS,
+	to: process.env.RECEIVER_MAIL_ADDRESS,
 	subject: `【SUSAN】${subject}`,
 	text: `${message}
   
