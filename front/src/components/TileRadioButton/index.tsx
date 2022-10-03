@@ -32,9 +32,9 @@ const TileRadioButton = ({
 			/>
 			<label
 				htmlFor={`${name}_${id}`}
-				className='flex flex-row items-center place-content-center gap-x-1 font-bold rounded-lg drop-shadow-md py-2 bg-neutral-200 dark:bg-slate-400 fill-susanBlue-100 peer-checked:text-slate-50 peer-checked:bg-susanBlue-100 peer-checked:fill-slate-50'
+				className='cursor-pointer focus:cursor-auto flex flex-row items-center place-content-center gap-x-1 font-bold rounded-lg drop-shadow-md py-2 bg-neutral-200 dark:bg-slate-400 fill-susanBlue-100 peer-checked:text-slate-50 peer-checked:bg-susanBlue-100 peer-checked:fill-slate-50'
 			>
-				<span>{imageComponent}</span>
+				{imageComponent && <span>{imageComponent}</span>}
 				{displayText}
 			</label>
 		</div>

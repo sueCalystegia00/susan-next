@@ -1,25 +1,34 @@
 import { User } from "@/types/models";
 import { UserRegistrationPayload } from "@/types/payloads";
 import axios, { AxiosError } from "axios";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 const useRegistration = (userIdToken?: User["token"]) => {
-	const age = useRef<HTMLInputElement>(null!);
-	const gender = useRef<HTMLSelectElement>(null!);
-	const canAnswer = useRef<HTMLInputElement>(null!);
+	const [age, setAge] = useState<UserRegistrationPayload["age"] | undefined>(
+		undefined
+	);
+	const [gender, setGender] = useState<
+		UserRegistrationPayload["gender"] | undefined
+	>(undefined);
+	const [canAnswer, setCanAnswer] = useState<
+		UserRegistrationPayload["canAnswer"] | null
+	>(null);
 
 	const userRegistration = async () => {
-		if (!(Number(age.current.value) >= 18 && Number(age.current.value) <= 99)) {
+		if (!(!!age && age >= 18 && age <= 99)) {
 			throw new TypeError("適切な年齢を半角数字で入力してください");
 		}
-		if (!gender.current.value) {
+		if (!gender) {
 			throw new TypeError("性別を選択してください");
+		}
+		if (canAnswer === null) {
+			throw new TypeError("利用方法を選択してください");
 		}
 		const payload: UserRegistrationPayload = {
 			userIdToken,
-			canAnswer: canAnswer.current.checked,
-			age: Number(age.current.value),
-			gender: gender.current.value as UserRegistrationPayload["gender"],
+			canAnswer,
+			age,
+			gender,
 		};
 		try {
 			const { status, data } = await axios.post<User>(
@@ -39,7 +48,15 @@ const useRegistration = (userIdToken?: User["token"]) => {
 		}
 	};
 
-	return { age, gender, canAnswer, userRegistration };
+	return {
+		age,
+		setAge,
+		gender,
+		setGender,
+		canAnswer,
+		setCanAnswer,
+		userRegistration,
+	};
 };
 
 export default useRegistration;
