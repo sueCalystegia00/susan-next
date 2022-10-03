@@ -256,7 +256,7 @@ class QuestionsController
           $this->code = 500;
           return ["error" => $resInsert];
         }
-        $resAssign = $this->assignStudentAnswerer($resInsert["questionIndex"]);
+        $resAssign = $this->assignStudentAnswerer($post["userId"], $resInsert["questionIndex"]);
         if(!array_key_exists("assignedStudents", $resAssign)){
           $this->code = 500;
           return ["error" => $resAssign];
@@ -510,7 +510,12 @@ class QuestionsController
     }
   }
 
-  private function assignStudentAnswerer($questionIndex){
+  /**
+   * 質問の回答者を割り振り，DBに登録する
+   * @param string $questionerId 質問者のLINEid
+   * @param int $questionIndex 質問のインデックス
+   */
+  private function assignStudentAnswerer($questionerId, $questionIndex){
     $db = new DB();
     $pdo = $db -> pdo();
 
@@ -519,10 +524,12 @@ class QuestionsController
       $stmtA = $pdo -> prepare(
         "SELECT `userUid`
         FROM `Users`
-        WHERE `type` = 'student' AND `canAnswer` = 1
+        WHERE `userUid` != :questionerId AND `type` = 'student' AND `canAnswer` = 1
         ORDER BY RAND() LIMIT 3"
       );
       
+      //データの紐付け
+      $stmtA->bindValue(':questionerId', $questionerId, PDO::PARAM_STR);
       // 実行
       $res = $stmtA->execute();
       if(!$res) throw new Exception("fail to assign student answerer");

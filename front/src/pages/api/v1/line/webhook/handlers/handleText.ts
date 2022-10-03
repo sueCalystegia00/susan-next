@@ -103,13 +103,16 @@ const handleText = async (
 					lectureNumber: calcLectureNumber(new Date()).number,
 					questionText: postNewQuestionText,
 				});
+			// 質問文の送信完了を伝えるメッセージ
 			replyMessage = [completeSendNewQuestion(questionIndex)];
 			nlpResult.queryResult.outputContexts = null; // 質問送信後はcontextを削除する
-			notifyNewQuestion({
-				userIds: assignedStudents,
-				questionIndex,
-				questionText: postNewQuestionText,
-			});
+			// 回答協力者に通知を送信する
+			assignedStudents.length > 0 &&
+				notifyNewQuestion({
+					userIds: assignedStudents,
+					questionIndex,
+					questionText: postNewQuestionText,
+				});
 			break;
 
 		case "ShowOthersQuestions": // input:「みんなの質問を見せて」
