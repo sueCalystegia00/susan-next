@@ -24,8 +24,8 @@ const InputMessageField = () => {
 			// DBにメッセージを記録
 			const res = await postDiscussionMessage(relevance === "questioner");
 			// LINEにメッセージを送信
-			if (res.questionerId) {
-				linePayload.userIds = [res.questionerId];
+			if (res.pushTo) {
+				linePayload.userIds = res.pushTo;
 				linePayload.event.message.text = inputtedText;
 				await pushLineMessage(linePayload);
 				alert("メッセージを送信しました");
