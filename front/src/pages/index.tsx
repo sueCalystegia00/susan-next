@@ -6,15 +6,23 @@ import useRegistration from "@/hooks/useRegistration";
 import { AuthContext } from "@/contexts/AuthContext";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import TileRadioButton from "@/components/TileRadioButton";
+import { UserRegistrationPayload } from "@/types/payloads";
 
 const HomePage = () => {
 	const router = useRouter();
 	const { user } = useContext(AuthContext);
 	const [isDarkMode, setIsDarkMode] = useState(false);
 
-	const { age, gender, canAnswer, userRegistration } = useRegistration(
-		user?.token
-	);
+	const {
+		age,
+		setAge,
+		gender,
+		setGender,
+		canAnswer,
+		setCanAnswer,
+		userRegistration,
+	} = useRegistration(user?.token);
 
 	useEffect(() => {
 		setIsDarkMode(window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -38,7 +46,7 @@ const HomePage = () => {
 	return (
 		<DefaultLayout>
 			{user?.type === "unregistered" ? (
-				<div className='w-full min-h-screen flex flex-col items-center gap-4 p-4'>
+				<div className='w-full max-w-4xl min-h-screen flex flex-col items-center gap-4 p-4'>
 					{!isDarkMode ? (
 						<LogoLight height='128px' />
 					) : (
@@ -46,7 +54,7 @@ const HomePage = () => {
 					)}
 					<h1 className='text-lg font-bold'>⚠️利用者登録をお願いします</h1>
 
-					<section className='max-w-full flex flex-col gap-2 items-start'>
+					<section className='w-full flex flex-col gap-2 items-start'>
 						<h2 className='text-lg font-bold'>『SUSAN』ってなに？</h2>
 						<p className='indent-4'>
 							SUSANは，学生からの質問対応を行うチャットボットシステムです．
@@ -139,17 +147,18 @@ const HomePage = () => {
 						</section>
 					</div>
 
-					<div className='w-full flex flex-col gap-4'>
+					<div className='w-full flex flex-col gap-6'>
 						<section className='max-w-full flex flex-col gap-2 items-start'>
 							<h2 className='text-lg font-bold'>あなたの年齢を教えて下さい</h2>
 							<label className='flex gap-2 items-center text-lg font-bold'>
 								<input
-									className='w-24 py-2 text-center border-2 border-gray-300 rounded-md'
-									ref={age}
+									className='w-24 py-2 text-center border-2 border-gray-300 rounded-md dark:bg-slate-600'
+									value={age}
 									type='number'
 									placeholder='半角数字'
 									min={18}
 									max={99}
+									onChange={(e) => setAge(Number(e.target.value))}
 								/>
 								歳
 							</label>
@@ -157,18 +166,35 @@ const HomePage = () => {
 
 						<section className='max-w-full flex flex-col gap-2 items-start'>
 							<h2 className='text-lg font-bold'>あなたの性別を教えて下さい</h2>
-							<select
-								className='px-4 py-2 text-center text-lg border-2 border-gray-300 rounded-md'
-								ref={gender}
-								defaultValue=''
-							>
-								<option disabled value=''>
-									性別を選択してください
-								</option>
-								<option value='male'>男性</option>
-								<option value='female'>女性</option>
-								<option value='other'>その他</option>
-							</select>
+							<div className='w-full flex space-x-4'>
+								{[
+									{
+										value: "male",
+										displayText: "男性",
+									},
+									{
+										value: "female",
+										displayText: "女性",
+									},
+									{
+										value: "other",
+										displayText: "その他",
+									},
+								].map((button, index) => (
+									<TileRadioButton
+										key={index}
+										id={index}
+										name='gender'
+										value={button.value}
+										displayText={button.displayText}
+										onChange={() =>
+											setGender(
+												button.value as UserRegistrationPayload["gender"]
+											)
+										}
+									/>
+								))}
+							</div>
 						</section>
 
 						<section className='max-w-full flex flex-col gap-2 items-start'>
@@ -188,23 +214,42 @@ const HomePage = () => {
 									しています．
 								</p>
 							</div>
-							<label className='flex items-center gap-2 text-lg'>
-								<input
-									className='w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'
-									type='checkbox'
-									ref={canAnswer}
-								/>
-								回答に協力する
-							</label>
+							<div className='w-full flex space-x-4'>
+								{[
+									{
+										value: false,
+										displayText: "質問のみ利用する",
+									},
+									{
+										value: true,
+										displayText: "回答にも協力する",
+									},
+								].map((button, index) => (
+									<TileRadioButton
+										key={index}
+										id={index}
+										name='canAnswer'
+										value={button.value}
+										displayText={button.displayText}
+										onChange={() =>
+											setCanAnswer(
+												button.value as UserRegistrationPayload["canAnswer"]
+											)
+										}
+									/>
+								))}
+							</div>
 						</section>
 					</div>
 
-					<div className='flex gap-4 items-center'>
+					<div className='flex gap-4 items-center my-10'>
 						<button
-							className='text-white bg-susanBlue-100 font-bold text-center rounded-lg px-5 py-2.5 disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700'
+							className='px-6 py-3 rounded bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 shadow-xl shadow-indigo-500/50'
 							onClick={handleRegistration}
 						>
-							実験に参加してSUSANを利用する
+							<span className='text-white font-bold'>
+								実験に参加してSUSANを利用する
+							</span>
 						</button>
 					</div>
 				</div>
