@@ -16,30 +16,53 @@ LINE ボットを介して質問を匿名投稿ができ，ユーザが投稿し
 
 # 💫Requirement
 
-### Developing Environment
+## 💻Developing Environment
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
+## 👀FrontEnd
+
 ### LINE bot
 
-www2 サーバーの PHP バージョンが 5.6 なので対応できるバージョンに \
-(ライブラリ内の NULL 合体演算子などを直さないといけない箇所もある)
+Next.js APIrouting を利用し，LINE bot の webhook を構築している
 
-- [LINEbot SDK](https://github.com/line/line-bot-sdk-php): 7.0
-- [Dialogflow](https://cloud.google.com/dialogflow/es/docs): 0.19.1
+- [Next.js](https://nextjs.org/)
+- [LINEbot SDK](https://github.com/line/line-bot-sdk-nodejs)
+- [Dialogflow](https://cloud.google.com/dialogflow/es/docs)
 
 ### LIFF(web application)
 
-- [Next.js](https://nextjs.org/): 12.1.6
-- [LIFF](https://developers.line.biz/ja/docs/liff/overview/)": 2.20.1
-- [LIFF mock](https://github.com/line/liff-mock): 1.0.1
-- axios: 0.27.2
+- [Next.js](https://nextjs.org/)
+- [LIFF](https://developers.line.biz/ja/docs/liff/overview/)
+- [LIFF mock](https://github.com/line/liff-mock)
+
+## 🗃BackEnd
+
+疑似(?)REST API をバニラ PHP で構築している．
+
+本番環境の都合上，PHP5.6 で組んでいるが，PHP7 以上の環境に書き直すことが求められるかと．
+
+### Composer
+
+環境変数(.env ファイル)を扱う関係で利用
 
 # ⚙️Installation
 
+## 🧩Create Each Web Service Accounts
+
+- LINE ボット・LIFF アプリのためのチャネルを作成
+
+  - [LINE Developers Console](https://developers.line.biz/console/) から作成
+  - LINE ボット本体は Messaging API
+  - LIFF アプリは LINE ログイン
+
+- Dialogflow API を利用可能に
+  - [Dialogflow ES](https://dialogflow.cloud.google.com/)でインテントなど設定
+  - [Google Cloud Console](https://console.cloud.google.com/)から Dialogflow の API キーを発行
+
 ## 📝Set Environment File
 
-- 各ディレクトリの.env.sample を参考に環境変数を設定
+- 各ディレクトリの.env.sample を参考に各サービスの環境変数を設定
 
 ## 🤖Start Developing
 
