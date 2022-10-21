@@ -289,7 +289,7 @@ class UsersController
         "SELECT `userUid`
         FROM `Users`
         WHERE `userUid` != :questionerId AND `type` = 'student' AND `canAnswer` = 1
-        ORDER BY RAND() LIMIT 3"
+        ORDER BY RAND() LIMIT 5"
       );
       
       //データの紐付け
