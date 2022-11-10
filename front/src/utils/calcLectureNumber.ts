@@ -13,21 +13,21 @@ const calcLectureNumber = (date: Date) => {
 
 	if (isAorB === "A") {
 		// 第3Qの場合
-		if (date <= new Date(2022, 10 -1, 12)) {
+		if (date <= new Date(2022, 10 - 1, 12)) {
 			return { type: isAorB, number: 1 };
 		} else if (date <= new Date(2022, 10 - 1, 19)) {
 			return { type: isAorB, number: 2 };
 		} else if (date <= new Date(2022, 10 - 1, 26)) {
 			return { type: isAorB, number: 3 };
-		} else if (date <= new Date(2022, 11 - 1, 2)) {
-			return { type: isAorB, number: 4 };
 		} else if (date <= new Date(2022, 11 - 1, 9)) {
-			return { type: isAorB, number: 5 };
+			return { type: isAorB, number: 4 };
 		} else if (date <= new Date(2022, 11 - 1, 16)) {
-			return { type: isAorB, number: 6 };
+			return { type: isAorB, number: 5 };
 		} else if (date <= new Date(2022, 11 - 1, 23)) {
-			return { type: isAorB, number: 7 };
+			return { type: isAorB, number: 6 };
 		} else if (date <= new Date(2022, 11 - 1, 30)) {
+			return { type: isAorB, number: 7 };
+		} else if (date <= new Date(2022, 12 - 1, 5)) {
 			return { type: isAorB, number: 8 };
 		} else {
 			return { type: undefined, number: undefined };
