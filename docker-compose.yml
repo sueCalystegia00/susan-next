@@ -36,7 +36,9 @@ services:
   #MySQL用コンテナ
   mysql:
     container_name: mysql
-    image: mysql:5.7
+    build:
+      context: ./mysql
+      dockerfile: Dockerfile
     volumes:
       - ./mysql:/var/lib/mysql
       - ./mysql/initdb.d:/docker-entrypoint-initdb.d
