@@ -36,11 +36,13 @@ services:
   #MySQL用コンテナ
   mysql:
     container_name: mysql
+    # for Apple Silicon Mac
+    platform: linux/arm64/v8
     build:
       context: ./mysql
       dockerfile: Dockerfile
     volumes:
-      - ./mysql:/var/lib/mysql
+      - ./mysql/data:/var/lib/mysql
       - ./mysql/initdb.d:/docker-entrypoint-initdb.d
     ports:
       - 3306:3306
@@ -55,7 +57,7 @@ services:
     container_name: phpMyAdmin
     depends_on:
       - mysql
-    image: phpmyadmin/phpmyadmin
+    image: phpmyadmin:latest
     environment:
       PMA_HOST: mysql
     restart: always
