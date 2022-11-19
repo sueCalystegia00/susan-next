@@ -20,7 +20,7 @@ const QuestionsListPage = () => {
 						dataLength={questions.length} //現在のデータの長さ
 						next={getQuestionsDataHandler} // スクロール位置を監視してコールバック（次のデータを読み込ませる）
 						hasMore={questions.slice(-1)[0]?.index != 1 || false} // さらにスクロールするかどうか（index:1の質問があればfalseを返すことで無限スクロールを回避）
-						loader={Loader()} // ローディング中のコンポーネント
+						loader={<></>} // ローディング中のコンポーネント
 						//height={420} // 高さ（なくても良い）
 					>
 						<ul className='flex flex-col gap-3 p-2'>
