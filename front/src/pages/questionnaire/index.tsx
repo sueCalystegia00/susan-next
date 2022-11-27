@@ -4,6 +4,7 @@ import { useContext, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import useQuestionnaire from "@/hooks/useQuestionnaire";
 import { AuthContext } from "@/contexts/AuthContext";
+import Loader from "@/components/Loader";
 
 const licart5descriptions = [
 	"強く同意しない",
@@ -29,23 +30,26 @@ const QuestionnairePage = () => {
 		isQuestionnaireCompleted,
 		checkIsQuestionnaireCompleted,
 		postQuestionnaire,
-	} = useQuestionnaire(user?.token);
-
-	const onSubmit = (data: {}) => {
-		postQuestionnaire(data);
-	};
+	} = useQuestionnaire();
 
 	// ページ読み込み時にアンケートの回答状況を確認する
 	useEffect(() => {
-		checkIsQuestionnaireCompleted();
-	}, []);
+		checkIsQuestionnaireCompleted(user?.token!);
+	}, [user?.token]);
+
+	const onSubmit = (data: {}) => {
+		postQuestionnaire(user?.token!, data);
+	};
 
 	return (
 		<DefaultLayout>
 			<h1 className='text-xl font-bold p-2'>第3Q実験評価アンケート</h1>
 
 			{isQuestionnaireCompleted ? (
-				<div>アンケートは完了しています</div>
+				<div className='text-center'>
+					<p>アンケートへのご回答ありがとうございました🙇‍♂️</p>
+					<p>引き続きSUSANをよろしくおねがいいたします．</p>
+				</div>
 			) : (
 				<div className='w-full'>
 					<section className='w-full max-w-4xl flex flex-col gap-4 items-start px-4 py-2'>
@@ -55,7 +59,10 @@ const QuestionnairePage = () => {
 								以下の注意点をご確認の上，アンケートの回答にご協力お願いします．
 							</p>
 							<p>
-								5分程度でお答えいただけると思いますので、どうぞよろしくお願いいたします。
+								<span className='font-bold underline underline-offset-[-3px] decoration-4 decoration-sky-500/50'>
+									全項目必須
+								</span>
+								となっておりますが，5分程度でお答えいただけると思いますので，どうぞよろしくお願いいたします。
 							</p>
 						</div>
 						<div className='border-l-4 border-gray-300 pl-2'>

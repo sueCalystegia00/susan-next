@@ -20,7 +20,55 @@ class QuestionnairesController
    * @return array レスポンス
    */
   public function get($args) {
-    return [];
+    if(!array_key_exists("userIdToken",$_GET)){
+      $this->code = 400;
+      return ["error" => [
+        "type" => "user token is required"
+      ]];
+    }
+    // ユーザーの存在確認
+    include("users.php");
+    $usersController = new UsersController();
+    try{
+      $userId = $usersController->verifyLine($_GET['userIdToken'])["sub"];
+    }catch(Exception $error){
+      $this->code = $error->getCode();
+      return ["error" => json_decode($error->getMessage(),true)];
+    }
+    return $this->checkIsQuestionnaireCompleted($userId);
+  }
+
+  private function checkIsQuestionnaireCompleted($lineId){
+    $db = new DB();
+
+    try{
+      // mysqlの実行文
+      $stmt = $db -> pdo() -> prepare(
+        "SELECT COUNT(*) 
+        FROM `Questionnaire`
+        WHERE `userUid` = :lineId"
+      );
+      // データの紐付け
+      $stmt->bindValue(':lineId', $lineId, PDO::PARAM_STR);
+      // 実行
+      $res = $stmt->execute();
+  
+      if($res){
+        return ["isQuestionnaireCompleted" => $stmt->fetchColumn() > 0];
+      
+      }else{
+        $this -> code = 500;
+        return ["error" => [
+          "type" => "pdo_not_response"
+        ]];
+      }
+    } catch(PDOException $error){
+      $this -> code = 500;
+      return ["error" => [
+        "type" => "pdo_exception",
+        "message" => $error
+      ]];
+    }
   }
 
   /**************************************************************************** */
@@ -31,31 +79,30 @@ class QuestionnairesController
    */
   public function post($args) {
     $post = $this->request_body;
-    if(!array_key_exists("userId",$post)){
+
+    if(!array_key_exists("userIdToken",$post)){
+      $this->code = 400;
+      return ["error" => [
+        "type" => "user token is required"
+      ]];
+    }
+    // ユーザーの存在確認
+    include("users.php");
+    $usersController = new UsersController();
+    try{
+      $userId = $usersController->verifyLine($post["userIdToken"])["sub"];
+    }catch(Exception $error){
+      $this->code = $error->getCode();
+      return ["error" => json_decode($error->getMessage(),true)];
+    }
+
+    if(!array_key_exists("questionnaire",$post)){
       $this->code = 400;
       return ["error" => [
         "type" => "invalid_param"
       ]];
-    }
-    switch($args[0]){
-      // 閲覧ログを記録する
-      case "evaluation":
-        if(!array_key_exists("answers",$post)){
-          $this->code = 400;
-          return ["error" => [
-            "type" => "invalid_param"
-          ]];
-        }else{
-          return $this->insertEvaluationQuestionnaire($post["userId"], $post["answers"]);
-        }
-        break;
-
-      // 無効なアクセス
-      default:
-        $this -> code = 400;
-        return ["error" => [
-          "type" => "invalid_access"
-        ]];
+    }else{
+      return $this->insertEvaluationQuestionnaire($userId, $post["questionnaire"]);
     }
   }
 
@@ -65,46 +112,41 @@ class QuestionnairesController
    * @param array $questionnaire アンケートへの回答
    * @return array DB追加の成功/失敗
    */
-  function insertEvaluationQuestionnaire($lineId, $questionnaire) {
+  private function insertEvaluationQuestionnaire($lineId, $questionnaire) {
     $db = new DB();
     $pdo = $db -> pdo();
+
+    $ColumnNames = "";
+    $ValuesName = "";
+    foreach($questionnaire as $key => $answer){
+      foreach($answer as $type => $value){
+        $ColumnNames .= $key.$type.",";
+        $ValuesName .= ":".$key.$type.",";
+      }
+    }
+    $ColumnNames = mb_substr($ColumnNames,0,-1);
+    $ValuesName = mb_substr($ValuesName,0,-1);
 
     try{
       // mysqlの実行文の記述
       $stmt = $pdo -> prepare(
-        "INSERT INTO evaluationQuestionnaire (LineId, FirstQuestion, FirstReason, SecondQuestion, SecondReason, ThirdQuestion, ThirdReason, FourthQuestion, FourthReason, FifthQuestion, FifthReason, SixthQuestion, SixthReason, SeventhQuestion, SeventhReason, EighthQuestion, EighthReason, goodPoint, improvementPoint, additionalFunction, AnyImpressions)
-        VALUES (:LineId, :FirstQuestion, :FirstReason, :SecondQuestion, :SecondReason, :ThirdQuestion, :ThirdReason, :FourthQuestion, :FourthReason, :FifthQuestion, :FifthReason, :SixthQuestion, :SixthReason, :SeventhQuestion, :SeventhReason, :EighthQuestion, :EighthReason, :goodPoint, :improvementPoint, :additionalFunction, :AnyImpressions)"
+        "INSERT INTO Questionnaire (userUid, ".$ColumnNames.") VALUES (:userUid, ".$ValuesName.")"
       );
       //データの紐付け
-      $stmt->bindValue(':LineId', $lineId, PDO::PARAM_STR);
-      $stmt->bindValue(':FirstQuestion', $questionnaire['question1']["answers"]['licart'], PDO::PARAM_INT);
-      $stmt->bindValue(':FirstReason', $questionnaire['question1']["answers"]['text'], PDO::PARAM_STR);
-      $stmt->bindValue(':SecondQuestion', $questionnaire['question2']["answers"]['licart'], PDO::PARAM_INT);
-      $stmt->bindValue(':SecondReason', $questionnaire['question2']["answers"]['text'], PDO::PARAM_STR);
-      $stmt->bindValue(':ThirdQuestion', $questionnaire['question3']["answers"]['licart'], PDO::PARAM_INT);
-      $stmt->bindValue(':ThirdReason', $questionnaire['question3']["answers"]['text'], PDO::PARAM_STR);
-      $stmt->bindValue(':FourthQuestion', $questionnaire['question4']["answers"]['licart'], PDO::PARAM_INT);
-      $stmt->bindValue(':FourthReason', $questionnaire['question4']["answers"]['text'], PDO::PARAM_STR);
-      $stmt->bindValue(':FifthQuestion', $questionnaire['question5']["answers"]['licart'], PDO::PARAM_INT);
-      $stmt->bindValue(':FifthReason', $questionnaire['question5']["answers"]['text'], PDO::PARAM_STR);
-      $stmt->bindValue(':SixthQuestion', $questionnaire['question6']["answers"]['licart'], PDO::PARAM_INT);
-      $stmt->bindValue(':SixthReason', $questionnaire['question6']["answers"]['text'], PDO::PARAM_STR);
-      $stmt->bindValue(':SeventhQuestion', $questionnaire['question7']["answers"]['licart'], PDO::PARAM_INT);
-      $stmt->bindValue(':SeventhReason', $questionnaire['question7']["answers"]['text'], PDO::PARAM_STR);
-      $stmt->bindValue(':EighthQuestion', $questionnaire['question8']["answers"]['licart'], PDO::PARAM_INT);
-      $stmt->bindValue(':EighthReason', $questionnaire['question8']["answers"]['text'], PDO::PARAM_STR);
-      $stmt->bindValue(':goodPoint', $questionnaire['question9']["answers"]['text'], PDO::PARAM_STR);
-      $stmt->bindValue(':improvementPoint', $questionnaire['question10']["answers"]['text'], PDO::PARAM_STR);
-      $stmt->bindValue(':additionalFunction', $questionnaire['question11']["answers"]['text'], PDO::PARAM_STR);
-      $stmt->bindValue(':AnyImpressions', $questionnaire['question12']["answers"]['text'], PDO::PARAM_STR);
-
+      $stmt->bindValue(':userUid', $lineId, PDO::PARAM_STR);
+      foreach($questionnaire as $key => $answer){
+        foreach($answer as $type => $value){
+          $valueType = $type == "licart" ? PDO::PARAM_INT : PDO::PARAM_STR;
+          $stmt->bindValue(":".$key.$type, $value, $valueType);
+        }
+      }
       // 実行
       $res = $stmt->execute();
       $lastIndex = $pdo->lastInsertId();
       if($res){
         $this->code = 201;
-        header("Location: ".$this->url.$lastIndex);
-        return [];
+        //header("Location: ".$this->url.$lastIndex);
+        return ["response" => "success!!"];
       }else{
         $this->code = 500;
         return ["error" => [

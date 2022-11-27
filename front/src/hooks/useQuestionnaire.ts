@@ -1,13 +1,12 @@
 import { User } from "@/types/models";
 import axios, { AxiosError } from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * アンケートの管理を行うカスタムフック
- * @param userIdToken ユーザーIDトークン
  * @returns
  */
-const useQuestionnaire = (userIdToken?: User["token"]) => {
+const useQuestionnaire = () => {
 	/**
 	 * アンケートの回答状況
 	 */
@@ -17,12 +16,12 @@ const useQuestionnaire = (userIdToken?: User["token"]) => {
 	/**
 	 * アンケートの回答状況を確認する
 	 */
-	const checkIsQuestionnaireCompleted = async () => {
+	const checkIsQuestionnaireCompleted = async (userIdToken: User["token"]) => {
 		try {
 			const { status, data } = await axios.get<{
 				isQuestionnaireCompleted: boolean;
 			}>(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questionnaire?userIdToken=${userIdToken}`
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questionnaires?userIdToken=${userIdToken}`
 			);
 			if (status === 200) {
 				setIsQuestionnaireCompleted(data.isQuestionnaireCompleted);
@@ -41,10 +40,10 @@ const useQuestionnaire = (userIdToken?: User["token"]) => {
 	 * アンケートの回答を送信する
 	 * @param payload アンケートの回答
 	 */
-	const postQuestionnaire = async (payload: {}) => {
+	const postQuestionnaire = async (userIdToken: User["token"], payload: {}) => {
 		try {
 			const { status, data } = await axios.post(
-				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questionnaire`,
+				`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/questionnaires`,
 				{
 					userIdToken,
 					questionnaire: payload,
