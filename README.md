@@ -79,12 +79,15 @@ docker-compose up -d
 docker-compose up --build --force-recreate -d
 ```
 
-- LIFF ページを開けるか確認 → http://localhost:3000
+- LIFF ページにアクセスできるか確認 → http://localhost:3000
+  - トークン切れが発生する場合は，本番環境などにアクセスしてネットワークログから ID トークンを取得し，.env.development ファイルに記載する．
 - 必要に応じて Docker コンテナ内のシェルからコマンドを実行
 
 ```Shell
 docker-compose run --rm <<コンテナ名>> sh
 ```
+
+> PHP5.6 での開発のため，VSCode の PHP validate のパスを docker コンテナ内を参照して設定するよう，php.sh を配置している．
 
 # 🙋🏻‍♂️Author
 

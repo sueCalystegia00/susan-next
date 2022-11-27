@@ -30,5 +30,6 @@
 	],
 
 	"intelephense.environment.phpVersion": "5.6.0",
-	"files.autoSave": "afterDelay"
+	"files.autoSave": "afterDelay",
+	"php.validate.executablePath": "./php.sh"
 }
