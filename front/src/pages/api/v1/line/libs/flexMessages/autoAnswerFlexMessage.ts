@@ -19,7 +19,7 @@ const autoAnswerFlexMessage = (
 		: "未設定";
 	return {
 		type: "flex",
-		altText: "似た質問と回答が見つかりました",
+		altText: `似た質問と回答が見つかりました(index:${questionIndex})`,
 		contents: {
 			type: "bubble",
 			header: {
