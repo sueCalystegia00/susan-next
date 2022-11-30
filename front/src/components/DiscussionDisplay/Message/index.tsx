@@ -25,7 +25,7 @@ const Message = ({ discussionMessage }: MessageProps) => {
 				{discussionMessage.messageType != "image" ? (
 					<InnerUrlText
 						innerText={discussionMessage.message}
-						settingClass={undefined}
+						settingClass='w-full whitespace-pre-line break-words leading-relaxed'
 					/>
 				) : (
 					<img
