@@ -7,7 +7,7 @@ const calcLectureNumber = (date: Date) => {
 	/**
 	 * 第3Qか第4Qかどうか
 	 */
-	const isAorB = date <= new Date(2022, 12, 6) ? "A" : "B";
+	const isAorB = date <= new Date(2022, 12 - 1, 6) ? "A" : "B";
 
 	// TODO: クイックソート的なアルゴリズムがあるのではなかろうか...
 
