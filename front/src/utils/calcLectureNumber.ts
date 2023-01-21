@@ -38,17 +38,17 @@ const calcLectureNumber = (date: Date) => {
 			return { type: isAorB, number: 1 };
 		} else if (date <= new Date(2022, 12 - 1, 21)) {
 			return { type: isAorB, number: 2 };
-		} else if (date <= new Date(2022, 12 - 1, 28)) {
-			return { type: isAorB, number: 3 };
-		} else if (date <= new Date(2023, 1 - 1, 4)) {
-			return { type: isAorB, number: 4 };
 		} else if (date <= new Date(2023, 1 - 1, 11)) {
-			return { type: isAorB, number: 5 };
+			return { type: isAorB, number: 3 };
 		} else if (date <= new Date(2023, 1 - 1, 18)) {
-			return { type: isAorB, number: 6 };
+			return { type: isAorB, number: 4 };
 		} else if (date <= new Date(2023, 1 - 1, 25)) {
+			return { type: isAorB, number: 5 };
+		} else if (date <= new Date(2023, 2 - 1, 1)) {
+			return { type: isAorB, number: 6 };
+		} else if (date <= new Date(2023, 2 - 1, 8)) {
 			return { type: isAorB, number: 7 };
-		} else if (date <= new Date(2023, 2 - 1, 4)) {
+		} else if (date <= new Date(2023, 2 - 1, 15)) {
 			return { type: isAorB, number: 8 };
 		} else {
 			return { type: undefined, number: undefined };
