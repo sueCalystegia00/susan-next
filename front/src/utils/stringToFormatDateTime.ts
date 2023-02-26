@@ -1,3 +1,8 @@
+/**
+ * タイムスタンプの表示形式を整形する
+ * @param timestamp mysqlのdate型文字列
+ * @returns
+ */
 const stringToFormatDateTime = (timestamp: string) => {
 	const date = new Date(timestamp);
 	const year = date.getFullYear();

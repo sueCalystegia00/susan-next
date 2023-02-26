@@ -1,3 +1,10 @@
+/**
+ *
+ * 未使用
+ * VercelからGmailを飛ばすことが出来なかったため(原因不明)
+ *
+ */
+
 import nodemailer from "nodemailer";
 import Mail from "nodemailer/lib/mailer";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
