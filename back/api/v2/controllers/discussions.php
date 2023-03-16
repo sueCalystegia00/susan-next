@@ -1,6 +1,11 @@
 <?php
 ini_set('display_errors',1);
 
+require_once(dirname(__FILE__)."/../vendor/autoload.php");
+use Dotenv\Dotenv;
+$dotenv = Dotenv::createImmutable(__DIR__."/../../../"); //.envを読み込む
+$dotenv->load();
+
 class DiscussionsController
 {
   public $code = 200;
@@ -273,9 +278,10 @@ class DiscussionsController
       }
 
       // ファイルデータからSHA-1ハッシュを取ってファイル名を決定し保存する(ディレクトリ・トラバーサル対策)
+      $homeDir = getenv('HOME_DIR');
       if (!move_uploaded_file(
         $postedFiles['file']['tmp_name'],
-        $path = sprintf('/home/suzuki/public_html/susan/upload_images/%s.%s',
+        $path = sprintf($homeDir.'/upload_images/%s.%s',
           sha1_file($postedFiles['file']['tmp_name']),
           $extension
         )
@@ -287,7 +293,9 @@ class DiscussionsController
       chmod($path, 0644);
 
       $this->code = 201;
-      return ["fileName" => preg_replace("/\/home\/suzuki\/public_html/", "/~suzuki", $path, 1)];
+      $dirNames = explode("/", $homeDir);
+      // "/home/ユーザー名/public_html/upload_images/ファイル名.拡張子" → "/~ユーザー名/upload_images/ファイル名.拡張子"
+      return ["fileName" => preg_replace("/\/".$dirNames[1]."\/".$dirNames[2]."\/".$dirNames[3]."/", "/~".$dirNames[2], $path, 1)];
 
     } catch (RuntimeException $e) {
       $this -> code = 412;
