@@ -9,6 +9,7 @@ import Link from "next/link";
 import TileRadioButton from "@/components/TileRadioButton";
 import { UserRegistrationPayload } from "@/types/payloads";
 
+/** トップページ */
 const HomePage = () => {
 	const router = useRouter();
 	const { user } = useContext(AuthContext);
@@ -28,6 +29,7 @@ const HomePage = () => {
 		setIsDarkMode(window.matchMedia("(prefers-color-scheme: dark)").matches);
 	}, []);
 
+	/** ユーザ登録の呼び出し→画面遷移 */
 	const handleRegistration = async () => {
 		try {
 			await userRegistration();

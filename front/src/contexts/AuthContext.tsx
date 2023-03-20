@@ -5,6 +5,13 @@ import type { Liff } from "@line/liff";
 import { useRouter } from "next/router";
 import axios, { AxiosError } from "axios";
 
+/**
+ * 認証情報
+ * @property isLoggedIn ログインしているかどうか
+ * @property isError エラーが発生したかどうか
+ * @property user ユーザ情報
+ * @property lineLogout LINEログアウトメソッド
+ */
 class AuthContextProps {
 	isLoggedIn = false;
 	isError = false;
@@ -41,7 +48,7 @@ const AuthProvider = ({ children }: Props) => {
 					withLoginOnExternalBrowser: true, //外部ブラウザでも自動ログイン(LIFFブラウザは最初から自動でログインが走る)
 					mock: process.env.NODE_ENV === "development", // 開発環境ではmockを使用
 				};
-				initConfig.mock && setMock(liff);
+				initConfig.mock && setMock(liff); // 開発環境ではmockを使用
 				refreshExpiredIdToken();
 				liff.init(initConfig, setUserInfo);
 			})
@@ -51,6 +58,7 @@ const AuthProvider = ({ children }: Props) => {
 			});
 	}, []);
 
+	/** ユーザ情報をstateに保存 */
 	const setUserInfo = async () => {
 		if (!liff.isLoggedIn()) {
 			await liff.login();
@@ -75,11 +83,18 @@ const AuthProvider = ({ children }: Props) => {
 		}
 	};
 
+	/** LINEログアウト */
 	const lineLogout = async () => {
 		liff && (await liff.ready.then(() => liff?.logout()));
 		setUser(undefined);
 	};
 
+	/**
+	 * ユーザの権限情報を取得
+	 * @param token LIFFのアクセストークン
+	 * @returns type ユーザの権限情報(教員/学生/未登録)
+	 * @returns canAnswer 回答可能かどうか
+	 */
 	const getUserInfo = async (token: User["token"]) => {
 		try {
 			const { status, data } = await axios.get<User>(

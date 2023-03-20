@@ -3,6 +3,7 @@ import type { PushLineMessagePayload } from "@/types/payloads";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { useEffect } from "react";
 
+/** LINEボットに関する処理のhooks */
 const useLineMessages = (
 	eventType: PushLineMessagePayload["event"]["type"],
 	question?: Question
@@ -28,6 +29,7 @@ const useLineMessages = (
 		};
 	}, [question]);
 
+	/** ボットからメッセージを送信するAPIを叩く */
 	const pushLineMessage = async (payload: PushLineMessagePayload) => {
 		try {
 			const { status, data } = await axios.post("/api/v1/line/push", payload);

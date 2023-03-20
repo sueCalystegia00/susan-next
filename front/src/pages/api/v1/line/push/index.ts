@@ -2,6 +2,7 @@ import { PushLineMessagePayload } from "@/types/payloads";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { pushAnnounceMessage, pushResponseMessage } from "./handlers";
 
+/** LINEボット側からメッセージを送信する際に利用するAPI */
 const LinePushMessageHandler = async (
 	req: NextApiRequest,
 	res: NextApiResponse

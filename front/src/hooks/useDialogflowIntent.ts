@@ -3,6 +3,11 @@ import { PostDialogflowIntentPayload } from "@/types/payloads";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { useEffect, useState } from "react";
 
+/**
+ * Dialogflowのインテントを管理するためのhooks
+ * @param questionText 質問文
+ * @param existedIntentName 既存インテントのintentName
+ **/
 const useDialogflowIntent = (
 	questionText: Question["questionText"],
 	existedIntentName?: DialogflowIntent["intentName"]
@@ -38,6 +43,7 @@ const useDialogflowIntent = (
 
 	/**
 	 * DialogflowのIntentを更新する
+	 * @param question 質問データ
 	 */
 	const postIntent = async (question: Question) => {
 		try {

@@ -7,14 +7,13 @@ import { useEffect, useState } from "react";
  * @returns
  */
 const useQuestionnaire = () => {
-	/**
-	 * アンケートの回答状況
-	 */
+	// アンケートの回答状況
 	const [isQuestionnaireCompleted, setIsQuestionnaireCompleted] =
 		useState(false);
 
 	/**
-	 * アンケートの回答状況を確認する
+	 * アンケートの回答状況(回答済みか)を確認する
+	 * @param userIdToken LIFFのユーザIDトークン
 	 */
 	const checkIsQuestionnaireCompleted = async (userIdToken: User["token"]) => {
 		try {
@@ -38,6 +37,7 @@ const useQuestionnaire = () => {
 
 	/**
 	 * アンケートの回答を送信する
+	 * @param userIdToken
 	 * @param payload アンケートの回答
 	 */
 	const postQuestionnaire = async (userIdToken: User["token"], payload: {}) => {
