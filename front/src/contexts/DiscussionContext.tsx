@@ -32,6 +32,11 @@ type Props = {
 	children: ReactNode;
 };
 
+/**
+ * タグ内でディスカッション情報を利用するためのプロバイダ
+ * @param userIdToken LIFFのユーザIDトークン
+ * @param questionIndex 質問のインデックス
+ */
 const DiscussionProvider = ({
 	userIdToken,
 	questionIndex,

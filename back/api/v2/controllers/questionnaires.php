@@ -136,6 +136,7 @@ class QuestionnairesController
       $stmt->bindValue(':userUid', $lineId, PDO::PARAM_STR);
       foreach($questionnaire as $key => $answer){
         foreach($answer as $type => $value){
+          // データの型として，リッカートならint，それ以外ならstr
           $valueType = $type == "licart" ? PDO::PARAM_INT : PDO::PARAM_STR;
           $stmt->bindValue(":".$key.$type, $value, $valueType);
         }

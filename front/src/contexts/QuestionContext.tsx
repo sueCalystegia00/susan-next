@@ -29,6 +29,7 @@ type Props = {
 	children: ReactNode;
 };
 
+/** タグ内で質問情報を利用するためのプロバイダ */
 const QuestionProvider = ({ userIdToken, questionIndex, children }: Props) => {
 	const [relevance, setRelevance] = useState<"questioner" | "assigner" | null>(
 		null
@@ -42,6 +43,7 @@ const QuestionProvider = ({ userIdToken, questionIndex, children }: Props) => {
 			answerIdToken: userIdToken,
 		});
 
+	/** 指定の質問とユーザの関係を確認する(質問投稿ユーザ or 回答可能ユーザ(教員/TA/回答協力者)) */
 	const checkQuestionRelevance = async () => {
 		try {
 			const { status, data } = await axios.post<{

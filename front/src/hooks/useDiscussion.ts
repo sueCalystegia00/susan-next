@@ -48,6 +48,7 @@ const useDiscussionData = (
 	const [text, setText] = useState<DiscussionMessage["message"]>("");
 
 	// TODO: postDiscussionImageと統合する
+	/** ディスカッションに新規メッセージを追加する */
 	const postDiscussionMessage = async (isUsersQuestion: boolean) => {
 		try {
 			const { status, data } = await axios.post<postDiscussionResponse>(
@@ -79,7 +80,7 @@ const useDiscussionData = (
 
 	// 画像
 	const [image, setImage] = useState<File>();
-
+	/** ディスカッションに新規投稿(画像)を追加する */
 	const postDiscussionImage = async (isUsersQuestion: boolean) => {
 		const formData = new FormData();
 		formData.append("index", questionIndex.toString());

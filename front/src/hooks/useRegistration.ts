@@ -3,6 +3,10 @@ import { UserRegistrationPayload } from "@/types/payloads";
 import axios, { AxiosError } from "axios";
 import { useRef, useState } from "react";
 
+/**
+ * ユーザ登録
+ * @param userIdToken LIFFユーザIDトークン
+ */
 const useRegistration = (userIdToken?: User["token"]) => {
 	const [age, setAge] = useState<UserRegistrationPayload["age"] | undefined>(
 		undefined

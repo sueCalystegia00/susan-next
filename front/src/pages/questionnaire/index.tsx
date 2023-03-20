@@ -96,6 +96,7 @@ const QuestionnairePage = () => {
 						className='w-full max-w-4xl flex flex-col gap-4 items-start p-4'
 						onSubmit={handleSubmit(onSubmit)}
 					>
+						{/* json形式の質問項目データからフォームを作成していく */}
 						{formData.map((questionnaire, questionnaireKey) => (
 							<div
 								key={questionnaireKey}

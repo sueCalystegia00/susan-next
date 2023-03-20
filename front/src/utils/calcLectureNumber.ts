@@ -9,7 +9,7 @@ const calcLectureNumber = (date: Date) => {
 	 */
 	const isAorB = date <= new Date(2022, 12 - 1, 6) ? "A" : "B";
 
-	// TODO: クイックソート的なアルゴリズムがあるのではなかろうか...
+	// TODO: より効率的な書き方を考える
 
 	if (isAorB === "A") {
 		// 第3Qの場合

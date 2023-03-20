@@ -1,6 +1,9 @@
 <?php
 ini_set('display_errors',1);
 
+/**
+ * LINEのユーザ情報・対話ログのコントローラー
+ */
 class LineController
 {
   public $code = 200;
@@ -60,7 +63,7 @@ class LineController
     $pdo = $db -> pdo();
 
     try{
-      // mysqlの実行文(各LINEid毎の最新メッセージを取得)
+      // 直前９時間以内のチャットボット側の最新応答メッセージを取得
       $stmt = $pdo -> prepare(
         "SELECT `contextName`, `lifespanCount`
         FROM `BotTalkLogs` 
