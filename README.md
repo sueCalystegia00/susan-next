@@ -58,11 +58,13 @@ Next.js APIrouting を利用し，LINE bot の webhook を構築している
 
 - Dialogflow API を利用可能に
   - [Dialogflow ES](https://dialogflow.cloud.google.com/)でインテントなど設定
-  - [Google Cloud Console](https://console.cloud.google.com/)から Dialogflow の API キーを発行
+  - [Google Cloud Console](https://console.cloud.google.com/)から Dialogflow の サービスアカウントキーを発行
+    - 作成した Dialogflow プロジェクトの[サービスアカウント](https://console.cloud.google.com/projectselector2/iam-admin/serviceaccounts)からキーの作成(JSON)を行う．
 
 ## 📝Set Environment File
 
-- 各ディレクトリの.env.sample を参考に各サービスの環境変数を設定
+- 各ディレクトリの.env.sample を参考に各サービスの環境変数を .env , .env.development , .env.production に設定
+- back/api の .htaccess を，自身の環境にあわせてリダイレクト先のパスを変更
 
 ## 🤖Start Developing
 
