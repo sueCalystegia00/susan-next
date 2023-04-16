@@ -64,6 +64,18 @@ services:
     ports:
       - "80:80"
 
+  #ngrok(LINEbot ローカル動作確認用)
+  ngrok:
+    container_name: ngrok
+    image: wernight/ngrok:latest
+    volumes:
+      - ./ngrok.yml:/home/ngrok/.ngrok2/ngrok.yml
+    ports:
+      - ${NGROK_PORT:-4040}:4040
+    environment:
+      NGROK_PORT: susan-liff-next_front:3000
+      NGROK_AUTH: ${NGROK_AUTH_TOKEN}
+
 volumes:
   node_modules_volume:
   build_volume:
