@@ -26,7 +26,7 @@ function sendEmailToInstructors($type, $messageText, $questionIndex){
   }
   $message = $messageText."\r\n \r\n".
               "確認する↓\r\n".
-              "https://liff.line.me/1657189212-Lwpmnpld/question/".$questionIndex."\r\n ";
+              "https://liff.line.me/".getenv("LIFF_ID")."/question/".$questionIndex."\r\n ";
 
   $headers = "From: noreply@susan.next.jp";
 
