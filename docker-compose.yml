@@ -13,6 +13,8 @@ services:
     ports:
       - "3000:3000" # 開発用
       - "4000:4000" # 本番用
+    networks:
+      - default
     volumes:
       - ./front:/home/app
       - node_modules_volume:/home/app/node_modules:delegated
@@ -47,6 +49,7 @@ services:
     ports:
       - 3306:3306
     environment:
+      - MYSQL_ROOT_HOST='%'
       - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
       - MYSQL_DATABASE=$MYSQL_DATABASE
       - MYSQL_USER=$MYSQL_USER
@@ -63,6 +66,22 @@ services:
     restart: always
     ports:
       - "80:80"
+
+  #ngrok(LINEbot ローカル動作確認用)
+  ngrok:
+    container_name: ngrok
+    image: wernight/ngrok:latest
+    volumes:
+      - ./ngrok.yml:/home/ngrok/.ngrok2/ngrok.yml
+    ports:
+      - ${NGROK_FRONT_PORT:-4040}:4040
+    environment:
+      NGROK_FRONT_PORT: front:3000
+      NGROK_AUTH: ${NGROK_AUTH_TOKEN}
+    depends_on:
+      - front
+    networks:
+      - default
 
 volumes:
   node_modules_volume:

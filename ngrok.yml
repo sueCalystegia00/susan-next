@@ -1,0 +1,4 @@
+authtoken: ${NGROK_AUTH_TOKEN}
+web_addr: 0.0.0.0:4040
+# regionをAsia Pacificに変更
+region: ap
