@@ -31,7 +31,7 @@ services:
       - ./back:/var/www/html
       - ./back/php.ini:/usr/local/etc/php/php.ini
     ports:
-      - 8080:80
+      - 80:80
     depends_on:
       - mysql
 
@@ -65,23 +65,20 @@ services:
       PMA_HOST: mysql
     restart: always
     ports:
-      - "80:80"
+      - "81:80"
 
   #ngrok(LINEbot ローカル動作確認用)
   ngrok:
     container_name: ngrok
+    platform: linux/amd64
     image: wernight/ngrok:latest
     volumes:
       - ./ngrok.yml:/home/ngrok/.ngrok2/ngrok.yml
     ports:
-      - ${NGROK_FRONT_PORT:-4040}:4040
+      - "4040:4040"
     environment:
-      NGROK_FRONT_PORT: front:3000
       NGROK_AUTH: ${NGROK_AUTH_TOKEN}
-    depends_on:
-      - front
-    networks:
-      - default
+    command: ["ngrok", "http", "back:80", "--authtoken", "${NGROK_AUTH_TOKEN}"]
 
 volumes:
   node_modules_volume:

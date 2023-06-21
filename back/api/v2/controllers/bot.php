@@ -113,7 +113,7 @@ class BotController
 
       // 送信失敗の場合はサーバーのエラーログへ
       if(!$response->isSucceeded()){
-        error_log('Failed! '. $response->getHTTPStatus . ' '.$response->getRawBody(), 3, dirname(__FILE__).'/debug.log');
+        error_log('Failed! '. $response->getHTTPStatus() . ' '.$response->getRawBody(), 3, dirname(__FILE__).'/debug.log');
       }
 
       $this->code = $response->getHTTPStatus();
