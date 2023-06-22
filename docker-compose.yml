@@ -69,16 +69,19 @@ services:
 
   #ngrok(LINEbot ローカル動作確認用)
   ngrok:
-    container_name: ngrok
-    platform: linux/amd64
-    image: wernight/ngrok:latest
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    command:
+      - "start"
+      - "back"
+      - "--authtoken"
+      - "${NGROK_AUTH_TOKEN}"
+      - "--config"
+      - "/etc/ngrok.yml"
     volumes:
-      - ./ngrok.yml:/home/ngrok/.ngrok2/ngrok.yml
+      - ./ngrok.yml:/etc/ngrok.yml
     ports:
-      - "4040:4040"
-    environment:
-      NGROK_AUTH: ${NGROK_AUTH_TOKEN}
-    command: ["ngrok", "http", "back:80", "--authtoken", "${NGROK_AUTH_TOKEN}"]
+      - 4040:4040
 
 volumes:
   node_modules_volume:
