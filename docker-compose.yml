@@ -68,6 +68,7 @@ services:
       - "81:80"
 
   #ngrok(LINEbot ローカル動作確認用)
+  #reference: https://ngrok.com/docs/using-ngrok-with/docker/
   ngrok:
     image: ngrok/ngrok:latest
     restart: unless-stopped
