@@ -1,7 +1,7 @@
 envs/
-.env
+.env*
 vendor/
 api/*/.htaccess*
-!*.development
+!htaccess.development
 !*.sample
 *.log

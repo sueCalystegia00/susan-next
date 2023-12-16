@@ -41,8 +41,10 @@ services:
       /bin/bash -c 
       "if [ $$ENV = 'development' ]; then 
         cp /var/www/html/api/v2/.htaccess.development /var/www/html/api/v2/.htaccess;
+        cp /var/www/html/.env.development /var/www/html/.env; 
       else 
         cp /var/www/html/api/v2/.htaccess.production /var/www/html/api/v2/.htaccess; 
+        cp /var/www/html/.env.production /var/www/html/.env; 
       fi 
       && apache2-foreground"
 
