@@ -32,8 +32,19 @@ services:
       - ./back/php.ini:/usr/local/etc/php/php.ini
     ports:
       - 80:80
+    environment:
+      - ENV=${ENV:-development}
     depends_on:
       - mysql
+    # 開発・本番環境によって .env/.htaccess を切り替える
+    command: >
+      /bin/bash -c 
+      "if [ $$ENV = 'development' ]; then 
+        cp /var/www/html/api/v2/.htaccess.development /var/www/html/api/v2/.htaccess;
+      else 
+        cp /var/www/html/api/v2/.htaccess.production /var/www/html/api/v2/.htaccess; 
+      fi 
+      && apache2-foreground"
 
   #MySQL用コンテナ
   mysql:
